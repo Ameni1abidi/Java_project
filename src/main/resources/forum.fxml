@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.controller.AjoutForum"
+            style="-fx-background-color: #f5f7fb;">
+
+    <!-- 🔹 HEADER -->
+    <top>
+        <HBox spacing="20" alignment="CENTER_LEFT"
+              style="-fx-padding:20; -fx-background-color: white; -fx-background-radius:10;">
+
+            <VBox spacing="5">
+                <Label text="Forum"
+                       style="-fx-font-size:24px; -fx-font-weight:bold;"/>
+                <Label text="Discussions de la communauté"
+                       style="-fx-text-fill: gray;"/>
+            </VBox>
+
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <Button text="Créer un sujet"
+                    onAction="#ajouterForum"
+                    style="-fx-background-color:#2ecc71; -fx-text-fill:white; -fx-background-radius:20;"/>
+        </HBox>
+    </top>
+
+    <!-- 🔹 CENTER -->
+    <center>
+        <VBox spacing="15" alignment="CENTER"
+              style="-fx-padding:30;">
+
+            <!-- Message vide -->
+            <Label text="Aucun sujet disponible."
+                   style="-fx-text-fill: gray; -fx-font-size:14px;"/>
+
+        </VBox>
+    </center>
+
+</BorderPane>
