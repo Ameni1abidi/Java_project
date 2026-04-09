@@ -1,4 +1,9 @@
-package tn.esprit.test;
+package tn.esprit;
+
+import tn.esprit.entities.forum;
+import tn.esprit.services.ForumService;
+
+import java.sql.Timestamp;
 
 import tn.esprit.entities.Chapitre;
 import tn.esprit.entities.Cours;
@@ -66,8 +71,14 @@ public class Main {
 
         // DELETE Cours
         coursService.supprimer(1);
+        ForumService fs = new ForumService();
 
+        // 🔹 AJOUT
+        forum f = new forum(0, "Sport", "Real Madrid best club", "football", new Timestamp(System.currentTimeMillis()));
+        fs.ajouter(f);
 
+        // 🔹 AFFICHAGE
+        fs.afficher().forEach(System.out::println);
     }
 
 }
