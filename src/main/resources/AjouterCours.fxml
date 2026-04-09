@@ -5,11 +5,45 @@
 <?import javafx.scene.layout.AnchorPane?>
 
 
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.DatePicker?>
 <AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.controllers.AjouterCours">
    <children>
-      <Accordion layoutX="39.0" layoutY="92.0" />
-      <Button layoutX="93.0" layoutY="320.0" mnemonicParsing="false" text="Ajouter" />
-      <Button layoutX="240.0" layoutY="320.0" mnemonicParsing="false" text="modifier" />
-      <Button layoutX="393.0" layoutY="320.0" mnemonicParsing="false" text="supprimer" />
+
+      <VBox spacing="10" layoutX="50" layoutY="30" prefWidth="500">
+
+         <Label text="Ajouter un Cours"
+                style="-fx-font-size:18px; -fx-font-weight:bold;" />
+
+         <!-- TITRE -->
+         <Label text="Titre"/>
+         <TextField fx:id="titreField" promptText="Titre du cours"/>
+
+         <!-- DESCRIPTION -->
+         <Label text="Description"/>
+         <TextArea fx:id="descriptionField" promptText="Description"/>
+
+         <!-- NIVEAU -->
+         <Label text="Niveau"/>
+         <TextField fx:id="niveauField" promptText="Débutant / Avancé"/>
+
+         <!-- DATE -->
+         <Label text="Date Création"/>
+         <DatePicker fx:id="dateField"/>
+
+         <!-- BADGE -->
+         <Label text="Badge"/>
+         <TextField fx:id="badgeField" promptText="gold / silver"/>
+
+         <!-- BUTTON -->
+         <Button text="Enregistrer"
+                 onAction="#ajouterCours"
+                 style="-fx-background-color: green; -fx-text-fill: white;" />
+
+      </VBox>
+
    </children>
 </AnchorPane>
