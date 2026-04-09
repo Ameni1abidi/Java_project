@@ -7,7 +7,7 @@ import tn.esprit.services.*;
 import java.sql.Date;
 import java.sql.Timestamp;
 
-public class main {
+public class Main {
 
     public static void main(String[] args) {
 
