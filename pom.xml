@@ -54,7 +54,7 @@
 
                 <configuration>
 
-                    <mainClass>tn.esprit.tests.MainFX</mainClass>
+                    <mainClass>tn.esprit.MainFX</mainClass>
 
                 </configuration>
 
