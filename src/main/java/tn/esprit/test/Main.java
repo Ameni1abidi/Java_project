@@ -1,7 +1,9 @@
 package tn.esprit;
 
 import tn.esprit.entities.forum;
+import tn.esprit.entities.commentaire;
 import tn.esprit.services.ForumService;
+import tn.esprit.services.CommentaireService;
 
 import java.sql.Timestamp;
 
@@ -117,13 +119,34 @@ public class Main {
         // DELETE Cours
         coursService.supprimer(1);
         ForumService fs = new ForumService();
+        CommentaireService cs = new CommentaireService();
 
-        // 🔹 AJOUT
-        forum f = new forum(0, "Sport", "Real Madrid best club", "football", new Timestamp(System.currentTimeMillis()));
+        // 🔹 AJOUT FORUM
+        forum f = new forum(
+                0,
+                "Sport",
+                "Real Madrid best club",
+                "football",
+                new Timestamp(System.currentTimeMillis())
+        );
         fs.ajouter(f);
 
-        // 🔹 AFFICHAGE
+        // 🔹 AFFICHAGE FORUMS
+        System.out.println("---- Forums ----");
         fs.afficher().forEach(System.out::println);
+
+        // 🔹 AJOUT COMMENTAIRE (⚠️ ID doit exister)
+        commentaire c = new commentaire(
+                0,
+                "Très bon sujet 🔥",
+                5,
+                new Timestamp(System.currentTimeMillis())
+        );
+        cs.ajouter(c);
+
+        // 🔹 AFFICHAGE COMMENTAIRES
+        System.out.println("---- Commentaires ----");
+        cs.afficher().forEach(System.out::println);
     }
 
 }
