@@ -10,11 +10,9 @@ public class Examen {
     private LocalDate dateExamen;
     private int duree;
 
-    public Examen() {
-    }
+    public Examen() {}
 
-    public Examen(int id, String titre, String contenu, String type, LocalDate dateExamen, int duree) {
-        this.id = id;
+    public Examen(String titre, String contenu, String type, LocalDate dateExamen, int duree) {
         this.titre = titre;
         this.contenu = contenu;
         this.type = type;
@@ -22,62 +20,31 @@ public class Examen {
         this.duree = duree;
     }
 
-    public int getId() {
-        return id;
-    }
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    public String getTitre() { return titre; }
+    public void setTitre(String titre) { this.titre = titre; }
 
-    public String getTitre() {
-        return titre;
-    }
+    public String getContenu() { return contenu; }
+    public void setContenu(String contenu) { this.contenu = contenu; }
 
-    public void setTitre(String titre) {
-        this.titre = titre;
-    }
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
 
-    public String getContenu() {
-        return contenu;
-    }
+    public LocalDate getDateExamen() { return dateExamen; }
+    public void setDateExamen(LocalDate dateExamen) { this.dateExamen = dateExamen; }
 
-    public void setContenu(String contenu) {
-        this.contenu = contenu;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public LocalDate getDateExamen() {
-        return dateExamen;
-    }
-
-    public void setDateExamen(LocalDate dateExamen) {
-        this.dateExamen = dateExamen;
-    }
-
-    public int getDuree() {
-        return duree;
-    }
-
-    public void setDuree(int duree) {
-        this.duree = duree;
-    }
+    public int getDuree() { return duree; }
+    public void setDuree(int duree) { this.duree = duree; }
 
     @Override
     public String toString() {
         return "Examen{" +
                 "id=" + id +
                 ", titre='" + titre + '\'' +
-                ", contenu='" + contenu + '\'' +
                 ", type='" + type + '\'' +
-                ", dateExamen=" + dateExamen +
+                ", date=" + dateExamen +
                 ", duree=" + duree +
                 '}';
     }
