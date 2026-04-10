@@ -1,11 +1,23 @@
 package tn.esprit.test;
 import tn.esprit.entities.*;
 
+import tn.esprit.entities.forum;
+import tn.esprit.entities.commentaire;
+import tn.esprit.services.ForumService;
+import tn.esprit.services.CommentaireService; 
 
 import tn.esprit.services.*;
 
 import java.sql.Date;
 import java.sql.Timestamp;
+
+import tn.esprit.entities.Examen;
+import tn.esprit.entities.Evaluation;
+import tn.esprit.services.ExamenService;
+import tn.esprit.services.EvaluationService;
+
+import java.time.LocalDate;
+import java.util.List;
 
 public class Main {
 
@@ -68,6 +80,28 @@ public class Main {
         chapitreService.modifier(ch);
 
         // DELETE Chapitre
+        // ===== EXAMEN =====
+        ExamenService es = new ExamenService();
+        //Examen e = new Examen("Examen BD", "SQL", "Final", LocalDate.now(), 90);
+        //es.create(e);
+        //es.getAll().forEach(System.out::println);
+        //e.setTitre("Examen Update");
+        //es.update(e);
+        //es.delete(e.getId());
+        // ===== EVALUATION =====
+        EvaluationService evs = new EvaluationService();
+        //Evaluation ev = new Evaluation(16, "Bien");
+        //evs.create(ev);
+        evs.getAll().forEach(System.out::println);
+        //ev.setNote(19);
+        //ev.setAppreciation("Excellent");
+        //evs.update(ev);
+        //evs.delete(ev.getId());
+    }
+
+
+}
+// DELETE Chapitre
         chapitreService.supprimer(1);
 
         // 🔹 Service Cours
@@ -100,6 +134,9 @@ public class Main {
         ForumService fs = new ForumService();
 
         // CREATE Forum
+        CommentaireService cs = new CommentaireService();
+
+        // 🔹 AJOUT FORUM
         forum f = new forum(
                 0,
                 "Sport",
@@ -110,6 +147,21 @@ public class Main {
         fs.ajouter(f);
 
         // READ Forum
+        // 🔹 AFFICHAGE FORUMS
+        System.out.println("---- Forums ----");
         fs.afficher().forEach(System.out::println);
+
+        // 🔹 AJOUT COMMENTAIRE (⚠️ ID doit exister)
+        commentaire c = new commentaire(
+                0,
+                "Très bon sujet 🔥",
+                5,
+                new Timestamp(System.currentTimeMillis())
+        );
+        cs.ajouter(c);
+
+        // 🔹 AFFICHAGE COMMENTAIRES
+        System.out.println("---- Commentaires ----");
+        cs.afficher().forEach(System.out::println);
     }
 }
