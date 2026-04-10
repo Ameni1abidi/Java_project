@@ -4,7 +4,7 @@ import tn.esprit.entities.*;
 import tn.esprit.entities.forum;
 import tn.esprit.entities.commentaire;
 import tn.esprit.services.ForumService;
-import tn.esprit.services.CommentaireService; 
+import tn.esprit.services.CommentaireService;
 
 import tn.esprit.services.*;
 
@@ -20,7 +20,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 public class Main {
-
     public static void main(String[] args) {
 
         // 🔹 Service Categorie
@@ -80,28 +79,6 @@ public class Main {
         chapitreService.modifier(ch);
 
         // DELETE Chapitre
-        // ===== EXAMEN =====
-        ExamenService es = new ExamenService();
-        //Examen e = new Examen("Examen BD", "SQL", "Final", LocalDate.now(), 90);
-        //es.create(e);
-        //es.getAll().forEach(System.out::println);
-        //e.setTitre("Examen Update");
-        //es.update(e);
-        //es.delete(e.getId());
-        // ===== EVALUATION =====
-        EvaluationService evs = new EvaluationService();
-        //Evaluation ev = new Evaluation(16, "Bien");
-        //evs.create(ev);
-        evs.getAll().forEach(System.out::println);
-        //ev.setNote(19);
-        //ev.setAppreciation("Excellent");
-        //evs.update(ev);
-        //evs.delete(ev.getId());
-    }
-
-
-}
-// DELETE Chapitre
         chapitreService.supprimer(1);
 
         // 🔹 Service Cours
@@ -152,16 +129,35 @@ public class Main {
         fs.afficher().forEach(System.out::println);
 
         // 🔹 AJOUT COMMENTAIRE (⚠️ ID doit exister)
-        commentaire c = new commentaire(
+        commentaire com = new commentaire(
                 0,
                 "Très bon sujet 🔥",
                 5,
                 new Timestamp(System.currentTimeMillis())
         );
-        cs.ajouter(c);
+        cs.ajouter(com);
 
         // 🔹 AFFICHAGE COMMENTAIRES
         System.out.println("---- Commentaires ----");
         cs.afficher().forEach(System.out::println);
+
+        // ===== EXAMEN =====
+        ExamenService es = new ExamenService();
+        //Examen e = new Examen("Examen BD", "SQL", "Final", LocalDate.now(), 90);
+        //es.create(e);
+        //es.getAll().forEach(System.out::println);
+        //e.setTitre("Examen Update");
+        //es.update(e);
+        //es.delete(e.getId());
+
+        // ===== EVALUATION =====
+        EvaluationService evs = new EvaluationService();
+        //Evaluation ev = new Evaluation(16, "Bien");
+        //evs.create(ev);
+        evs.getAll().forEach(System.out::println);
+        //ev.setNote(19);
+        //ev.setAppreciation("Excellent");
+        //evs.update(ev);
+        //evs.delete(ev.getId());
     }
 }

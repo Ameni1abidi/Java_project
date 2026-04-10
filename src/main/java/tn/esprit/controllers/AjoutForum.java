@@ -1,4 +1,4 @@
-package tn.esprit.controller;
+package tn.esprit.controllers;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
