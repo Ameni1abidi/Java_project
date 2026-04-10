@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="tn.esprit.controllers.AjoutCommentaire"
+      spacing="10"
+      style="-fx-padding:10; -fx-background-color:#f9f9f9; -fx-background-radius:10;">
+
+    <Label text="Commentaires"
+           style="-fx-font-size:16px; -fx-font-weight:bold;"/>
+
+    <VBox fx:id="commentContainer" spacing="8"/>
+
+    <TextArea fx:id="contenuField"
+              promptText="Ajouter un commentaire..."
+              prefHeight="60"/>
+
+    <Button text="Ajouter" onAction="#ajouterCommentaire"/>
+
+</VBox>
