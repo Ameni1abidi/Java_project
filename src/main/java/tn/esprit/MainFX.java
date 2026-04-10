@@ -9,6 +9,13 @@ public class MainFX extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ajouterCours.fxml"));
+        Scene scene = new Scene(loader.load());
+
+        stage.setTitle("Ajouter Cours");
+        stage.setScene(scene);
+        stage.show();
+    }
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/forum.fxml"));
         Scene scene = new Scene(loader.load(), 600, 500);
