@@ -16,4 +16,16 @@ public class MainFX extends Application {
         stage.setScene(scene);
         stage.show();
     }
+
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/forum.fxml"));
+        Scene scene = new Scene(loader.load(), 600, 500);
+
+        stage.setTitle("EduFlex Forum");
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    public static void main(String[] args) {
+        launch();
+    }
 }
