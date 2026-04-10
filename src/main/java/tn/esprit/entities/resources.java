@@ -59,3 +59,4 @@ public class resources {
         return "resources{id=" + id + ", titre='" + titre + "', contenu='" + contenu + "', categorieId=" + categorieId + "}";
     }
 }
+
