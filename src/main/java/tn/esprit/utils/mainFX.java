@@ -1,4 +1,4 @@
-package tn.esprit.test;
+package tn.esprit.utils;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -10,7 +10,7 @@ public class mainFX extends Application {
     public void start(Stage stage) throws Exception {
 
         FXMLLoader loader = new FXMLLoader(
-                getClass().getResource("/views/EvaluationView.fxml")
+                getClass().getResource("/EvaluationView.fxml")
         );
 
         Scene scene = new Scene(loader.load());
