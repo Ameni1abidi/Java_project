@@ -3,41 +3,62 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="tn.esprit.controllers.AjoutForum"
-            style="-fx-background-color: #f5f7fb;">
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="tn.esprit.controllers.AjoutForum"
+           style="-fx-background-color:#f5f7fb;">
 
-    <!-- 🔹 HEADER -->
-    <top>
-        <HBox spacing="20" alignment="CENTER_LEFT"
-              style="-fx-padding:20; -fx-background-color: white; -fx-background-radius:10;">
+    <!-- ================== LIST VIEW ================== -->
+    <VBox fx:id="listPane" spacing="20" alignment="TOP_CENTER"
+          style="-fx-padding:20;">
 
-            <VBox spacing="5">
+        <HBox alignment="CENTER_LEFT" spacing="20"
+              style="-fx-background-color:white; -fx-padding:15; -fx-background-radius:10;">
+
+            <VBox>
                 <Label text="Forum"
-                       style="-fx-font-size:24px; -fx-font-weight:bold;"/>
+                       style="-fx-font-size:22px; -fx-font-weight:bold;"/>
                 <Label text="Discussions de la communauté"
-                       style="-fx-text-fill: gray;"/>
+                       style="-fx-text-fill:gray;"/>
             </VBox>
 
             <Region HBox.hgrow="ALWAYS"/>
 
             <Button text="Créer un sujet"
-                    onAction="#ajouterForum"
-                    style="-fx-background-color:#2ecc71; -fx-text-fill:white; -fx-background-radius:20;"/>
+                    onAction="#showCreateForm"
+                    style="-fx-background-color:#2ecc71; -fx-text-fill:white;"/>
         </HBox>
-    </top>
 
-    <!-- 🔹 CENTER -->
-    <center>
-        <VBox spacing="15" alignment="CENTER"
-              style="-fx-padding:30;">
+        <ListView fx:id="forumList" prefWidth="500" prefHeight="300"/>
 
-            <!-- Message vide -->
-            <Label text="Aucun sujet disponible."
-                   style="-fx-text-fill: gray; -fx-font-size:14px;"/>
+    </VBox>
 
-        </VBox>
-    </center>
+    <!-- ================== CREATE FORM ================== -->
+    <VBox fx:id="formPane" spacing="15" alignment="TOP_LEFT"
+          visible="false"
+          style="-fx-padding:30;">
 
-</BorderPane>
+        <Label text="Créer un nouveau sujet"
+               style="-fx-font-size:22px; -fx-font-weight:bold;" />
+
+        <Label text="Titre"/>
+        <TextField fx:id="titreField"/>
+
+        <Label text="Type"/>
+        <TextField fx:id="typeField"/>
+
+        <Label text="Contenu"/>
+        <TextArea fx:id="contenuField" prefHeight="120"/>
+
+        <HBox spacing="10">
+            <Button text="Créer"
+                    onAction="#ajouterForum"
+                    style="-fx-background-color:#2ecc71; -fx-text-fill:white;"/>
+
+            <Button text="Retour"
+                    onAction="#showList"/>
+        </HBox>
+
+    </VBox>
+
+</StackPane>

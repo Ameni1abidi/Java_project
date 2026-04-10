@@ -1,8 +1,9 @@
 package tn.esprit.controllers;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
+
 import tn.esprit.entities.forum;
 import tn.esprit.services.ForumService;
 
@@ -10,86 +11,94 @@ import java.sql.Timestamp;
 
 public class AjoutForum {
 
+    // 🔹 PANES
     @FXML
-    private TextField titreField;
+    private VBox listPane;
 
     @FXML
-    private TextArea contenuField;
+    private VBox formPane;
+
+    // 🔹 LIST
+    @FXML
+    private ListView<String> forumList;
+
+    // 🔹 FORM
+    @FXML
+    private TextField titreField;
 
     @FXML
     private TextField typeField;
 
     @FXML
-    private TextField idField;
+    private TextArea contenuField;
 
     private ForumService forumService = new ForumService();
 
-    // ✅ CREATE → appel service
+    // ================= INIT =================
+    @FXML
+    public void initialize() {
+        loadForums();
+    }
+
+    // ================= SWITCH =================
+
+    @FXML
+    public void showCreateForm() {
+        listPane.setVisible(false);
+        formPane.setVisible(true);
+    }
+
+    @FXML
+    public void showList() {
+        formPane.setVisible(false);
+        listPane.setVisible(true);
+    }
+
+    // ================= CREATE =================
+
     @FXML
     public void ajouterForum() {
 
-        String titre = titreField.getText();
-        String contenu = contenuField.getText();
-        String type = typeField.getText();
+        if (titreField.getText().isEmpty() || typeField.getText().isEmpty()) {
+            System.out.println("Champs vides !");
+            return;
+        }
 
         forum f = new forum(
                 0,
-                titre,
-                contenu,
-                type,
+                titreField.getText(),
+                contenuField.getText(),
+                typeField.getText(),
                 new Timestamp(System.currentTimeMillis())
         );
 
         forumService.ajouter(f);
 
-        System.out.println("Ajout OK (via service)");
+        System.out.println("Forum ajouté !");
+
         clearFields();
+        loadForums();
+        showList();
     }
 
-    // ✅ UPDATE → appel service
-    @FXML
-    public void modifierForum() {
+    // ================= READ =================
 
-        int id = Integer.parseInt(idField.getText());
+    private void loadForums() {
 
-        forum f = new forum(
-                id,
-                titreField.getText(),
-                contenuField.getText(),
-                typeField.getText(),
-                null
+        forumList.getItems().clear();
+
+        forumService.afficher().forEach(f ->
+                forumList.getItems().add(
+                        f.getTitre() + " | " + f.getType()
+                )
         );
-
-        forumService.modifier(f);
-
-        System.out.println("Modification OK (via service)");
-        clearFields();
     }
 
-    // ✅ DELETE → appel service
-    @FXML
-    public void supprimerForum() {
+    // ================= UTIL =================
 
-        int id = Integer.parseInt(idField.getText());
-
-        forumService.supprimer(id);
-
-        System.out.println("Suppression OK (via service)");
-        clearFields();
-    }
-
-    // ✅ READ → appel service
-    @FXML
-    public void afficherForums() {
-
-        forumService.afficher().forEach(System.out::println);
-    }
-
-    // 🔹 utilitaire
     private void clearFields() {
         titreField.clear();
         contenuField.clear();
         typeField.clear();
-        idField.clear();
     }
 }
