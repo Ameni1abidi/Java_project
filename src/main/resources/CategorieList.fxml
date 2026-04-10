@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.controllers.CategorieListController">
+
+    <children>
+
+        <Button text="⬅ Retour"
+                onAction="#goToAdd"
+                style="-fx-background-color: #3498db;
+                   -fx-text-fill: white;
+                   -fx-font-weight: bold;
+                   -fx-background-radius: 8;" />
+
+
+        <TableView fx:id="tableCategorie"
+                   AnchorPane.topAnchor="20"
+                   AnchorPane.leftAnchor="20"
+                   AnchorPane.rightAnchor="20"
+                   AnchorPane.bottomAnchor="20">
+
+            <columns>
+
+                <TableColumn fx:id="idCol" text="ID" prefWidth="100"/>
+                <TableColumn fx:id="nomCol" text="Nom" prefWidth="300"/>
+
+            </columns>
+
+        </TableView>
+
+    </children>
+
+</AnchorPane>
