@@ -5,14 +5,13 @@
 
 <StackPane xmlns="http://javafx.com/javafx"
            xmlns:fx="http://javafx.com/fxml"
-           fx:controller="tn.esprit.controller.AjoutForum"
+           fx:controller="tn.esprit.controllers.AjoutForum"
            style="-fx-background-color:#f5f7fb;">
 
     <!-- ================== LIST VIEW ================== -->
     <VBox fx:id="listPane" spacing="20" alignment="TOP_CENTER"
           style="-fx-padding:20;">
 
-        <!-- Header -->
         <HBox alignment="CENTER_LEFT" spacing="20"
               style="-fx-background-color:white; -fx-padding:15; -fx-background-radius:10;">
 
@@ -30,11 +29,9 @@
                     style="-fx-background-color:#2ecc71; -fx-text-fill:white;"/>
         </HBox>
 
-        <!-- Liste -->
         <ListView fx:id="forumList" prefWidth="500" prefHeight="300"/>
 
     </VBox>
-
 
     <!-- ================== CREATE FORM ================== -->
     <VBox fx:id="formPane" spacing="15" alignment="TOP_LEFT"

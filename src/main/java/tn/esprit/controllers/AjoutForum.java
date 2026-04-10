@@ -1,9 +1,7 @@
-package tn.esprit.controller;
+package tn.esprit.controllers;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ListView;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 
 import tn.esprit.entities.forum;
@@ -13,18 +11,18 @@ import java.sql.Timestamp;
 
 public class AjoutForum {
 
-    // 🔹 PANES (switch view)
+    // 🔹 PANES
     @FXML
     private VBox listPane;
 
     @FXML
     private VBox formPane;
 
-    // 🔹 LIST VIEW
+    // 🔹 LIST
     @FXML
     private ListView<String> forumList;
 
-    // 🔹 FORM FIELDS
+    // 🔹 FORM
     @FXML
     private TextField titreField;
 
@@ -34,7 +32,6 @@ public class AjoutForum {
     @FXML
     private TextArea contenuField;
 
-    // 🔹 SERVICE
     private ForumService forumService = new ForumService();
 
     // ================= INIT =================
@@ -43,7 +40,7 @@ public class AjoutForum {
         loadForums();
     }
 
-    // ================= SWITCH VIEWS =================
+    // ================= SWITCH =================
 
     @FXML
     public void showCreateForm() {
@@ -57,14 +54,13 @@ public class AjoutForum {
         listPane.setVisible(true);
     }
 
-    // ================= CRUD =================
+    // ================= CREATE =================
 
-    // 🔹 CREATE
     @FXML
     public void ajouterForum() {
 
         if (titreField.getText().isEmpty() || typeField.getText().isEmpty()) {
-            System.out.println("Veuillez remplir les champs !");
+            System.out.println("Champs vides !");
             return;
         }
 
@@ -85,7 +81,8 @@ public class AjoutForum {
         showList();
     }
 
-    // 🔹 READ (chargement liste)
+    // ================= READ =================
+
     private void loadForums() {
 
         forumList.getItems().clear();
