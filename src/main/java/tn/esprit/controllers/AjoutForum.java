@@ -1,7 +1,10 @@
 package tn.esprit.controllers;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import tn.esprit.entities.forum;
@@ -11,18 +14,12 @@ import java.sql.Timestamp;
 
 public class AjoutForum {
 
-    // 🔹 PANES
     @FXML
-    private VBox listPane;
+    private VBox forumContainer;
 
     @FXML
     private VBox formPane;
 
-    // 🔹 LIST
-    @FXML
-    private ListView<String> forumList;
-
-    // 🔹 FORM
     @FXML
     private TextField titreField;
 
@@ -32,7 +29,7 @@ public class AjoutForum {
     @FXML
     private TextArea contenuField;
 
-    private ForumService forumService = new ForumService();
+    private ForumService fs = new ForumService();
 
     // ================= INIT =================
     @FXML
@@ -41,21 +38,17 @@ public class AjoutForum {
     }
 
     // ================= SWITCH =================
-
     @FXML
     public void showCreateForm() {
-        listPane.setVisible(false);
         formPane.setVisible(true);
     }
 
     @FXML
     public void showList() {
         formPane.setVisible(false);
-        listPane.setVisible(true);
     }
 
     // ================= CREATE =================
-
     @FXML
     public void ajouterForum() {
 
@@ -72,33 +65,75 @@ public class AjoutForum {
                 new Timestamp(System.currentTimeMillis())
         );
 
-        forumService.ajouter(f);
+        fs.ajouter(f);
 
-        System.out.println("Forum ajouté !");
-
-        clearFields();
-        loadForums();
-        showList();
-    }
-
-    // ================= READ =================
-
-    private void loadForums() {
-
-        forumList.getItems().clear();
-
-        forumService.afficher().forEach(f ->
-                forumList.getItems().add(
-                        f.getTitre() + " | " + f.getType()
-                )
-        );
-    }
-
-    // ================= UTIL =================
-
-    private void clearFields() {
+        // reset form
         titreField.clear();
         contenuField.clear();
         typeField.clear();
+
+        showList();
+        loadForums();
+    }
+
+    // ================= READ =================
+    private void loadForums() {
+
+        forumContainer.getChildren().clear();
+
+        fs.afficher().forEach(f -> {
+
+            try {
+                VBox card = new VBox(10);
+                card.setStyle("-fx-background-color:white; -fx-padding:15; -fx-background-radius:10;");
+
+                Label titre = new Label(f.getTitre());
+                titre.setStyle("-fx-font-size:16px; -fx-font-weight:bold;");
+
+                Label info = new Label("Type: " + f.getType() + " | " + f.getDateCreation());
+                info.setStyle("-fx-text-fill:gray;");
+
+                Label contenu = new Label(f.getContenu());
+
+                // 🔹 boutons CRUD forum
+                Button delete = new Button("Supprimer");
+                Button edit = new Button("Modifier");
+
+                // DELETE
+                delete.setOnAction(e -> {
+                    fs.supprimer(f.getId());
+                    loadForums();
+                });
+
+                // UPDATE
+                edit.setOnAction(e -> {
+                    TextInputDialog dialog = new TextInputDialog(f.getContenu());
+                    dialog.setTitle("Modifier forum");
+
+                    dialog.showAndWait().ifPresent(newText -> {
+                        f.setContenu(newText);
+                        fs.modifier(f);
+                        loadForums();
+                    });
+                });
+
+                HBox actions = new HBox(10, edit, delete);
+
+                // 🔥 charger les commentaires
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/commentaire.fxml"));
+                Parent commentUI = loader.load();
+
+                AjoutCommentaire cc = loader.getController();
+                cc.setForumId(f.getId());
+
+                // ajouter tout
+                card.getChildren().addAll(titre, info, contenu, actions, commentUI);
+
+                forumContainer.getChildren().add(card);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 }
