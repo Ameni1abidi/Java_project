@@ -5,21 +5,34 @@
 
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="tn.esprit.controllers.CategorieController">
+            fx:controller="tn.esprit.controllers.CategorieController"
+            style="-fx-background-color: #f4f7fb;">
 
     <children>
 
-        <VBox spacing="150" AnchorPane.topAnchor="90"
-              AnchorPane.leftAnchor="60">
+        <VBox spacing="20" AnchorPane.topAnchor="40" AnchorPane.leftAnchor="40" AnchorPane.rightAnchor="40">
+            <children>
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <children>
+                        <Label fx:id="titleLabel" text="Ajouter catégorie" style="-fx-font-size: 28px; -fx-font-weight: bold;"/>
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Button text="Retour" onAction="#retourListe"
+                                style="-fx-background-color: transparent; -fx-border-color: #34495e; -fx-text-fill: #34495e; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 8 16;"/>
+                    </children>
+                </HBox>
 
-            <Label text="Ajouter Catégorie" style="-fx-font-size:89;"/>
+                <TextField fx:id="nomField" promptText="Nom de la catégorie"
+                           style="-fx-background-radius: 10; -fx-border-radius: 10; -fx-padding: 12;"/>
 
-            <TextField fx:id="nomField" promptText="Nom catégorie"/>
-
-            <Button text="Enregistrer"
-                    onAction="#ajouterCategorie"
-                    style="-fx-background-color: green; -fx-text-fill: white;"/>
-
+                <HBox spacing="10">
+                    <children>
+                        <Button fx:id="saveButton" text="Créer" onAction="#saveCategorie"
+                                style="-fx-background-color: #1abc9c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 24;"/>
+                        <Button fx:id="deleteButton" text="Supprimer" onAction="#deleteCategorie"
+                                style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 12 24;"/>
+                    </children>
+                </HBox>
+            </children>
         </VBox>
 
     </children>
