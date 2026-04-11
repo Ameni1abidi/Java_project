@@ -1,15 +1,74 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Accordion?>
-<?import javafx.scene.control.Button?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Button?>
 
+<AnchorPane prefHeight="600" prefWidth="800"
+            xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="tn.esprit.controllers.AjouterCours">
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.controllers.AjouterCours">
    <children>
-      <Accordion layoutX="39.0" layoutY="92.0" />
-      <Button layoutX="93.0" layoutY="320.0" mnemonicParsing="false" text="Ajouter" />
-      <Button layoutX="240.0" layoutY="320.0" mnemonicParsing="false" text="modifier" />
-      <Button layoutX="393.0" layoutY="320.0" mnemonicParsing="false" text="supprimer" />
+
+      <VBox spacing="20" layoutX="20" layoutY="20" prefWidth="750">
+
+         <!-- 🔷 HEADER -->
+         <HBox spacing="20"
+               style="-fx-background-color:#f5f5f5; -fx-padding:15; -fx-background-radius:10;">
+
+            <VBox spacing="5">
+               <Label text="Bienvenue dans votre espace enseignant"
+                      style="-fx-font-size:18px; -fx-font-weight:bold;" />
+               <Label text="Suivez vos cours et vos chapitres." />
+            </VBox>
+
+            <!-- BOUTON LISTE -->
+            <Button text="Liste des Cours"
+                    style="-fx-background-color:#ff4081; -fx-text-fill:white; -fx-font-weight:bold;" />
+
+         </HBox>
+
+         <!-- 🔷 FORM -->
+         <VBox spacing="10"
+               style="-fx-background-color:white; -fx-padding:20; -fx-background-radius:10; -fx-border-color:#ccc;">
+
+            <Label text="Ajouter un Cours"
+                   style="-fx-font-size:18px; -fx-font-weight:bold;" />
+
+            <!-- TITRE -->
+            <Label text="Titre"/>
+            <TextField fx:id="titreField" promptText="Titre du cours"/>
+
+            <!-- DESCRIPTION -->
+            <Label text="Description"/>
+            <TextArea fx:id="descriptionField" promptText="Description" prefHeight="80"/>
+
+            <!-- NIVEAU -->
+            <Label text="Niveau"/>
+            <TextField fx:id="niveauField" promptText="Débutant / Avancé"/>
+
+            <!-- DATE -->
+            <Label text="Date Création"/>
+            <DatePicker fx:id="dateField"/>
+
+            <!-- BADGE -->
+            <Label text="Badge"/>
+            <TextField fx:id="badgeField" promptText="gold / silver"/>
+
+            <!-- BUTTON -->
+            <Button text="Enregistrer"
+                    onAction="#ajouterCours"
+                    style="-fx-background-color:#28a745; -fx-text-fill:white; -fx-font-weight:bold;" />
+
+         </VBox>
+
+      </VBox>
+
    </children>
 </AnchorPane>

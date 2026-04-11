@@ -3,41 +3,56 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="tn.esprit.controllers.AjoutForum"
-            style="-fx-background-color: #f5f7fb;">
+<StackPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="tn.esprit.controllers.AjoutForum"
+           style="-fx-background-color:#f5f7fb;">
 
-    <!-- 🔹 HEADER -->
-    <top>
-        <HBox spacing="20" alignment="CENTER_LEFT"
-              style="-fx-padding:20; -fx-background-color: white; -fx-background-radius:10;">
+    <VBox spacing="20" style="-fx-padding:20;">
 
-            <VBox spacing="5">
+        <!-- HEADER -->
+        <HBox alignment="CENTER_LEFT" spacing="20"
+              style="-fx-background-color:white; -fx-padding:20; -fx-background-radius:12;">
+
+            <VBox>
                 <Label text="Forum"
-                       style="-fx-font-size:24px; -fx-font-weight:bold;"/>
+                       style="-fx-font-size:26px; -fx-font-weight:bold;"/>
                 <Label text="Discussions de la communauté"
-                       style="-fx-text-fill: gray;"/>
+                       style="-fx-text-fill:#888;"/>
             </VBox>
 
             <Region HBox.hgrow="ALWAYS"/>
 
             <Button text="Créer un sujet"
-                    onAction="#ajouterForum"
+                    onAction="#showCreateForm"
                     style="-fx-background-color:#2ecc71; -fx-text-fill:white; -fx-background-radius:20;"/>
         </HBox>
-    </top>
 
-    <!-- 🔹 CENTER -->
-    <center>
-        <VBox spacing="15" alignment="CENTER"
-              style="-fx-padding:30;">
+        <!-- LISTE -->
+        <ScrollPane fitToWidth="true" style="-fx-background-color:transparent;">
+            <VBox fx:id="forumContainer" spacing="15"/>
+        </ScrollPane>
 
-            <!-- Message vide -->
-            <Label text="Aucun sujet disponible."
-                   style="-fx-text-fill: gray; -fx-font-size:14px;"/>
+    </VBox>
 
-        </VBox>
-    </center>
+    <!-- FORM -->
+    <VBox fx:id="formPane"
+          spacing="15"
+          visible="false"
+          style="-fx-padding:30; -fx-background-color:white; -fx-background-radius:10;">
 
-</BorderPane>
+        <Label text="Créer un nouveau sujet"
+               style="-fx-font-size:20px; -fx-font-weight:bold;"/>
+
+        <TextField fx:id="titreField" promptText="Titre"/>
+        <TextField fx:id="typeField" promptText="Type"/>
+        <TextArea fx:id="contenuField" promptText="Contenu"/>
+
+        <HBox spacing="10">
+            <Button text="Créer" onAction="#ajouterForum"/>
+            <Button text="Retour" onAction="#showList"/>
+        </HBox>
+
+    </VBox>
+
+</StackPane>
