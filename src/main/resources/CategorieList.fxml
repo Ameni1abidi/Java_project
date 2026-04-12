@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.controllers.CategorieListController"
+            style="-fx-background-color: #f8f9fa;">
+
+    <children>
+
+        <HBox spacing="10" AnchorPane.topAnchor="20" AnchorPane.leftAnchor="20" AnchorPane.rightAnchor="20">
+            <children>
+                <Label text="Catégories" style="-fx-font-size: 28px; -fx-font-weight: bold;"/>
+                <Region fx:id="spacer" HBox.hgrow="ALWAYS" />
+                <Button text="Créer" onAction="#goToAdd"
+                        style="-fx-background-color: #1abc9c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 20;"/>
+            </children>
+        </HBox>
+
+        <TableView fx:id="tableCategorie"
+                   AnchorPane.topAnchor="80"
+                   AnchorPane.leftAnchor="20"
+                   AnchorPane.rightAnchor="20"
+                   AnchorPane.bottomAnchor="20"
+                   style="-fx-background-color: white; -fx-border-color: #dfe3e7; -fx-border-radius: 10; -fx-background-radius: 10;">
+
+            <columns>
+                <TableColumn fx:id="idCol" text="ID" prefWidth="80"/>
+                <TableColumn fx:id="nomCol" text="Nom" prefWidth="300"/>
+                <TableColumn fx:id="actionCol" text="Actions" prefWidth="150"/>
+            </columns>
+
+        </TableView>
+
+    </children>
+
+</AnchorPane>
