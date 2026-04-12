@@ -21,6 +21,9 @@ public class UserController {
     @FXML private PasswordField    passwordField;
     @FXML private ComboBox<String> roleAddCombo;
 
+    // ── Recherche ────────────────────────────────────────────────────────────
+    @FXML private TextField searchField;
+
     // ── TableView ────────────────────────────────────────────────────────────
     @FXML private TableView<User>            table;
     @FXML private TableColumn<User, Integer> colId;
@@ -39,7 +42,6 @@ public class UserController {
     // ── Initialisation ───────────────────────────────────────────────────────
     @FXML
     public void initialize() {
-        // Colonnes table
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colName.setCellValueFactory(new PropertyValueFactory<>("nom"));
         colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
@@ -47,19 +49,13 @@ public class UserController {
 
         // ComboBox rôle formulaire
         roleAddCombo.getItems().addAll(
-                "ROLE_PROF",
-                "ROLE_ETUDIANT",
-                "ROLE_PARENT"
+                "ROLE_PROF", "ROLE_ETUDIANT", "ROLE_PARENT"
         );
         roleAddCombo.setValue("ROLE_ETUDIANT");
 
         // ComboBox filtre
         filterRoleCombo.getItems().addAll(
-                "Tous",
-                "ROLE_ADMIN",
-                "ROLE_PROF",
-                "ROLE_ETUDIANT",
-                "ROLE_PARENT"
+                "Tous", "ROLE_ADMIN", "ROLE_PROF", "ROLE_ETUDIANT", "ROLE_PARENT"
         );
         filterRoleCombo.setValue("Tous");
         filterRoleCombo.setOnAction(e -> applyFilter());
@@ -75,6 +71,7 @@ public class UserController {
             allUsers = FXCollections.observableArrayList(userService.getAllUsers());
             table.setItems(allUsers);
             filterRoleCombo.setValue("Tous");
+            if (searchField != null) searchField.clear();
             updateCount(allUsers.size());
         } catch (SQLException e) {
             e.printStackTrace();
@@ -82,27 +79,26 @@ public class UserController {
         }
     }
 
-    // ── Filtrage par rôle ────────────────────────────────────────────────────
+    // ── Recherche par nom ────────────────────────────────────────────────────
     @FXML
-    public void applyFilter() {
-        String selected = filterRoleCombo.getValue();
-
-        if (selected == null || selected.equals("Tous")) {
-            table.setItems(allUsers);
-            updateCount(allUsers.size());
-            return;
-        }
+    public void handleSearch() {
+        String keyword = searchField.getText().trim().toLowerCase();
+        String roleFilter = filterRoleCombo.getValue();
 
         List<User> filtered = allUsers.stream()
-                .filter(u -> u.getRole().name().equals(selected))
+                .filter(u -> keyword.isEmpty() || u.getNom().toLowerCase().contains(keyword))
+                .filter(u -> roleFilter == null || roleFilter.equals("Tous")
+                        || u.getRole().name().equals(roleFilter))
                 .collect(Collectors.toList());
 
         table.setItems(FXCollections.observableArrayList(filtered));
         updateCount(filtered.size());
+    }
 
-        if (filtered.isEmpty()) {
-            showAlert("Info", "Aucun utilisateur avec le rôle : " + selected);
-        }
+    // ── Filtrage par rôle ────────────────────────────────────────────────────
+    @FXML
+    public void applyFilter() {
+        handleSearch(); // réutilise la logique de recherche combinée
     }
 
     // ── Ajouter user ─────────────────────────────────────────────────────────
@@ -113,7 +109,6 @@ public class UserController {
         String pw    = passwordField.getText();
         Role   role  = Role.fromString(roleAddCombo.getValue());
 
-        // Validations
         if (nom.isEmpty() || email.isEmpty() || pw.isEmpty()) {
             showAlert("Erreur", "Tous les champs sont obligatoires !");
             return;
@@ -155,7 +150,7 @@ public class UserController {
         }
 
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Confirmation de suppression");
+        confirm.setTitle("Confirmation");
         confirm.setHeaderText("Supprimer " + selected.getNom() + " ?");
         confirm.setContentText("Cette action est irréversible.");
         confirm.showAndWait().ifPresent(response -> {
@@ -166,7 +161,7 @@ public class UserController {
                     loadUsers();
                 } catch (SQLException e) {
                     e.printStackTrace();
-                    showAlert("Erreur", "Problème lors de la suppression : " + e.getMessage());
+                    showAlert("Erreur", "Suppression échouée : " + e.getMessage());
                 }
             }
         });
