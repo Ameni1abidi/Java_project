@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.controllers.CoursForm">
+
+    <children>
+
+        <VBox spacing="8"
+              AnchorPane.topAnchor="20"
+              AnchorPane.leftAnchor="20"
+              AnchorPane.rightAnchor="20">
+
+            <Label text="Form Cours"
+                   style="-fx-font-size:22px; -fx-font-weight:bold;"/>
+
+            <!-- TITRE -->
+            <TextField fx:id="titreField" promptText="Titre"/>
+            <Label fx:id="titreError" style="-fx-text-fill:red; -fx-font-size:11px;"/>
+
+            <!-- DESCRIPTION -->
+            <TextArea fx:id="descriptionField" promptText="Description"/>
+            <Label fx:id="descriptionError" style="-fx-text-fill:red; -fx-font-size:11px;"/>
+
+            <!-- NIVEAU -->
+            <TextField fx:id="niveauField" promptText="Niveau"/>
+            <Label fx:id="niveauError" style="-fx-text-fill:red; -fx-font-size:11px;"/>
+
+            <!-- DATE -->
+            <DatePicker fx:id="dateField"/>
+            <Label fx:id="dateError" style="-fx-text-fill:red; -fx-font-size:11px;"/>
+
+            <!-- BADGE -->
+            <TextField fx:id="badgeField" promptText="Badge"/>
+            <Label fx:id="badgeError" style="-fx-text-fill:red; -fx-font-size:11px;"/>
+
+            <!-- BUTTONS -->
+            <HBox spacing="10">
+
+                <Button text="Enregistrer"
+                        onAction="#saveCours"
+                        style="-fx-background-color:#28a745; -fx-text-fill:white;"/>
+
+                <Button text="Retour"
+                        onAction="#goToList"/>
+
+            </HBox>
+
+        </VBox>
+
+    </children>
+</AnchorPane>

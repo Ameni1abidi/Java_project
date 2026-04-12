@@ -1,25 +1,20 @@
 package tn.esprit.services;
 
-
-
 import tn.esprit.entities.Cours;
 import tn.esprit.utils.MyDatabase;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CoursService {
+
     Connection cnx = MyDatabase.getInstance().getConnection();
 
     // CREATE
-
     public void ajouter(Cours c) {
         try {
-            String sql = "INSERT INTO cours (titre, description, niveau, date_creation, titre_traduit, description_traduit, badge) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO cours (titre, description, niveau, date_creation, titre_traduit, description_traduit, badge) VALUES (?,?,?,?,?,?,?)";
             PreparedStatement ps = cnx.prepareStatement(sql);
 
             ps.setString(1, c.getTitre());
@@ -31,15 +26,16 @@ public class CoursService {
             ps.setString(7, c.getBadge());
 
             ps.executeUpdate();
-            System.out.println("Ajout OK");
+
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
     }
 
-    // READ
-    public List<Cours> afficher() {
+    // READ ✅
+    public List<Cours> getAll() {
         List<Cours> list = new ArrayList<>();
+
         try {
             String sql = "SELECT * FROM cours";
             Statement st = cnx.createStatement();
@@ -58,9 +54,11 @@ public class CoursService {
 
                 list.add(c);
             }
+
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
+
         return list;
     }
 
@@ -80,9 +78,9 @@ public class CoursService {
             ps.setInt(8, c.getId());
 
             ps.executeUpdate();
-            System.out.println("Update OK");
+
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -92,11 +90,10 @@ public class CoursService {
             String sql = "DELETE FROM cours WHERE id=?";
             PreparedStatement ps = cnx.prepareStatement(sql);
             ps.setInt(1, id);
-
             ps.executeUpdate();
-            System.out.println("Delete OK");
+
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
     }
 }
