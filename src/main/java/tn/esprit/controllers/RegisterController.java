@@ -22,9 +22,12 @@ public class RegisterController {
 
     @FXML
     public void initialize() {
-        // ADMIN ne s'inscrit pas via ce formulaire
-        roleCombo.getItems().addAll(Role.PROF, Role.ETUDIANT, Role.PARENT);
-        roleCombo.setValue(Role.ETUDIANT);
+        roleCombo.getItems().addAll(
+                User.Role.ROLE_PROF,
+                User.Role.ROLE_ETUDIANT,
+                User.Role.ROLE_PARENT
+        );
+        roleCombo.setValue(User.Role.ROLE_ETUDIANT);
     }
 
     @FXML

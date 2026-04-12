@@ -2,14 +2,14 @@ package tn.esprit.entities;
 public class User {
 
     public enum Role {
-        ADMIN, PROF, ETUDIANT, PARENT;
+        ROLE_ADMIN, ROLE_PROF, ROLE_ETUDIANT, ROLE_PARENT;
 
         public static Role fromString(String s) {
             return switch (s.toUpperCase()) {
-                case "ADMIN"    -> ADMIN;
-                case "PROF"     -> PROF;
-                case "ETUDIANT" -> ETUDIANT;
-                case "PARENT"   -> PARENT;
+                case "ADMIN"    -> ROLE_ADMIN;
+                case "PROF"     -> ROLE_PROF;
+                case "ETUDIANT" -> ROLE_ETUDIANT;
+                case "PARENT"   -> ROLE_PARENT;
                 default -> throw new IllegalArgumentException("Rôle inconnu : " + s);
             };
         }
