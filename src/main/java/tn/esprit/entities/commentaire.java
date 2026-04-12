@@ -16,23 +16,32 @@ public class commentaire {
         this.dateEnvoi = dateEnvoi;
     }
 
-    public int getId() {
-        return id;
+    // 🔥 VALIDATION
+    public String valider() {
+
+        if (contenu == null || contenu.trim().isEmpty()) {
+            return "Le commentaire est obligatoire";
+        }
+
+        if (contenu.length() < 3) {
+            return "Le commentaire doit contenir au moins 3 caractères";
+        }
+
+        if (forumId <= 0) {
+            return "Forum invalide";
+        }
+
+        if (dateEnvoi == null) {
+            return "Date invalide";
+        }
+
+        return null;
     }
 
-    public String getContenu() {
-        return contenu;
-    }
+    public int getId() { return id; }
+    public String getContenu() { return contenu; }
+    public int getForumId() { return forumId; }
+    public Timestamp getDateEnvoi() { return dateEnvoi; }
 
-    public int getForumId() {
-        return forumId;
-    }
-
-    public Timestamp getDateEnvoi() {
-        return dateEnvoi;
-    }
-
-    public void setContenu(String contenu) {
-        this.contenu = contenu;
-    }
+    public void setContenu(String contenu) { this.contenu = contenu; }
 }

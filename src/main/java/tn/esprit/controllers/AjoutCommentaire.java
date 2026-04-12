@@ -32,14 +32,23 @@ public class AjoutCommentaire {
     @FXML
     public void ajouterCommentaire() {
 
-        if (contenuField.getText().isEmpty()) return;
-
         commentaire c = new commentaire(
                 0,
                 contenuField.getText(),
                 forumId,
                 new Timestamp(System.currentTimeMillis())
         );
+
+        // 🔥 VALIDATION
+        String erreur = c.valider();
+
+        if (erreur != null) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Erreur");
+            alert.setContentText(erreur);
+            alert.showAndWait();
+            return;
+        }
 
         cs.ajouter(c);
 
