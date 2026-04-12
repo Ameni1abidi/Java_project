@@ -6,11 +6,16 @@ public class User {
 
         public static Role fromString(String s) {
             return switch (s.toUpperCase()) {
-                case "ADMIN"    -> ROLE_ADMIN;
-                case "PROF"     -> ROLE_PROF;
-                case "ETUDIANT" -> ROLE_ETUDIANT;
-                case "PARENT"   -> ROLE_PARENT;
-                default -> throw new IllegalArgumentException("Rôle inconnu : " + s);
+                case "ROLE_ADMIN"                -> ROLE_ADMIN;
+                case "ROLE_PROF", "ROLE_TEACHER" -> ROLE_PROF;
+                case "ROLE_ETUDIANT", "ROLE_STUDENT", "ROLE_USER" -> ROLE_ETUDIANT;
+                case "ROLE_PARENT"               -> ROLE_PARENT;
+                case "ADMIN"                     -> ROLE_ADMIN;
+                case "PROF", "TEACHER"           -> ROLE_PROF;
+                case "ETUDIANT", "STUDENT", "USER" -> ROLE_ETUDIANT;
+                case "PARENT"                    -> ROLE_PARENT;
+                default                          -> ROLE_ETUDIANT;
+
             };
         }
     }

@@ -47,10 +47,11 @@ public class LoginController {
     /** Charge le bon FXML selon le rôle de l'utilisateur connecté. */
     private void redirectByRole(User user) throws Exception {
         String fxml = switch (user.getRole()) {
-            case ADMIN    -> "/AdminDashboard.fxml";
-            case PROF     -> "/ProfDashboard.fxml";
-            case ETUDIANT -> "/EtudiantDashboard.fxml";
-            case PARENT   -> "/ParentDashboard.fxml";
+            case ROLE_ADMIN    -> "/GestionUsers.fxml";
+            case ROLE_PROF     -> "/ProfDashboard.fxml";
+            case ROLE_ETUDIANT -> "/EtudiantDashboard.fxml";
+            case ROLE_PARENT   -> "/ParentDashboard.fxml";
+
         };
         // ...
     }

@@ -16,9 +16,10 @@ import java.util.stream.Collectors;
 public class UserController {
 
     // ── Formulaire ───────────────────────────────────────────────────────────
-    @FXML private TextField     nameField;
-    @FXML private TextField     emailField;
-    @FXML private PasswordField passwordField;
+    @FXML private TextField        nameField;
+    @FXML private TextField        emailField;
+    @FXML private PasswordField    passwordField;
+    @FXML private ComboBox<String> roleAddCombo;
 
     // ── TableView ────────────────────────────────────────────────────────────
     @FXML private TableView<User>            table;
@@ -27,34 +28,40 @@ public class UserController {
     @FXML private TableColumn<User, String>  colEmail;
     @FXML private TableColumn<User, String>  colRole;
 
-    // ── Filtre par rôle ──────────────────────────────────────────────────────
+    // ── Filtre + compteur ────────────────────────────────────────────────────
     @FXML private ComboBox<String> filterRoleCombo;
+    @FXML private Label            countLabel;
 
-    // ── Service ──────────────────────────────────────────────────────────────
+    // ── Service + données ────────────────────────────────────────────────────
     private final UserService userService = new UserService();
-
-    // Liste complète en mémoire pour le filtrage
     private ObservableList<User> allUsers = FXCollections.observableArrayList();
 
     // ── Initialisation ───────────────────────────────────────────────────────
     @FXML
     public void initialize() {
+        // Colonnes table
         colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colName.setCellValueFactory(new PropertyValueFactory<>("nom"));
         colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
         colRole.setCellValueFactory(new PropertyValueFactory<>("role"));
 
-        // Peupler le ComboBox de filtrage
+        // ComboBox rôle formulaire
+        roleAddCombo.getItems().addAll(
+                "ROLE_PROF",
+                "ROLE_ETUDIANT",
+                "ROLE_PARENT"
+        );
+        roleAddCombo.setValue("ROLE_ETUDIANT");
+
+        // ComboBox filtre
         filterRoleCombo.getItems().addAll(
                 "Tous",
-                Role.ROLE_ADMIN.name(),
-                Role.ROLE_PROF.name(),
-                Role.ROLE_ETUDIANT.name(),
-                Role.ROLE_PARENT.name()
+                "ROLE_ADMIN",
+                "ROLE_PROF",
+                "ROLE_ETUDIANT",
+                "ROLE_PARENT"
         );
         filterRoleCombo.setValue("Tous");
-
-        // Écouter les changements du filtre
         filterRoleCombo.setOnAction(e -> applyFilter());
 
         loadUsers();
@@ -62,11 +69,13 @@ public class UserController {
     }
 
     // ── Charger tous les users ───────────────────────────────────────────────
+    @FXML
     public void loadUsers() {
         try {
             allUsers = FXCollections.observableArrayList(userService.getAllUsers());
             table.setItems(allUsers);
-            filterRoleCombo.setValue("Tous"); // reset filtre
+            filterRoleCombo.setValue("Tous");
+            updateCount(allUsers.size());
         } catch (SQLException e) {
             e.printStackTrace();
             showAlert("Erreur", "Impossible de charger les utilisateurs : " + e.getMessage());
@@ -80,6 +89,7 @@ public class UserController {
 
         if (selected == null || selected.equals("Tous")) {
             table.setItems(allUsers);
+            updateCount(allUsers.size());
             return;
         }
 
@@ -88,6 +98,7 @@ public class UserController {
                 .collect(Collectors.toList());
 
         table.setItems(FXCollections.observableArrayList(filtered));
+        updateCount(filtered.size());
 
         if (filtered.isEmpty()) {
             showAlert("Info", "Aucun utilisateur avec le rôle : " + selected);
@@ -97,22 +108,26 @@ public class UserController {
     // ── Ajouter user ─────────────────────────────────────────────────────────
     @FXML
     public void addUser() {
-        if (nameField.getText().isEmpty() || emailField.getText().isEmpty()) {
-            showAlert("Erreur", "Champs obligatoires !");
+        String nom   = nameField.getText().trim();
+        String email = emailField.getText().trim();
+        String pw    = passwordField.getText();
+        Role   role  = Role.fromString(roleAddCombo.getValue());
+
+        // Validations
+        if (nom.isEmpty() || email.isEmpty() || pw.isEmpty()) {
+            showAlert("Erreur", "Tous les champs sont obligatoires !");
             return;
         }
-        if (passwordField.getText().length() < 6) {
-            showAlert("Erreur", "Mot de passe trop court (min. 6 caractères).");
+        if (!email.matches("^[\\w.+\\-]+@[\\w\\-]+\\.[a-z]{2,}$")) {
+            showAlert("Erreur", "Format d'email invalide !");
+            return;
+        }
+        if (pw.length() < 6) {
+            showAlert("Erreur", "Mot de passe trop court (min. 6 caractères) !");
             return;
         }
 
-        User user = new User(
-                0,
-                nameField.getText(),
-                passwordField.getText(),
-                emailField.getText(),
-                Role.ROLE_ETUDIANT
-        );
+        User user = new User(0, nom, pw, email, role);
 
         try {
             boolean ok = userService.register(user);
@@ -120,7 +135,7 @@ public class UserController {
                 showAlert("Erreur", "Cet email est déjà utilisé !");
                 return;
             }
-            showAlert("Succès", "Utilisateur ajouté !");
+            showAlert("Succès", "Utilisateur ajouté avec succès !");
             clearFields();
             loadUsers();
         } catch (SQLException e) {
@@ -135,14 +150,14 @@ public class UserController {
         User selected = table.getSelectionModel().getSelectedItem();
 
         if (selected == null) {
-            showAlert("Erreur", "Sélectionnez un utilisateur !");
+            showAlert("Erreur", "Sélectionnez un utilisateur dans le tableau !");
             return;
         }
 
-        // Confirmation avant suppression
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Confirmation");
-        confirm.setContentText("Supprimer " + selected.getNom() + " ?");
+        confirm.setTitle("Confirmation de suppression");
+        confirm.setHeaderText("Supprimer " + selected.getNom() + " ?");
+        confirm.setContentText("Cette action est irréversible.");
         confirm.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
                 try {
@@ -164,17 +179,25 @@ public class UserController {
             nameField.setText(selected.getNom());
             emailField.setText(selected.getEmail());
             passwordField.setText(selected.getPassword());
+            roleAddCombo.setValue(selected.getRole().name());
         }
     }
 
     // ── Vider les champs ─────────────────────────────────────────────────────
+    @FXML
     public void clearFields() {
         nameField.clear();
         emailField.clear();
         passwordField.clear();
+        roleAddCombo.setValue("ROLE_ETUDIANT");
     }
 
-    // ── Alerte ───────────────────────────────────────────────────────────────
+    // ── Utilitaires ──────────────────────────────────────────────────────────
+    private void updateCount(int count) {
+        if (countLabel != null)
+            countLabel.setText(count + " utilisateur(s)");
+    }
+
     public void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
