@@ -8,55 +8,49 @@
            fx:controller="tn.esprit.controllers.AjoutForum"
            style="-fx-background-color:#f5f7fb;">
 
-    <!-- ================== LIST VIEW ================== -->
-    <VBox fx:id="listPane" spacing="20" alignment="TOP_CENTER"
-          style="-fx-padding:20;">
+    <VBox spacing="20" style="-fx-padding:20;">
 
+        <!-- HEADER -->
         <HBox alignment="CENTER_LEFT" spacing="20"
-              style="-fx-background-color:white; -fx-padding:15; -fx-background-radius:10;">
+              style="-fx-background-color:white; -fx-padding:20; -fx-background-radius:12;">
 
             <VBox>
                 <Label text="Forum"
-                       style="-fx-font-size:22px; -fx-font-weight:bold;"/>
+                       style="-fx-font-size:26px; -fx-font-weight:bold;"/>
                 <Label text="Discussions de la communauté"
-                       style="-fx-text-fill:gray;"/>
+                       style="-fx-text-fill:#888;"/>
             </VBox>
 
             <Region HBox.hgrow="ALWAYS"/>
 
             <Button text="Créer un sujet"
                     onAction="#showCreateForm"
-                    style="-fx-background-color:#2ecc71; -fx-text-fill:white;"/>
+                    style="-fx-background-color:#2ecc71; -fx-text-fill:white; -fx-background-radius:20;"/>
         </HBox>
 
-        <ListView fx:id="forumList" prefWidth="500" prefHeight="300"/>
+        <!-- LISTE -->
+        <ScrollPane fitToWidth="true" style="-fx-background-color:transparent;">
+            <VBox fx:id="forumContainer" spacing="15"/>
+        </ScrollPane>
 
     </VBox>
 
-    <!-- ================== CREATE FORM ================== -->
-    <VBox fx:id="formPane" spacing="15" alignment="TOP_LEFT"
+    <!-- FORM -->
+    <VBox fx:id="formPane"
+          spacing="15"
           visible="false"
-          style="-fx-padding:30;">
+          style="-fx-padding:30; -fx-background-color:white; -fx-background-radius:10;">
 
         <Label text="Créer un nouveau sujet"
-               style="-fx-font-size:22px; -fx-font-weight:bold;" />
+               style="-fx-font-size:20px; -fx-font-weight:bold;"/>
 
-        <Label text="Titre"/>
-        <TextField fx:id="titreField"/>
-
-        <Label text="Type"/>
-        <TextField fx:id="typeField"/>
-
-        <Label text="Contenu"/>
-        <TextArea fx:id="contenuField" prefHeight="120"/>
+        <TextField fx:id="titreField" promptText="Titre"/>
+        <TextField fx:id="typeField" promptText="Type"/>
+        <TextArea fx:id="contenuField" promptText="Contenu"/>
 
         <HBox spacing="10">
-            <Button text="Créer"
-                    onAction="#ajouterForum"
-                    style="-fx-background-color:#2ecc71; -fx-text-fill:white;"/>
-
-            <Button text="Retour"
-                    onAction="#showList"/>
+            <Button text="Créer" onAction="#ajouterForum"/>
+            <Button text="Retour" onAction="#showList"/>
         </HBox>
 
     </VBox>
