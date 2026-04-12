@@ -18,7 +18,7 @@ public class MainFX extends Application {
         stage.show();
 
 
-        FXMLLoader loader1 = new FXMLLoader(getClass().getResource("/forum.fxml"));
+        /*FXMLLoader loader1 = new FXMLLoader(getClass().getResource("/forum.fxml"));
         Scene scene2 = new Scene(loader1.load(), 600, 500);
 
         stage.setTitle("EduFlex Forum");
@@ -27,14 +27,14 @@ public class MainFX extends Application {
 
 
 
-        FXMLLoader loader2 = new FXMLLoader(
+        /*FXMLLoader loader2 = new FXMLLoader(
                 getClass().getResource("/EvaluationView.fxml")
         );
 
-        Scene scene3 = new Scene(loader.load());
+        Scene scene3 = new Scene(loader2.load());
         stage.setTitle("EduFlex - Résultats");
         stage.setScene(scene3);
-        stage.show();
+        stage.show();*/
     }
 
 
