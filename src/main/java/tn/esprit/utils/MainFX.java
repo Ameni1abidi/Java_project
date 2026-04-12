@@ -9,13 +9,13 @@ public class MainFX extends Application {
 
     public void start(Stage stage) throws Exception {
 
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/CategorieList.fxml"));
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ajouterCours.fxml"));
+        /*FXMLLoader loader = new FXMLLoader(getClass().getResource("/CategorieList.fxml"));
+        //FXMLLoader loader = new FXMLLoader(getClass().getResource("/ajouterCours.fxml"));
         Scene scene = new Scene(loader.load());
 
         stage.setTitle("Ajouter Cours");
         stage.setScene(scene);
-        stage.show();
+        stage.show();*/
 
 
         /*FXMLLoader loader1 = new FXMLLoader(getClass().getResource("/forum.fxml"));
@@ -23,18 +23,18 @@ public class MainFX extends Application {
 
         stage.setTitle("EduFlex Forum");
         stage.setScene(scene2);
-        stage.show();
+        stage.show();*/
 
 
 
-        /*FXMLLoader loader2 = new FXMLLoader(
+        FXMLLoader loader2 = new FXMLLoader(
                 getClass().getResource("/EvaluationView.fxml")
         );
 
         Scene scene3 = new Scene(loader2.load());
         stage.setTitle("EduFlex - Résultats");
         stage.setScene(scene3);
-        stage.show();*/
+        stage.show();
     }
 
 
