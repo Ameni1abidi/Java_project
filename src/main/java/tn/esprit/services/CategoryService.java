@@ -85,4 +85,28 @@ public class CategoryService {
             throw new RuntimeException("Erreur lors de la suppression de la categorie", e);
         }
     }
+
+    public boolean existsByName(String nom, Integer excludeId) {
+        String sql = "SELECT COUNT(*) FROM categorie WHERE nom = ?";
+        if (excludeId != null) {
+            sql += " AND id != ?";
+        }
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, nom);
+            if (excludeId != null) {
+                ps.setInt(2, excludeId);
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur lors de la vérification du nom", e);
+        }
+
+        return false;
+    }
 }
