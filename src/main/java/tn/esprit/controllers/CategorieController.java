@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -26,6 +27,9 @@ public class CategorieController {
     @FXML
     private Button deleteButton;
 
+    @FXML
+    private Label errorLabel;
+
     private CategoryService service = new CategoryService();
     private categorie currentCategorie;
 
@@ -34,10 +38,12 @@ public class CategorieController {
         titleLabel.setText("Ajouter catégorie");
         saveButton.setText("Créer");
         deleteButton.setVisible(false);
+        errorLabel.setText("");
     }
 
     public void setCategorie(categorie categorie) {
         this.currentCategorie = categorie;
+        errorLabel.setText("");
         if (categorie != null) {
             titleLabel.setText("Modifier catégorie");
             saveButton.setText("Enregistrer");
@@ -48,10 +54,25 @@ public class CategorieController {
 
     @FXML
     void saveCategorie() {
-        String nom = nomField.getText();
+        errorLabel.setText(""); // Clear previous errors
+        String nom = nomField.getText().trim();
 
-        if (nom == null || nom.trim().isEmpty()) {
-            showAlert("Erreur", "Le nom de la catégorie est requis.");
+        // Validation: not empty
+        if (nom.isEmpty()) {
+            errorLabel.setText("Le nom de la catégorie est requis.");
+            return;
+        }
+
+        // Validation: length 1-50
+        if (nom.length() > 50) {
+            errorLabel.setText("Le nom de la catégorie ne peut pas dépasser 50 caractères.");
+            return;
+        }
+
+        // Validation: no duplicate names
+        Integer excludeId = (currentCategorie != null) ? currentCategorie.getId() : null;
+        if (service.existsByName(nom, excludeId)) {
+            errorLabel.setText("Une catégorie avec ce nom existe déjà.");
             return;
         }
 
@@ -73,9 +94,18 @@ public class CategorieController {
             return;
         }
 
-        service.delete(currentCategorie.getId());
-        showAlert("Succès", "Catégorie supprimée avec succès !");
-        retourListe();
+        Alert confirmation = new Alert(AlertType.CONFIRMATION);
+        confirmation.setTitle("Confirmation");
+        confirmation.setHeaderText("Supprimer la catégorie");
+        confirmation.setContentText("Êtes-vous sûr de vouloir supprimer cette catégorie ?");
+
+        confirmation.showAndWait().ifPresent(response -> {
+            if (response == javafx.scene.control.ButtonType.OK) {
+                service.delete(currentCategorie.getId());
+                showAlert("Succès", "Catégorie supprimée avec succès !");
+                retourListe();
+            }
+        });
     }
 
     @FXML

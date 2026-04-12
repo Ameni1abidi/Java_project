@@ -10,6 +10,7 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 import tn.esprit.entities.categorie;
 import tn.esprit.services.CategoryService;
@@ -60,7 +61,15 @@ public class CategorieListController {
             }
         });
 
-        tableCategorie.setItems(FXCollections.observableArrayList(service.getAll()));
+        try {
+            tableCategorie.setItems(FXCollections.observableArrayList(service.getAll()));
+        } catch (Exception e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Erreur de base de données");
+            alert.setHeaderText("Connexion à la base de données échouée");
+            alert.setContentText("Vérifiez que MySQL est démarré et que la base 'eduflex' existe.\nErreur: " + e.getMessage());
+            alert.showAndWait();
+        }
     }
 
     @FXML

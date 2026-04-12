@@ -12,13 +12,12 @@ public class MainFX extends Application {
         /*FXMLLoader loader = new FXMLLoader(getClass().getResource("/CategorieList.fxml"));
         //FXMLLoader loader = new FXMLLoader(getClass().getResource("/ajouterCours.fxml"));
         Scene scene = new Scene(loader.load());
-
         stage.setTitle("Ajouter Cours");
         stage.setScene(scene);
         stage.show();*/
 
 
-        /*FXMLLoader loader1 = new FXMLLoader(getClass().getResource("/forum.fxml"));
+        FXMLLoader loader1 = new FXMLLoader(getClass().getResource("/forum.fxml"));
         Scene scene2 = new Scene(loader1.load(), 600, 500);
 
         stage.setTitle("EduFlex Forum");
