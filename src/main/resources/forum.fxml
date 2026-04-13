@@ -28,9 +28,12 @@
                     style="-fx-background-color:#2ecc71; -fx-text-fill:white; -fx-background-radius:20;"/>
         </HBox>
 
-        <!-- LISTE -->
+        <!-- GRID FORUM -->
         <ScrollPane fitToWidth="true" style="-fx-background-color:transparent;">
-            <VBox fx:id="forumContainer" spacing="15"/>
+            <FlowPane fx:id="forumContainer"
+                      hgap="20"
+                      vgap="20"
+                      prefWrapLength="800"/>
         </ScrollPane>
 
     </VBox>
@@ -49,8 +52,13 @@
         <TextArea fx:id="contenuField" promptText="Contenu"/>
 
         <HBox spacing="10">
-            <Button text="Créer" onAction="#ajouterForum"/>
-            <Button text="Retour" onAction="#showList"/>
+            <Button text="Créer"
+                    onAction="#ajouterForum"
+                    style="-fx-background-color:#2ecc71; -fx-text-fill:white;"/>
+
+            <Button text="Retour"
+                    onAction="#showList"
+                    style="-fx-background-color:#2ecc71; -fx-text-fill:white;"/>
         </HBox>
 
     </VBox>
