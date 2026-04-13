@@ -1,4 +1,5 @@
 package tn.esprit.controllers;
+
 import tn.esprit.entities.User;
 import tn.esprit.services.UserService;
 import javafx.fxml.FXML;
@@ -44,19 +45,21 @@ public class LoginController {
         }
     }
 
-    /** Charge le bon FXML selon le rôle de l'utilisateur connecté. */
     private void redirectByRole(User user) throws Exception {
         String fxml = switch (user.getRole()) {
             case ROLE_ADMIN    -> "/GestionUsers.fxml";
             case ROLE_PROF     -> "/ProfDashboard.fxml";
             case ROLE_ETUDIANT -> "/EtudiantDashboard.fxml";
             case ROLE_PARENT   -> "/ParentDashboard.fxml";
-
+            default            -> "/Login.fxml";
         };
-        // ...
+
+        Parent root = FXMLLoader.load(getClass().getResource(fxml));
+        Stage stage = (Stage) emailField.getScene().getWindow();
+        stage.setScene(new Scene(root));
+        stage.setTitle("EduFlex — " + user.getNom());
+        stage.show();
     }
-
-
 
     @FXML
     private void handleGoRegister() throws Exception {
