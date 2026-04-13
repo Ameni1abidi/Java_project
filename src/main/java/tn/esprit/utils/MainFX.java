@@ -14,15 +14,15 @@ public class MainFX extends Application {
         Scene scene = new Scene(loader.load());
         stage.setTitle("EduFlex - Ressources");
         stage.setScene(scene);
-        stage.show();*/
-
-
-        FXMLLoader loader1 = new FXMLLoader(getClass().getResource("/forum.fxml"));
-        Scene scene2 = new Scene(loader1.load(), 600, 500);
-
-        stage.setTitle("EduFlex Forum");
-        stage.setScene(scene2);
         stage.show();
+
+
+        //FXMLLoader loader1 = new FXMLLoader(getClass().getResource("/forum.fxml"));
+        //Scene scene2 = new Scene(loader1.load(), 600, 500);
+
+        //stage.setTitle("EduFlex Forum");
+        //stage.setScene(scene2);
+        //stage.show();
 
 
 
