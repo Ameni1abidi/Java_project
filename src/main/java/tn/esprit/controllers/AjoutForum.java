@@ -4,6 +4,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
@@ -15,7 +16,7 @@ import java.sql.Timestamp;
 public class AjoutForum {
 
     @FXML
-    private VBox forumContainer;
+    private FlowPane forumContainer;
 
     @FXML
     private VBox formPane;
@@ -31,13 +32,11 @@ public class AjoutForum {
 
     private ForumService fs = new ForumService();
 
-    // ================= INIT =================
     @FXML
     public void initialize() {
         loadForums();
     }
 
-    // ================= SWITCH =================
     @FXML
     public void showCreateForm() {
         formPane.setVisible(true);
@@ -52,11 +51,6 @@ public class AjoutForum {
     @FXML
     public void ajouterForum() {
 
-        if (titreField.getText().isEmpty() || typeField.getText().isEmpty()) {
-            System.out.println("Champs vides !");
-            return;
-        }
-
         forum f = new forum(
                 0,
                 titreField.getText(),
@@ -65,9 +59,19 @@ public class AjoutForum {
                 new Timestamp(System.currentTimeMillis())
         );
 
+        // 🔥 VALIDATION
+        String erreur = f.valider();
+
+        if (erreur != null) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Erreur");
+            alert.setContentText(erreur);
+            alert.showAndWait();
+            return;
+        }
+
         fs.ajouter(f);
 
-        // reset form
         titreField.clear();
         contenuField.clear();
         typeField.clear();
@@ -85,6 +89,7 @@ public class AjoutForum {
 
             try {
                 VBox card = new VBox(10);
+                card.setPrefWidth(300);
                 card.setStyle("-fx-background-color:white; -fx-padding:15; -fx-background-radius:10;");
 
                 Label titre = new Label(f.getTitre());
@@ -95,17 +100,21 @@ public class AjoutForum {
 
                 Label contenu = new Label(f.getContenu());
 
-                // 🔹 boutons CRUD forum
-                Button delete = new Button("Supprimer");
-                Button edit = new Button("Modifier");
+                String btnStyle = "-fx-background-color:#2ecc71; -fx-text-fill:white; -fx-background-radius:15;";
 
-                // DELETE
+                Button edit = new Button("Modifier");
+                edit.setStyle(btnStyle);
+
+                Button delete = new Button("Supprimer");
+                delete.setStyle(btnStyle);
+
+                // 🔹 DELETE
                 delete.setOnAction(e -> {
                     fs.supprimer(f.getId());
                     loadForums();
                 });
 
-                // UPDATE
+                // 🔹 UPDATE
                 edit.setOnAction(e -> {
                     TextInputDialog dialog = new TextInputDialog(f.getContenu());
                     dialog.setTitle("Modifier forum");
@@ -119,14 +128,13 @@ public class AjoutForum {
 
                 HBox actions = new HBox(10, edit, delete);
 
-                // 🔥 charger les commentaires
+                // 🔹 COMMENTAIRES
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/commentaire.fxml"));
                 Parent commentUI = loader.load();
 
                 AjoutCommentaire cc = loader.getController();
                 cc.setForumId(f.getId());
 
-                // ajouter tout
                 card.getChildren().addAll(titre, info, contenu, actions, commentUI);
 
                 forumContainer.getChildren().add(card);

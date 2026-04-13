@@ -96,8 +96,7 @@ public class Main {
         );
         coursService.ajouter(cours);
 
-        // READ Cours
-        coursService.afficher().forEach(System.out::println);
+
 
         // UPDATE Cours
         cours.setId(1);

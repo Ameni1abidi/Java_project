@@ -1,37 +1,133 @@
 package tn.esprit.controllers;
+
 import javafx.fxml.FXML;
-import javafx.scene.control.TextField;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 import tn.esprit.entities.categorie;
 import tn.esprit.services.CategoryService;
-import tn.esprit.entities.categorie;
 
 public class CategorieController {
+
+    @FXML
+    private Label titleLabel;
+
     @FXML
     private TextField nomField;
 
-    private CategoryService categoryService = new CategoryService();
+    @FXML
+    private Button saveButton;
 
     @FXML
-    void ajouterCategorie() {
-        String nom = nomField.getText();
+    private Button deleteButton;
 
+    @FXML
+    private Label errorLabel;
+
+    private CategoryService service = new CategoryService();
+    private categorie currentCategorie;
+
+    @FXML
+    public void initialize() {
+        titleLabel.setText("Ajouter catégorie");
+        saveButton.setText("Créer");
+        deleteButton.setVisible(false);
+        errorLabel.setText("");
+    }
+
+    public void setCategorie(categorie categorie) {
+        this.currentCategorie = categorie;
+        errorLabel.setText("");
+        if (categorie != null) {
+            titleLabel.setText("Modifier catégorie");
+            saveButton.setText("Enregistrer");
+            nomField.setText(categorie.getNom());
+            deleteButton.setVisible(true);
+        }
+    }
+
+    @FXML
+    void saveCategorie() {
+        errorLabel.setText(""); // Clear previous errors
+        String nom = nomField.getText().trim();
+
+        // Validation: not empty
         if (nom.isEmpty()) {
-            showAlert("Erreur", "Le champ nom est vide !");
+            errorLabel.setText("Le nom de la catégorie est requis.");
             return;
         }
 
-        categorie c = new categorie(nom);
-        categoryService.add(c);
+        // Validation: length 1-50
+        if (nom.length() > 50) {
+            errorLabel.setText("Le nom de la catégorie ne peut pas dépasser 50 caractères.");
+            return;
+        }
 
-        showAlert("Succès", "Catégorie ajoutée !");
-        nomField.clear();
+        // Validation: no duplicate names
+        Integer excludeId = (currentCategorie != null) ? currentCategorie.getId() : null;
+        if (service.existsByName(nom, excludeId)) {
+            errorLabel.setText("Une catégorie avec ce nom existe déjà.");
+            return;
+        }
+
+        if (currentCategorie == null) {
+            service.add(new categorie(nom));
+            showAlert("Succès", "Catégorie ajoutée avec succès !");
+        } else {
+            currentCategorie.setNom(nom);
+            service.update(currentCategorie);
+            showAlert("Succès", "Catégorie modifiée avec succès !");
+        }
+
+        retourListe();
     }
 
-    private void showAlert(String title, String message) {
+    @FXML
+    void deleteCategorie() {
+        if (currentCategorie == null) {
+            return;
+        }
+
+        Alert confirmation = new Alert(AlertType.CONFIRMATION);
+        confirmation.setTitle("Confirmation");
+        confirmation.setHeaderText("Supprimer la catégorie");
+        confirmation.setContentText("Êtes-vous sûr de vouloir supprimer cette catégorie ?");
+
+        confirmation.showAndWait().ifPresent(response -> {
+            if (response == javafx.scene.control.ButtonType.OK) {
+                service.delete(currentCategorie.getId());
+                showAlert("Succès", "Catégorie supprimée avec succès !");
+                retourListe();
+            }
+        });
+    }
+
+    @FXML
+    void retourListe() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/CategorieList.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = (Stage) nomField.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Liste des catégories");
+            stage.show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void showAlert(String title, String msg) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
-        alert.setContentText(message);
-        alert.showAndWait();
+        alert.setContentText(msg);
+        alert.show();
     }
 }
