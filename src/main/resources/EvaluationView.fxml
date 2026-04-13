@@ -3,7 +3,9 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<HBox prefHeight="700" prefWidth="1100" style="-fx-background-color: #f0edf8;" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/17.0.12" fx:controller="tn.esprit.controllers.EvaluationController">
+<HBox prefHeight="700" prefWidth="1100" style="-fx-background-color: #f0edf8;"
+      xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/17.0.12"
+      fx:controller="tn.esprit.controllers.EvaluationController">
 
     <!-- ===== SIDEBAR ===== -->
     <VBox prefWidth="220" style="-fx-background-color: #c4b5e8; -fx-padding: 20;">
@@ -40,20 +42,37 @@
     <VBox style="-fx-padding: 40; -fx-background-color: #f5f3fb;" HBox.hgrow="ALWAYS">
 
         <!-- Card -->
-        <VBox style="-fx-background-color: white; -fx-background-radius: 15;                      -fx-padding: 30; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 2);">
+        <VBox spacing="15">
 
-            <Label style="-fx-font-size: 22; -fx-font-weight: bold; -fx-padding: 0 0 20 0;" text="Resultats" />
+            <!-- TABLE -->
+            <TableView fx:id="tableEvaluations">
 
-            <TableView fx:id="tableEvaluations" prefHeight="0.0" prefWidth="640.0">
                 <columns>
-                    <TableColumn fx:id="colId" prefWidth="60" text="ID" />
-                    <TableColumn fx:id="colNote" prefWidth="100" text="Note" />
-                    <TableColumn fx:id="colAppreciation" prefWidth="200" text="Appreciation" />
-                    <TableColumn fx:id="colEleve" prefWidth="200" text="Eleve" />
-                    <TableColumn fx:id="colExamen" prefWidth="180" text="Examen" />
-                    <TableColumn fx:id="colActions" prefWidth="120" text="Actions" />
+                    <TableColumn fx:id="colId" text="ID" />
+                    <TableColumn fx:id="colNote" text="Note" />
+                    <TableColumn fx:id="colAppreciation" text="Appreciation" />
+                    <TableColumn fx:id="colExamen" text="Examen" />
                 </columns>
+
             </TableView>
+
+            <!-- FORM -->
+            <HBox spacing="10">
+
+                <TextField fx:id="txtNote" promptText="Note" />
+                <TextField fx:id="txtAppreciation" promptText="Appreciation" />
+                <TextField fx:id="txtExamenId" promptText="Examen ID" />
+
+            </HBox>
+
+            <!-- BUTTONS -->
+            <HBox spacing="10">
+
+                <Button text="Ajouter" onAction="#handleAdd"/>
+                <Button text="Modifier" onAction="#handleUpdate"/>
+                <Button text="Supprimer" onAction="#handleDelete"/>
+
+            </HBox>
 
         </VBox>
     </VBox>
