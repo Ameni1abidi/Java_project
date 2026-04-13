@@ -39,6 +39,14 @@ public class MainFX extends Application {
         stage.setScene(scene3);
         stage.show();
     }
+    @Override
+    public void start(Stage stage) throws Exception {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/GestionUsers.fxml"));
+        Scene scene = new Scene(loader.load());
+        stage.setTitle("EduFlex — Connexion");
+        stage.setScene(scene);
+        stage.show();
+    }
 
 
     public static void main(String[] args) {
