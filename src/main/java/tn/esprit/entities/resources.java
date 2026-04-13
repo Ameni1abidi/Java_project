@@ -5,21 +5,30 @@ public class resources {
     private String titre;
     private String contenu;
     private int categorieId;
+    private String type;
+    private String disponibleLe;
 
     public resources() {
     }
 
-    public resources(String titre, String contenu, int categorieId) {
+    public resources(String titre, String contenu, int categorieId, String type, String disponibleLe) {
         this.titre = titre;
         this.contenu = contenu;
         this.categorieId = categorieId;
+        this.type = type;
+        this.disponibleLe = disponibleLe;
     }
 
-    public resources(int id, String titre, String contenu, int categorieId) {
+    public resources(int id, String titre, String contenu, int categorieId, String type, String disponibleLe) {
         this.id = id;
         this.titre = titre;
         this.contenu = contenu;
         this.categorieId = categorieId;
+        this.type = type;
+        this.disponibleLe = disponibleLe;
+    }
+
+    public resources(String ressourceTest, String contenuTest, int id) {
     }
 
     public int getId() {
@@ -54,9 +63,25 @@ public class resources {
         this.categorieId = categorieId;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getDisponibleLe() {
+        return disponibleLe;
+    }
+
+    public void setDisponibleLe(String disponibleLe) {
+        this.disponibleLe = disponibleLe;
+    }
+
     @Override
     public String toString() {
-        return "resources{id=" + id + ", titre='" + titre + "', contenu='" + contenu + "', categorieId=" + categorieId + "}";
+        return "resources{id=" + id + ", titre='" + titre + "', contenu='" + contenu + "', type='" + type + "', categorieId=" + categorieId + ", disponibleLe='" + disponibleLe + "'}";
     }
 }
 
