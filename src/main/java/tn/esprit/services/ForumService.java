@@ -9,14 +9,15 @@ import java.util.List;
 
 public class ForumService {
 
-    Connection cnx;
+    private Connection cnx;
 
     public ForumService() {
         cnx = MyDatabase.getInstance().getConnection();
     }
 
-    // CREATE
+    // ================= CREATE =================
     public void ajouter(forum f) {
+
         String sql = "INSERT INTO forum (titre, contenu, type, date_creation) VALUES (?, ?, ?, ?)";
 
         try {
@@ -24,7 +25,7 @@ public class ForumService {
             ps.setString(1, f.getTitre());
             ps.setString(2, f.getContenu());
             ps.setString(3, f.getType());
-            ps.setTimestamp(4, new Timestamp(System.currentTimeMillis()));
+            ps.setTimestamp(4, f.getDateCreation());
 
             ps.executeUpdate();
             System.out.println("Forum ajouté !");
@@ -33,9 +34,11 @@ public class ForumService {
         }
     }
 
-    // READ
+    // ================= READ =================
     public List<forum> afficher() {
+
         List<forum> list = new ArrayList<>();
+
         String sql = "SELECT * FROM forum";
 
         try {
@@ -43,15 +46,18 @@ public class ForumService {
             ResultSet rs = st.executeQuery(sql);
 
             while (rs.next()) {
-                forum f = new forum();
-                f.setId(rs.getInt("id"));
-                f.setTitre(rs.getString("titre"));
-                f.setContenu(rs.getString("contenu"));
-                f.setType(rs.getString("type"));
-                f.setDateCreation(rs.getTimestamp("date_creation"));
+
+                forum f = new forum(
+                        rs.getInt("id"),
+                        rs.getString("titre"),
+                        rs.getString("contenu"),
+                        rs.getString("type"),
+                        rs.getTimestamp("date_creation")
+                );
 
                 list.add(f);
             }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -59,33 +65,33 @@ public class ForumService {
         return list;
     }
 
-    // UPDATE
-    public void modifier(forum f) {
-        String sql = "UPDATE forum SET titre=?, contenu=?, type=? WHERE id=?";
-
-        try {
-            PreparedStatement ps = cnx.prepareStatement(sql);
-            ps.setString(1, f.getTitre());
-            ps.setString(2, f.getContenu());
-            ps.setString(3, f.getType());
-            ps.setInt(4, f.getId());
-
-            ps.executeUpdate();
-            System.out.println("Forum modifié !");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    // DELETE
+    // ================= DELETE =================
     public void supprimer(int id) {
-        String sql = "DELETE FROM forum WHERE id=?";
+
+        String sql = "DELETE FROM forum WHERE id = ?";
 
         try {
             PreparedStatement ps = cnx.prepareStatement(sql);
             ps.setInt(1, id);
             ps.executeUpdate();
-            System.out.println("Forum supprimé !");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // ================= UPDATE =================
+    public void modifier(forum f) {
+
+        String sql = "UPDATE forum SET contenu = ? WHERE id = ?";
+
+        try {
+            PreparedStatement ps = cnx.prepareStatement(sql);
+            ps.setString(1, f.getContenu());
+            ps.setInt(2, f.getId());
+
+            ps.executeUpdate();
+
         } catch (SQLException e) {
             e.printStackTrace();
         }

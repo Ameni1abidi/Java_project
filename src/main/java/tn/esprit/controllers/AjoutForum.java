@@ -47,6 +47,7 @@ public class AjoutForum {
         formPane.setVisible(false);
     }
 
+    // ================= CREATE =================
     @FXML
     public void ajouterForum() {
 
@@ -58,6 +59,17 @@ public class AjoutForum {
                 new Timestamp(System.currentTimeMillis())
         );
 
+        // 🔥 VALIDATION
+        String erreur = f.valider();
+
+        if (erreur != null) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Erreur");
+            alert.setContentText(erreur);
+            alert.showAndWait();
+            return;
+        }
+
         fs.ajouter(f);
 
         titreField.clear();
@@ -68,6 +80,7 @@ public class AjoutForum {
         loadForums();
     }
 
+    // ================= READ =================
     private void loadForums() {
 
         forumContainer.getChildren().clear();
@@ -76,7 +89,7 @@ public class AjoutForum {
 
             try {
                 VBox card = new VBox(10);
-                card.setPrefWidth(250);
+                card.setPrefWidth(300);
                 card.setStyle("-fx-background-color:white; -fx-padding:15; -fx-background-radius:10;");
 
                 Label titre = new Label(f.getTitre());
@@ -95,13 +108,17 @@ public class AjoutForum {
                 Button delete = new Button("Supprimer");
                 delete.setStyle(btnStyle);
 
+                // 🔹 DELETE
                 delete.setOnAction(e -> {
                     fs.supprimer(f.getId());
                     loadForums();
                 });
 
+                // 🔹 UPDATE
                 edit.setOnAction(e -> {
                     TextInputDialog dialog = new TextInputDialog(f.getContenu());
+                    dialog.setTitle("Modifier forum");
+
                     dialog.showAndWait().ifPresent(newText -> {
                         f.setContenu(newText);
                         fs.modifier(f);
@@ -111,6 +128,7 @@ public class AjoutForum {
 
                 HBox actions = new HBox(10, edit, delete);
 
+                // 🔹 COMMENTAIRES
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/commentaire.fxml"));
                 Parent commentUI = loader.load();
 
