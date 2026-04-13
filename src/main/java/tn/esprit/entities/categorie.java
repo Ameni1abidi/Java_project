@@ -34,6 +34,6 @@ public class categorie {
 
     @Override
     public String toString() {
-        return "categorie{id=" + id + ", nom='" + nom + "'}";
+        return nom;
     }
 }
