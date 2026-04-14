@@ -10,6 +10,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
+<?import javafx.scene.control.TextField?>
 <AnchorPane prefHeight="600.0" prefWidth="960.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.controllers.ResourceListController">
    <children>
       <VBox layoutX="20.0" layoutY="20.0" prefHeight="560.0" prefWidth="920.0" spacing="15.0">
@@ -22,6 +23,12 @@
                      </font>
                   </Label>
                   <Button fx:id="createButton" mnemonicParsing="false" onAction="#onCreateClick" prefHeight="40.0" prefWidth="120.0" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6;" text="Créer" />
+               </children>
+            </HBox>
+            <HBox spacing="10.0" alignment="CENTER_LEFT">
+               <children>
+                  <TextField fx:id="searchField" promptText="Rechercher une ressource..." prefWidth="520.0" />
+                  <Button fx:id="searchButton" mnemonicParsing="false" onAction="#onSearchClick" prefHeight="36.0" prefWidth="120.0" style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6;" text="Rechercher" />
                </children>
             </HBox>
             <TableView fx:id="resourceTable" prefHeight="500.0" prefWidth="920.0" VBox.vgrow="ALWAYS">

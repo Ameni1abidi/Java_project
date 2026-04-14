@@ -47,7 +47,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <mainClass>tn.esprit.MainFX</mainClass>
+                    <mainClass>tn.esprit.utils.MainFX</mainClass>
                 </configuration>
             </plugin>
         </plugins>
