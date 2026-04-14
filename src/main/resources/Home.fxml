@@ -61,14 +61,14 @@
                     <Label text="OUR COURSES"
                            style="-fx-background-color: #b19cd9; -fx-text-fill: white; -fx-padding: 5 15; -fx-background-radius: 20;" />
 
-                    <Label text="With Scholar Teachers,"
+                    <Label text="With EduFlex Teachers,"
                            style="-fx-text-fill: white; -fx-font-size: 36px; -fx-font-weight: bold;" />
 
                     <Label text="Everything Is Easier"
                            style="-fx-text-fill: white; -fx-font-size: 36px; -fx-font-weight: bold;" />
 
                     <Label wrapText="true"
-                           text="Scholar is free CSS template designed by TemplateMo for online educational related websites."
+                           text="EduFlex is your smart learning platform to explore courses, follow progress, and connect with teachers."
                            style="-fx-text-fill: white;" />
 
                     <HBox spacing="15">
@@ -76,7 +76,7 @@
                                 onAction="#goCourses"
                                 style="-fx-background-color: white; -fx-text-fill: #6a5acd; -fx-background-radius: 20;" />
 
-                        <Button text="▶ What's Scholar?"
+                        <Button text="▶ Why EduFlex?"
                                 style="-fx-background-color: transparent; -fx-text-fill: white; -fx-border-color: white;" />
                     </HBox>
 

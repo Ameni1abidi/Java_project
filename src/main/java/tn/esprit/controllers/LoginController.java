@@ -9,6 +9,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
+import tn.esprit.services.AuditLogService;
+import tn.esprit.utils.UserSession;
 
 import java.util.Optional;
 
@@ -19,6 +21,7 @@ public class LoginController {
     @FXML private Label         errorLabel;
 
     private final UserService userService = new UserService();
+    private final AuditLogService auditLogService = new AuditLogService();
 
     @FXML
     private void handleLogin() {
@@ -34,11 +37,15 @@ public class LoginController {
             Optional<User> result = userService.login(email, pw);
 
             if (result.isEmpty()) {
+                auditLogService.log(email, "LOGIN_FAILED", "Login failed for provided credentials");
                 showError("Email ou mot de passe incorrect.");
                 return;
             }
 
-            redirectByRole(result.get());
+            User connectedUser = result.get();
+            UserSession.setCurrentUser(connectedUser);
+            auditLogService.log(connectedUser.getEmail(), "LOGIN_SUCCESS", "User logged in with role " + connectedUser.getRole());
+            redirectByRole(connectedUser);
 
         } catch (Exception e) {
             showError("Erreur : " + e.getMessage());

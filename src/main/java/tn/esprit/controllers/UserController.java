@@ -1,5 +1,6 @@
 package tn.esprit.controllers;
 
+import javafx.animation.PauseTransition;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -13,17 +14,22 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import tn.esprit.entities.User;
 import tn.esprit.entities.User.Role;
+import tn.esprit.services.AuditLogService;
 import tn.esprit.services.UserService;
+import tn.esprit.utils.UserSession;
+import javafx.util.Duration;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class UserController {
+    private static final int PAGE_SIZE = 10;
 
     // ── Formulaire ───────────────────────────────────────────────────────────
     @FXML private TextField        nameField;
@@ -44,16 +50,21 @@ public class UserController {
     // ── Filtre + compteur ────────────────────────────────────────────────────
     @FXML private ComboBox<String> filterRoleCombo;
     @FXML private ComboBox<String> sortCombo;
+    @FXML private ComboBox<String> bulkRoleCombo;
     @FXML private Label            countLabel;
     @FXML private Label            totalUsersLabel;
     @FXML private Label            totalAdminsLabel;
     @FXML private Label            totalProfsLabel;
     @FXML private Label            totalEtudiantsLabel;
     @FXML private Label            totalParentsLabel;
+    @FXML private Pagination       pagination;
 
     // ── Service + données ────────────────────────────────────────────────────
     private final UserService userService = new UserService();
+    private final AuditLogService auditLogService = new AuditLogService();
     private ObservableList<User> allUsers = FXCollections.observableArrayList();
+    private final PauseTransition searchDebounce = new PauseTransition(Duration.millis(300));
+    private List<User> processedUsers = new ArrayList<>();
 
     // ── Initialisation ───────────────────────────────────────────────────────
     @FXML
@@ -87,6 +98,25 @@ public class UserController {
         sortCombo.setValue("Nom A-Z");
         sortCombo.setOnAction(e -> applySorting());
 
+        bulkRoleCombo.getItems().addAll("ROLE_ADMIN", "ROLE_PROF", "ROLE_ETUDIANT", "ROLE_PARENT");
+        bulkRoleCombo.setValue("ROLE_ETUDIANT");
+
+        table.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        table.setSortPolicy(tv -> {
+            applySearchFilterSort();
+            return true;
+        });
+
+        if (searchField != null) {
+            searchField.textProperty().addListener((obs, oldValue, newValue) -> searchDebounce.playFromStart());
+        }
+        searchDebounce.setOnFinished(event -> applySearchFilterSort());
+
+        pagination.setPageFactory(pageIndex -> {
+            updateTablePage(pageIndex);
+            return new Label("");
+        });
+
         loadUsers();
         table.setOnMouseClicked(e -> selectUser());
     }
@@ -96,7 +126,6 @@ public class UserController {
     public void loadUsers() {
         try {
             allUsers = FXCollections.observableArrayList(userService.getAllUsers());
-            table.setItems(allUsers);
             filterRoleCombo.setValue("Tous");
             if (sortCombo != null) sortCombo.setValue("Nom A-Z");
             if (searchField != null) searchField.clear();
@@ -154,6 +183,8 @@ public class UserController {
                 return;
             }
             showAlert("Succès", "Utilisateur ajouté avec succès !");
+            String actor = currentActorEmail();
+            auditLogService.log(actor, "ADMIN_ADD_USER", "Added user " + email + " with role " + role.name());
             clearFields();
             loadUsers();
         } catch (SQLException e) {
@@ -181,6 +212,8 @@ public class UserController {
                 try {
                     userService.deleteUser(selected.getId());
                     showAlert("Succès", "Utilisateur supprimé !");
+                    String actor = currentActorEmail();
+                    auditLogService.log(actor, "ADMIN_DELETE_USER", "Deleted user id=" + selected.getId() + ", email=" + selected.getEmail());
                     loadUsers();
                 } catch (SQLException e) {
                     e.printStackTrace();
@@ -196,9 +229,96 @@ public class UserController {
         if (selected != null) {
             nameField.setText(selected.getNom());
             emailField.setText(selected.getEmail());
-            passwordField.setText(selected.getPassword());
+            passwordField.clear();
             roleAddCombo.setValue(selected.getRole().name());
         }
+    }
+
+    @FXML
+    public void updateSelectedUser() {
+        User selected = table.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("Erreur", "Sélectionnez un utilisateur à modifier.");
+            return;
+        }
+
+        String nom = nameField.getText().trim();
+        String email = emailField.getText().trim();
+        String pw = passwordField.getText();
+        Role role = Role.fromString(roleAddCombo.getValue());
+
+        if (nom.isEmpty() || email.isEmpty()) {
+            showAlert("Erreur", "Nom et email sont obligatoires.");
+            return;
+        }
+
+        String newPassword = (pw == null || pw.isBlank()) ? selected.getPassword() : pw;
+        User updated = new User(selected.getId(), nom, newPassword, email, role);
+
+        try {
+            if (userService.updateUser(updated)) {
+                showAlert("Succès", "Utilisateur modifié.");
+                String actor = currentActorEmail();
+                auditLogService.log(actor, "ADMIN_UPDATE_USER", "Updated user id=" + updated.getId() + ", email=" + updated.getEmail());
+                clearFields();
+                loadUsers();
+            } else {
+                showAlert("Erreur", "Modification impossible.");
+            }
+        } catch (SQLException e) {
+            showAlert("Erreur", "Erreur modification: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    public void deleteSelectedUsers() {
+        List<User> selectedUsers = new ArrayList<>(table.getSelectionModel().getSelectedItems());
+        if (selectedUsers.isEmpty()) {
+            showAlert("Erreur", "Sélectionnez un ou plusieurs utilisateurs.");
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirmation");
+        confirm.setHeaderText("Supprimer " + selectedUsers.size() + " utilisateur(s) ?");
+        confirm.setContentText("Cette action est irréversible.");
+        confirm.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                int deleted = 0;
+                for (User user : selectedUsers) {
+                    try {
+                        if (userService.deleteUser(user.getId())) deleted++;
+                    } catch (SQLException ignored) {
+                    }
+                }
+                String actor = currentActorEmail();
+                auditLogService.log(actor, "ADMIN_BULK_DELETE", "Bulk deleted users count=" + deleted);
+                showAlert("Succès", deleted + " utilisateur(s) supprimé(s).");
+                loadUsers();
+            }
+        });
+    }
+
+    @FXML
+    public void applyBulkRole() {
+        List<User> selectedUsers = new ArrayList<>(table.getSelectionModel().getSelectedItems());
+        if (selectedUsers.isEmpty()) {
+            showAlert("Erreur", "Sélectionnez un ou plusieurs utilisateurs.");
+            return;
+        }
+        Role role = Role.fromString(bulkRoleCombo.getValue());
+        int updatedCount = 0;
+        for (User user : selectedUsers) {
+            try {
+                User updated = new User(user.getId(), user.getNom(), user.getPassword(), user.getEmail(), role);
+                if (userService.updateUser(updated)) updatedCount++;
+            } catch (SQLException ignored) {
+            }
+        }
+        String actor = currentActorEmail();
+        auditLogService.log(actor, "ADMIN_BULK_ROLE_UPDATE", "Set role=" + role.name() + " for " + updatedCount + " users");
+        showAlert("Succès", "Rôle appliqué à " + updatedCount + " utilisateur(s).");
+        loadUsers();
     }
 
     // ── Vider les champs ─────────────────────────────────────────────────────
@@ -247,6 +367,9 @@ public class UserController {
     @FXML
     private void goBack(ActionEvent event) {
         try {
+            String actor = currentActorEmail();
+            auditLogService.log(actor, "LOGOUT", "Admin session ended from user management screen");
+            UserSession.clear();
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/Home.fxml"));
             Parent root = loader.load();
 
@@ -285,9 +408,34 @@ public class UserController {
                 .sorted(comparator)
                 .collect(Collectors.toList());
 
-        table.setItems(FXCollections.observableArrayList(processed));
-        updateCount(processed.size());
-        updateStatistics(processed);
+        if (table.getComparator() != null) {
+            processed = processed.stream().sorted(table.getComparator()).collect(Collectors.toList());
+        }
+
+        processedUsers = processed;
+        updateCount(processedUsers.size());
+        updateStatistics(processedUsers);
+        updatePaginationBounds();
+        updateTablePage(pagination.getCurrentPageIndex());
+    }
+
+    private void updatePaginationBounds() {
+        int pageCount = Math.max(1, (int) Math.ceil((double) processedUsers.size() / PAGE_SIZE));
+        pagination.setPageCount(pageCount);
+        if (pagination.getCurrentPageIndex() >= pageCount) {
+            pagination.setCurrentPageIndex(0);
+        }
+    }
+
+    private void updateTablePage(int pageIndex) {
+        if (processedUsers == null) {
+            table.setItems(FXCollections.observableArrayList());
+            return;
+        }
+        int from = pageIndex * PAGE_SIZE;
+        int to = Math.min(from + PAGE_SIZE, processedUsers.size());
+        if (from > to) from = to;
+        table.setItems(FXCollections.observableArrayList(processedUsers.subList(from, to)));
     }
 
     private void updateStatistics(List<User> users) {
@@ -307,6 +455,11 @@ public class UserController {
     private String csv(String value) {
         if (value == null) return "\"\"";
         return "\"" + value.replace("\"", "\"\"") + "\"";
+    }
+
+    private String currentActorEmail() {
+        User current = UserSession.getCurrentUser();
+        return current != null ? current.getEmail() : "admin@system";
     }
 
     public void showAlert(String title, String message) {
