@@ -21,7 +21,7 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-
+    /*
         // 🔹 Service Categorie
         CategoryService categoryService = new CategoryService();
 
@@ -139,10 +139,10 @@ public class Main {
         // 🔹 AFFICHAGE COMMENTAIRES
         System.out.println("---- Commentaires ----");
         cs.afficher().forEach(System.out::println);
-
+*/
         // ===== EXAMEN =====
         ExamenService es = new ExamenService();
-        Examen e = new Examen("Examen BD", "SQL", "Final", LocalDate.now(), 90);
+        Examen e = new Examen("Examen BD", "SQL", "Final", LocalDate.now(), 90,1,1);
         es.create(e);
         es.getAll().forEach(System.out::println);
         //e.setTitre("Examen Update");
