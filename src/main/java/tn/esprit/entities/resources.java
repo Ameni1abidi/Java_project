@@ -4,26 +4,26 @@ public class resources {
     private int id;
     private String titre;
     private String contenu;
-    private int categorieId;
+    private String categorieNom;
     private String type;
     private String disponibleLe;
 
     public resources() {
     }
 
-    public resources(String titre, String contenu, int categorieId, String type, String disponibleLe) {
+    public resources(String titre, String contenu, String categorieNom, String type, String disponibleLe) {
         this.titre = titre;
         this.contenu = contenu;
-        this.categorieId = categorieId;
+        this.categorieNom = categorieNom;
         this.type = type;
         this.disponibleLe = disponibleLe;
     }
 
-    public resources(int id, String titre, String contenu, int categorieId, String type, String disponibleLe) {
+    public resources(int id, String titre, String contenu, String categorieNom, String type, String disponibleLe) {
         this.id = id;
         this.titre = titre;
         this.contenu = contenu;
-        this.categorieId = categorieId;
+        this.categorieNom = categorieNom;
         this.type = type;
         this.disponibleLe = disponibleLe;
     }
@@ -55,12 +55,12 @@ public class resources {
         this.contenu = contenu;
     }
 
-    public int getCategorieId() {
-        return categorieId;
+    public String getCategorieNom() {
+        return categorieNom;
     }
 
-    public void setCategorieId(int categorieId) {
-        this.categorieId = categorieId;
+    public void setCategorieNom(String categorieNom) {
+        this.categorieNom = categorieNom;
     }
 
     public String getType() {
@@ -81,7 +81,7 @@ public class resources {
 
     @Override
     public String toString() {
-        return "resources{id=" + id + ", titre='" + titre + "', contenu='" + contenu + "', type='" + type + "', categorieId=" + categorieId + ", disponibleLe='" + disponibleLe + "'}";
+        return "resources{id=" + id + ", titre='" + titre + "', contenu='" + contenu + "', type='" + type + "', categorieNom='" + categorieNom + "', disponibleLe='" + disponibleLe + "'}";
     }
 }
 
