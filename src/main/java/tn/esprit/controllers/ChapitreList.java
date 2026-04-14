@@ -128,15 +128,18 @@ public class ChapitreList {
             fileLink.setDisable(true);
         }
 
-        Label ordreLabel = new Label("Ordre: " + chapitre.getOrdre());
-        ordreLabel.setStyle("-fx-text-fill:#666; -fx-font-size:11px;");
-
-        Label dureeLabel = new Label("Durée: " + chapitre.getDureeEstimee() + " min");
-        dureeLabel.setStyle("-fx-text-fill:#666; -fx-font-size:11px;");
-        ordreLabel.setStyle("-fx-text-fill:#888; -fx-font-size:11px;");
+        Label info = new Label(
+                "Ordre: " + chapitre.getOrdre() +
+                        " | Durée: " + chapitre.getDureeEstimee() + " min"
+        );
+        Label durée = new Label(
+                        " Durée: " + chapitre.getDureeEstimee() + " min"
+        );
+        info.setStyle("-fx-text-fill:#888; -fx-font-size:11px;");
 
         javafx.scene.control.Button edit = new javafx.scene.control.Button("Modifier");
         edit.setStyle("-fx-border-color:#007bff; -fx-text-fill:#007bff;");
+        edit.setOnAction(e -> openForm(chapitre));
 
         javafx.scene.control.Button delete = new javafx.scene.control.Button("Supprimer");
         delete.setStyle("-fx-border-color:#dc3545; -fx-text-fill:#dc3545;");
@@ -147,7 +150,7 @@ public class ChapitreList {
 
         HBox actions = new HBox(10, edit, delete);
 
-        card.getChildren().addAll(titre, type, contenu, fileLink, ordreLabel, actions);
+        card.getChildren().addAll(titre, type, contenu, fileLink, info, actions);
 
         return card;
     }
