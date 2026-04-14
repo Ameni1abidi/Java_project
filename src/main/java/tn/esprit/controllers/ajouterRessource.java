@@ -157,7 +157,7 @@ public class ajouterRessource {
             }
 
             for (categorie cat : categorieCombo.getItems()) {
-                if (cat.getId() == resource.getCategorieId()) {
+                if (cat.getNom().equals(resource.getCategorieNom())) {
                     categorieCombo.setValue(cat);
                     break;
                 }
@@ -218,13 +218,13 @@ public class ajouterRessource {
 
         try {
             if (currentResource == null) {
-                resources newResource = new resources(titre, contenu, categorie.getId(), type, disponibleLe);
+                resources newResource = new resources(titre, contenu, categorie.getNom(), type, disponibleLe);
                 resourceService.add(newResource);
                 showAlert("Succès", "Ressource créée avec succès !");
             } else {
                 currentResource.setTitre(titre);
                 currentResource.setContenu(contenu);
-                currentResource.setCategorieId(categorie.getId());
+                currentResource.setCategorieNom(categorie.getNom());
                 currentResource.setType(type);
                 currentResource.setDisponibleLe(disponibleLe);
                 resourceService.update(currentResource);

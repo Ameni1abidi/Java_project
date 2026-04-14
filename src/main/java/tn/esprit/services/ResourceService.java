@@ -49,11 +49,11 @@ public class ResourceService {
     }
 
     public void add(resources resource) {
-        String sql = "INSERT INTO ressource(titre, contenu, categorie_id, type, disponible_le) VALUES(?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO ressource(titre, contenu, categorie_nom, type, disponible_le) VALUES(?, ?, ?, ?, ?)";
         try (PreparedStatement ps = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, resource.getTitre());
             ps.setString(2, resource.getContenu());
-            ps.setInt(3, resource.getCategorieId());
+            ps.setString(3, resource.getCategorieNom());
             ps.setString(4, resource.getType());
             ps.setString(5, resource.getDisponibleLe());
             ps.executeUpdate();
@@ -69,7 +69,7 @@ public class ResourceService {
     }
 
     public List<resources> getAll() {
-        String sql = "SELECT id, titre, contenu, categorie_id, type, disponible_le FROM ressource";
+        String sql = "SELECT id, titre, contenu, categorie_nom, type, disponible_le FROM ressource";
         List<resources> resourceList = new ArrayList<>();
 
         try (PreparedStatement ps = connection.prepareStatement(sql);
@@ -79,7 +79,7 @@ public class ResourceService {
                         rs.getInt("id"),
                         rs.getString("titre"),
                         rs.getString("contenu"),
-                        rs.getInt("categorie_id"),
+                        rs.getString("categorie_nom"),
                         rs.getString("type"),
                         rs.getString("disponible_le")
                 ));
@@ -92,7 +92,7 @@ public class ResourceService {
     }
 
     public resources getById(int id) {
-        String sql = "SELECT id, titre, contenu, categorie_id, type, disponible_le FROM ressource WHERE id = ?";
+        String sql = "SELECT id, titre, contenu, categorie_nom, type, disponible_le FROM ressource WHERE id = ?";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, id);
@@ -103,7 +103,7 @@ public class ResourceService {
                             rs.getInt("id"),
                             rs.getString("titre"),
                             rs.getString("contenu"),
-                            rs.getInt("categorie_id"),
+                            rs.getString("categorie_nom"),
                             rs.getString("type"),
                             rs.getString("disponible_le")
                     );
@@ -117,12 +117,12 @@ public class ResourceService {
     }
 
     public boolean update(resources resource) {
-        String sql = "UPDATE ressource SET titre = ?, contenu = ?, categorie_id = ?, type = ?, disponible_le = ? WHERE id = ?";
+        String sql = "UPDATE ressource SET titre = ?, contenu = ?, categorie_nom = ?, type = ?, disponible_le = ? WHERE id = ?";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, resource.getTitre());
             ps.setString(2, resource.getContenu());
-            ps.setInt(3, resource.getCategorieId());
+            ps.setString(3, resource.getCategorieNom());
             ps.setString(4, resource.getType());
             ps.setString(5, resource.getDisponibleLe());
             ps.setInt(6, resource.getId());
@@ -143,12 +143,12 @@ public class ResourceService {
         }
     }
 
-    public List<resources> getByCategoryId(int categorieId) {
-        String sql = "SELECT id, titre, contenu, categorie_id, type, disponible_le FROM ressource WHERE categorie_id = ?";
+    public List<resources> getByCategoryNom(String categorieNom) {
+        String sql = "SELECT id, titre, contenu, categorie_nom, type, disponible_le FROM ressource WHERE categorie_nom = ?";
         List<resources> resourceList = new ArrayList<>();
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, categorieId);
+            ps.setString(1, categorieNom);
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -156,7 +156,7 @@ public class ResourceService {
                             rs.getInt("id"),
                             rs.getString("titre"),
                             rs.getString("contenu"),
-                            rs.getInt("categorie_id"),
+                            rs.getString("categorie_nom"),
                             rs.getString("type"),
                             rs.getString("disponible_le")
                     ));
@@ -174,7 +174,7 @@ public class ResourceService {
             return getAll();
         }
 
-        String sql = "SELECT id, titre, contenu, categorie_id, type, disponible_le FROM ressource WHERE titre LIKE ? OR contenu LIKE ?";
+        String sql = "SELECT id, titre, contenu, categorie_nom, type, disponible_le FROM ressource WHERE titre LIKE ? OR contenu LIKE ?";
         List<resources> resourceList = new ArrayList<>();
         String searchPattern = "%" + keyword + "%";
 
@@ -188,7 +188,7 @@ public class ResourceService {
                             rs.getInt("id"),
                             rs.getString("titre"),
                             rs.getString("contenu"),
-                            rs.getInt("categorie_id"),
+                            rs.getString("categorie_nom"),
                             rs.getString("type"),
                             rs.getString("disponible_le")
                     ));

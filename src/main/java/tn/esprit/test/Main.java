@@ -31,8 +31,7 @@ public class Main {
         System.out.println("Categorie ajoutée");
 
         // UPDATE Categorie
-        c.setNom("Categorie Modifiée");
-        categoryService.update(c);
+        categoryService.update("Categorie Test", "Categorie Modifiée");
         System.out.println("Categorie modifiée");
 
         // 🔹 Service Ressource
@@ -42,7 +41,9 @@ public class Main {
         resources r = new resources(
                 "Ressource Test",
                 "Contenu Test",
-                c.getId()
+                "Categorie Test",
+                "pdf",
+                "2024-01-01"
         );
         resourceService.add(r);
         System.out.println("Ressource ajoutée");
@@ -50,7 +51,7 @@ public class Main {
         // UPDATE Ressource
         r.setTitre("Ressource Modifiée");
         r.setContenu("Contenu Modifié");
-        r.setCategorieId(c.getId());
+        r.setCategorieNom("Categorie Test");
         resourceService.update(r);
         System.out.println("Ressource modifiée");
 
