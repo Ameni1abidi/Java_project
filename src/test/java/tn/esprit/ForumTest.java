@@ -16,6 +16,7 @@ public class ForumTest {
     static ForumService service;
     static int idForumTest;
 
+    // ================= INIT =================
     @BeforeAll
     static void setup() {
         service = new ForumService();
@@ -55,6 +56,8 @@ public class ForumTest {
     @Order(2)
     void testModifierForum() {
 
+        assertTrue(idForumTest > 0); // 🔥 sécurité
+
         forum f = new forum(
                 idForumTest,
                 "Test Forum",
@@ -91,12 +94,19 @@ public class ForumTest {
         assertFalse(exists);
     }
 
-    // ================= CLEANUP PRO =================
-    @AfterEach
-    void cleanUp() {
+    // ================= CLEAN FINAL =================
+    @AfterAll
+    static void cleanUpAll() {
 
-        if (idForumTest != 0) {
-            service.supprimer(idForumTest);
+        try {
+            List<forum> list = service.afficher();
+
+            list.stream()
+                    .filter(f -> f.getTitre().equals("Test Forum"))
+                    .forEach(f -> service.supprimer(f.getId()));
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
