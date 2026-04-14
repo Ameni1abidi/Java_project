@@ -1,8 +1,5 @@
 package tn.esprit.services;
 
-
-
-
 import tn.esprit.entities.Chapitre;
 import tn.esprit.utils.MyDatabase;
 
@@ -11,13 +8,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ChapitreService {
+
     Connection cnx = MyDatabase.getInstance().getConnection();
 
     // CREATE
     public void ajouter(Chapitre c) {
-        try {
-            String sql = "INSERT INTO chapitre (titre, ordre, type_contenu, contenu_texte, contenu_fichier, duree_estimee, resume, cours_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-            PreparedStatement ps = cnx.prepareStatement(sql);
+        String sql = "INSERT INTO chapitre (titre, ordre, type_contenu, contenu_texte, contenu_fichier, duree_estimee, resume, cours_id) VALUES (?,?,?,?,?,?,?,?)";
+
+        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
 
             ps.setString(1, c.getTitre());
             ps.setInt(2, c.getOrdre());
@@ -26,25 +24,31 @@ public class ChapitreService {
             ps.setString(5, c.getContenuFichier());
             ps.setInt(6, c.getDureeEstimee());
             ps.setString(7, c.getResume());
-            ps.setInt(8, c.getCoursId());
+            ps.setInt(8, c.getCoursId()); // ✅ FIX relation object
 
             ps.executeUpdate();
-            System.out.println("Chapitre ajouté !");
+
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
     }
 
-    // READ
-    public List<Chapitre> afficher() {
+    // READ BY COURS
+    public List<Chapitre> getAll(int coursId) {
+
         List<Chapitre> list = new ArrayList<>();
-        try {
-            String sql = "SELECT * FROM chapitre";
-            Statement st = cnx.createStatement();
-            ResultSet rs = st.executeQuery(sql);
+
+        String sql = "SELECT * FROM chapitre WHERE cours_id = ?";
+
+        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+
+            ps.setInt(1, coursId);
+
+            ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
                 Chapitre c = new Chapitre();
+
                 c.setId(rs.getInt("id"));
                 c.setTitre(rs.getString("titre"));
                 c.setOrdre(rs.getInt("ordre"));
@@ -53,21 +57,23 @@ public class ChapitreService {
                 c.setContenuFichier(rs.getString("contenu_fichier"));
                 c.setDureeEstimee(rs.getInt("duree_estimee"));
                 c.setResume(rs.getString("resume"));
-                c.setCoursId(rs.getInt("cours_id"));
 
                 list.add(c);
             }
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
         return list;
     }
 
-    // UPDATE
+    // UPDATE ✅ FIX
     public void modifier(Chapitre c) {
-        try {
-            String sql = "UPDATE chapitre SET titre=?, ordre=?, type_contenu=?, contenu_texte=?, contenu_fichier=?, duree_estimee=?, resume=?, cours_id=? WHERE id=?";
-            PreparedStatement ps = cnx.prepareStatement(sql);
+
+        String sql = "UPDATE chapitre SET titre=?, ordre=?, type_contenu=?, contenu_texte=?, contenu_fichier=?, duree_estimee=?, resume=?, cours_id=? WHERE id=?";
+
+        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
 
             ps.setString(1, c.getTitre());
             ps.setInt(2, c.getOrdre());
@@ -76,27 +82,28 @@ public class ChapitreService {
             ps.setString(5, c.getContenuFichier());
             ps.setInt(6, c.getDureeEstimee());
             ps.setString(7, c.getResume());
+
+            // relation
             ps.setInt(8, c.getCoursId());
+
             ps.setInt(9, c.getId());
 
             ps.executeUpdate();
-            System.out.println("Chapitre modifié !");
+
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
     }
 
+
     // DELETE
     public void supprimer(int id) {
-        try {
-            String sql = "DELETE FROM chapitre WHERE id=?";
-            PreparedStatement ps = cnx.prepareStatement(sql);
+        String sql = "DELETE FROM chapitre WHERE id=?";
+        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
             ps.setInt(1, id);
-
             ps.executeUpdate();
-            System.out.println("Chapitre supprimé !");
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
     }
 }

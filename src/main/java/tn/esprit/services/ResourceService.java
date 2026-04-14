@@ -168,4 +168,36 @@ public class ResourceService {
 
         return resourceList;
     }
+
+    public List<resources> search(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return getAll();
+        }
+
+        String sql = "SELECT id, titre, contenu, categorie_id, type, disponible_le FROM ressource WHERE titre LIKE ? OR contenu LIKE ?";
+        List<resources> resourceList = new ArrayList<>();
+        String searchPattern = "%" + keyword + "%";
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, searchPattern);
+            ps.setString(2, searchPattern);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    resourceList.add(new resources(
+                            rs.getInt("id"),
+                            rs.getString("titre"),
+                            rs.getString("contenu"),
+                            rs.getInt("categorie_id"),
+                            rs.getString("type"),
+                            rs.getString("disponible_le")
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur lors de la recherche de ressources", e);
+        }
+
+        return resourceList;
+    }
 }
