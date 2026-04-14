@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+<HBox prefHeight="700" prefWidth="1100"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="tn.esprit.controllers.CreateExamenController">
+
+    <!-- SIDEBAR (copier coller même code) -->
+    <VBox prefWidth="220" style="-fx-background-color: #c4b5e8; -fx-padding: 20;">
+        <Label text="EduFlex" style="-fx-text-fill: white; -fx-font-size: 18;"/>
+    </VBox>
+
+    <!-- FORM -->
+    <VBox spacing="15" style="-fx-padding: 40;" HBox.hgrow="ALWAYS">
+
+        <Label text="Créer un examen"
+               style="-fx-font-size: 22; -fx-font-weight: bold;"/>
+
+        <TextField fx:id="txtTitre" promptText="Titre"/>
+
+        <Button text="Choisir un fichier" onAction="#chooseFile"/>
+
+        <ComboBox fx:id="cbType">
+            <items>
+                <FXCollections fx:factory="observableArrayList">
+                    <String fx:value="examen"/>
+                    <String fx:value="controle"/>
+                </FXCollections>
+            </items>
+        </ComboBox>
+
+        <DatePicker fx:id="dateExamen"/>
+
+        <TextField fx:id="txtDuree" promptText="Durée (minutes)"/>
+
+        <Button text="Enregistrer" onAction="#handleSave"
+                style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+
+    </VBox>
+
+</HBox>
