@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      alignment="CENTER"
+      spacing="12"
+      style="-fx-background-color: linear-gradient(to bottom, #EDE7F6, #E8F5E9);">
+    <children>
+        <Label text="Dashboard Etudiant"
+               style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #7E57C2;"/>
+        <Label text="Connexion reussie en tant qu'ETUDIANT."
+               style="-fx-font-size: 14px; -fx-text-fill: #5E35B1;"/>
+    </children>
+</VBox>
