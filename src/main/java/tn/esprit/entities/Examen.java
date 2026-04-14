@@ -9,17 +9,37 @@ public class Examen {
     private String type;
     private LocalDate dateExamen;
     private int duree;
+    private int coursId;
+    private int enseignantId;
 
     public Examen() {}
 
-    public Examen(String titre, String contenu, String type, LocalDate dateExamen, int duree) {
+
+
+    public Examen(String titre, String contenu, String type, LocalDate dateExamen, int duree, int coursId, int enseignantId) {
         this.titre = titre;
         this.contenu = contenu;
         this.type = type;
         this.dateExamen = dateExamen;
         this.duree = duree;
+        this.coursId = coursId;
+        this.enseignantId = enseignantId;
+    }
+    public int getCoursId() {
+        return coursId;
     }
 
+    public void setCoursId(int coursId) {
+        this.coursId = coursId;
+    }
+
+    public int getEnseignantId() {
+        return enseignantId;
+    }
+
+    public void setEnseignantId(int enseignantId) {
+        this.enseignantId = enseignantId;
+    }
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 
@@ -39,6 +59,7 @@ public class Examen {
     public void setDuree(int duree) { this.duree = duree; }
 
     @Override
+
     public String toString() {
         return "Examen{" +
                 "id=" + id +
@@ -46,6 +67,9 @@ public class Examen {
                 ", type='" + type + '\'' +
                 ", date=" + dateExamen +
                 ", duree=" + duree +
+                ", coursId=" + coursId +
+                ", enseignantId=" + enseignantId +
                 '}';
     }
+
 }
