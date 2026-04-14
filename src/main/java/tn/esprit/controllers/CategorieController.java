@@ -70,8 +70,8 @@ public class CategorieController {
         }
 
         // Validation: no duplicate names
-        Integer excludeId = (currentCategorie != null) ? currentCategorie.getId() : null;
-        if (service.existsByName(nom, excludeId)) {
+        // Check if the new name already exists (excluding the current name if updating)
+        if (service.existsByName(nom) && (currentCategorie == null || !nom.equals(currentCategorie.getNom()))) {
             errorLabel.setText("Une catégorie avec ce nom existe déjà.");
             return;
         }
@@ -80,8 +80,7 @@ public class CategorieController {
             service.add(new categorie(nom));
             showAlert("Succès", "Catégorie ajoutée avec succès !");
         } else {
-            currentCategorie.setNom(nom);
-            service.update(currentCategorie);
+            service.update(currentCategorie.getNom(), nom);
             showAlert("Succès", "Catégorie modifiée avec succès !");
         }
 
@@ -101,7 +100,7 @@ public class CategorieController {
 
         confirmation.showAndWait().ifPresent(response -> {
             if (response == javafx.scene.control.ButtonType.OK) {
-                service.delete(currentCategorie.getId());
+                service.delete(currentCategorie.getNom());
                 showAlert("Succès", "Catégorie supprimée avec succès !");
                 retourListe();
             }

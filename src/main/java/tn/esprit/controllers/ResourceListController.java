@@ -48,7 +48,7 @@ public class ResourceListController {
 
     private ResourceService resourceService = new ResourceService();
     private CategoryService categoryService = new CategoryService();
-    private Map<Integer, String> categoryNames = new HashMap<>();
+    private Map<String, String> categoryNames = new HashMap<>();
 
     @FXML
     public void initialize() {
@@ -60,7 +60,7 @@ public class ResourceListController {
     private void loadCategories() {
         List<categorie> categories = categoryService.getAll();
         for (categorie cat : categories) {
-            categoryNames.put(cat.getId(), cat.getNom());
+            categoryNames.put(cat.getNom(), cat.getNom());
         }
     }
 
@@ -68,8 +68,8 @@ public class ResourceListController {
         titreColumn.setCellValueFactory(new PropertyValueFactory<>("titre"));
 
         categorieColumn.setCellValueFactory(cellData -> {
-            int categoryId = cellData.getValue().getCategorieId();
-            String name = categoryNames.getOrDefault(categoryId, "N/A");
+            String categorieNom = cellData.getValue().getCategorieNom();
+            String name = categoryNames.getOrDefault(categorieNom, "N/A");
             return new javafx.beans.property.SimpleStringProperty(name);
         });
 
