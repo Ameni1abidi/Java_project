@@ -17,23 +17,19 @@ public class ResourceServiceTest {
     private static ResourceService service = new ResourceService();
     private static CategoryService categoryService = new CategoryService();
     private static int idRessourceTest;
-    private static int idCategorieTest;
+    private static String nomCategorieTest = "TestCategorie";
 
     @BeforeAll
     static void setup() throws SQLException {
         // Add a test categorie
-        categorie c = new categorie("TestCategorie");
+        categorie c = new categorie(nomCategorieTest);
         categoryService.add(c);
-        List<categorie> categories = categoryService.getAll();
-        idCategorieTest = categories.stream()
-            .filter(cat -> cat.getNom().equals("TestCategorie"))
-            .findFirst().get().getId();
     }
 
     @Test
     @Order(1)
     void testAjouterRessource() throws SQLException {
-        resources r = new resources("TestTitre", "TestContenu", idCategorieTest, "TestType", "2023-01-01");
+        resources r = new resources("TestTitre", "TestContenu", nomCategorieTest, "TestType", "2023-01-01");
         service.add(r);
         List<resources> ressources = service.getAll();
         assertFalse(ressources.isEmpty());
@@ -54,7 +50,7 @@ public class ResourceServiceTest {
         r.setId(idRessourceTest);
         r.setTitre("TitreModifie");
         r.setContenu("ContenuModifie");
-        r.setCategorieId(idCategorieTest);
+        r.setCategorieNom(nomCategorieTest);
         r.setType("TypeModifie");
         r.setDisponibleLe("2023-02-01");
         service.update(r);
@@ -77,6 +73,6 @@ public class ResourceServiceTest {
     @AfterAll
     static void cleanUp() throws SQLException {
         // Delete the test categorie
-        categoryService.delete(idCategorieTest);
+        categoryService.delete(nomCategorieTest);
     }
 }
