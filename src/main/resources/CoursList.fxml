@@ -16,6 +16,9 @@
                 onAction="#searchCours"
                 style="-fx-background-color:#007bff; -fx-text-fill:white; -fx-background-radius:8;"/>
     </HBox>
+    <FlowPane fx:id="coursContainer"
+              hgap="20" vgap="20"
+              prefWrapLength="800"/>
 
     <!-- ➕ ADD BUTTON -->
     <HBox alignment="CENTER_RIGHT">
@@ -28,11 +31,5 @@
                        -fx-padding:10 20;"/>
     </HBox>
 
-    <!-- 📦 LIST -->
-    <ScrollPane fitToWidth="true">
-        <FlowPane fx:id="coursContainer"
-                  hgap="20" vgap="20"
-                  prefWrapLength="800"/>
-    </ScrollPane>
 
 </VBox>

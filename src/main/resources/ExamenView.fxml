@@ -80,6 +80,11 @@
                     <TableColumn fx:id="colType" text="Type"/>
                     <TableColumn fx:id="colDate" text="Date"/>
                     <TableColumn fx:id="colDuree" text="Durée"/>
+
+                    <!-- 🔥 RELATIONS -->
+                    <TableColumn fx:id="colCours" text="Cours"/>
+                    <TableColumn fx:id="colEnseignant" text="Enseignant"/>
+
                     <TableColumn fx:id="colActions" text="Actions"/>
                 </columns>
 
