@@ -10,8 +10,6 @@ public class forum {
     private String type;
     private Timestamp dateCreation;
 
-    public forum() {}
-
     public forum(int id, String titre, String contenu, String type, Timestamp dateCreation) {
         this.id = id;
         this.titre = titre;
@@ -20,54 +18,41 @@ public class forum {
         this.dateCreation = dateCreation;
     }
 
-    public int getId() {
-        return id;
+    // ================= VALIDATION =================
+    public String valider() {
+
+        if (titre == null || titre.trim().isEmpty()) {
+            return "Le titre est obligatoire";
+        }
+
+        if (titre.length() < 3) {
+            return "Le titre doit contenir au moins 3 caractères";
+        }
+
+        if (type == null || type.trim().isEmpty()) {
+            return "Le type est obligatoire";
+        }
+
+        if (contenu == null || contenu.trim().isEmpty()) {
+            return "Le contenu est obligatoire";
+        }
+
+        if (contenu.length() < 5) {
+            return "Le contenu doit contenir au moins 5 caractères";
+        }
+
+        if (dateCreation == null) {
+            return "La date est obligatoire";
+        }
+
+        return null;
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    public int getId() { return id; }
+    public String getTitre() { return titre; }
+    public String getContenu() { return contenu; }
+    public String getType() { return type; }
+    public Timestamp getDateCreation() { return dateCreation; }
 
-    public String getTitre() {
-        return titre;
-    }
-
-    public void setTitre(String titre) {
-        this.titre = titre;
-    }
-
-    public String getContenu() {
-        return contenu;
-    }
-
-    public void setContenu(String contenu) {
-        this.contenu = contenu;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public Timestamp getDateCreation() {
-        return dateCreation;
-    }
-
-    public void setDateCreation(Timestamp dateCreation) {
-        this.dateCreation = dateCreation;
-    }
-
-    @Override
-    public String toString() {
-        return "forum{" +
-                "id=" + id +
-                ", titre='" + titre + '\'' +
-                ", contenu='" + contenu + '\'' +
-                ", type='" + type + '\'' +
-                ", dateCreation=" + dateCreation +
-                '}';
-    }
+    public void setContenu(String contenu) { this.contenu = contenu; }
 }
