@@ -4,7 +4,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.FlowPane;
@@ -21,89 +20,125 @@ public class ChapitreList {
     @FXML
     private FlowPane chapitreContainer;
 
-    private ChapitreService service = new ChapitreService();
+    @FXML
+    private TextField searchField;
+
+    @FXML
+    private Label coursTitle;
+
+    private final ChapitreService service = new ChapitreService();
 
     private int coursId;
 
-    public void setCoursId(int coursId) {
-        this.coursId = coursId;
+    // =========================
+    // INIT Cours
+    // =========================
+    public void setCoursId(int id) {
+        this.coursId = id;
         loadChapitres();
-    }
 
-    @FXML
-    private TextField searchField;
-    @FXML
-    void searchChapitre() {
-
-        String keyword = searchField.getText().toLowerCase();
-
-        chapitreContainer.getChildren().clear();
-
-        List<Chapitre> list = service.getAll(coursId); // مهم 👈
-
-        for (Chapitre ch : list) {
-
-            if (ch.getTitre().toLowerCase().contains(keyword)) {
-                chapitreContainer.getChildren().add(createCard(ch));
-            }
+        if (coursTitle != null) {
+            coursTitle.setText("Chapitres du cours ID: " + id);
         }
     }
 
+    // =========================
+    // LOAD
+    // =========================
     private void loadChapitres() {
-
         chapitreContainer.getChildren().clear();
 
-        if (coursId == 0) {
-            System.out.println("❌ coursId = 0");
-            return;
-        }
-
-        List<Chapitre> list = service.getAll(coursId); // ✅ IMPORTANT
-
-        System.out.println("SIZE = " + list.size()); // debug
+        List<Chapitre> list = service.getAll(coursId);
 
         for (Chapitre ch : list) {
             chapitreContainer.getChildren().add(createCard(ch));
         }
     }
 
-    private VBox createCard(Chapitre ch) {
+    // =========================
+    // SEARCH
+    // =========================
+    @FXML
+    void searchChapitre() {
+
+        String keyword = searchField.getText();
+
+        chapitreContainer.getChildren().clear();
+
+        for (Chapitre ch : service.getAll(coursId)) {
+
+            if (keyword == null || keyword.isEmpty()
+                    || ch.getTitre().toLowerCase().contains(keyword.toLowerCase())) {
+
+                chapitreContainer.getChildren().add(createCard(ch));
+            }
+        }
+    }
+
+    // =========================
+    // CARD UI
+    // =========================
+    private VBox createCard(Chapitre chapitre) {
 
         VBox card = new VBox(10);
-        card.setStyle("-fx-background-color:white; -fx-padding:15; -fx-background-radius:15;");
+        card.setStyle("""
+            -fx-background-color:white;
+            -fx-padding:15;
+            -fx-background-radius:15;
+            -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0, 0, 5);
+        """);
 
-        Label titre = new Label(ch.getTitre());
+        Label titre = new Label(chapitre.getTitre());
         titre.setStyle("-fx-font-size:16px; -fx-font-weight:bold;");
 
-        Label info = new Label("Ordre: " + ch.getOrdre());
+        Label type = new Label("Type : " + chapitre.getTypeContenu());
 
-        Button edit = new Button("Modifier");
+        Label contenu = new Label();
+        if (chapitre.getContenuTexte() != null && !chapitre.getContenuTexte().isEmpty()) {
+            contenu.setText(chapitre.getContenuTexte());
+            contenu.setWrapText(true);
+        }
+
+        Label file = new Label();
+        if (chapitre.getContenuFichier() != null && !chapitre.getContenuFichier().isEmpty()) {
+            file.setText("Fichier : " + chapitre.getContenuFichier());
+            file.setStyle("-fx-text-fill:blue;");
+        }
+
+        Label info = new Label(
+                "Ordre: " + chapitre.getOrdre() +
+                        " | Durée: " + chapitre.getDureeEstimee() + " min"
+        );
+        info.setStyle("-fx-text-fill:#888; -fx-font-size:11px;");
+
+        javafx.scene.control.Button edit = new javafx.scene.control.Button("Modifier");
         edit.setStyle("-fx-border-color:#007bff; -fx-text-fill:#007bff;");
-        edit.setOnAction(e -> openForm(ch));
 
-        Button delete = new Button("Supprimer");
+        javafx.scene.control.Button delete = new javafx.scene.control.Button("Supprimer");
         delete.setStyle("-fx-border-color:#dc3545; -fx-text-fill:#dc3545;");
         delete.setOnAction(e -> {
-            service.supprimer(ch.getId());
+            service.supprimer(chapitre.getId());
             loadChapitres();
         });
 
-// ✅ نحطهم في HBox باش يجو بحذا بعضهم
-        HBox actions = new HBox(10);
-        actions.getChildren().addAll(edit, delete);
+        HBox actions = new HBox(10, edit, delete);
 
-// ✅ نزيدهم للـ card
-        card.getChildren().addAll(titre, info, actions);
+        card.getChildren().addAll(titre, type, contenu, file, info, actions);
 
         return card;
     }
 
-    // 🔥 BUTTON AJOUT
+    // =========================
+    // ADD
+    // =========================
     @FXML
     void goToAdd() {
         openForm(null);
     }
 
+    // =========================
+    // OPEN FORM
+    // =========================
     private void openForm(Chapitre ch) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ChapitreForm.fxml"));
@@ -119,4 +154,22 @@ public class ChapitreList {
             e.printStackTrace();
         }
     }
+
+    // =========================
+    // BACK BUTTON
+    // =========================
+    @FXML
+    void goBack() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/CoursList.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = (Stage) chapitreContainer.getScene().getWindow();
+            stage.setScene(new Scene(root));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }

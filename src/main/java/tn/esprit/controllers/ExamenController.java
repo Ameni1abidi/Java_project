@@ -23,6 +23,8 @@ public class ExamenController {
     @FXML private TableColumn<Examen, LocalDate> colDate;
     @FXML private TableColumn<Examen, Integer> colDuree;
     @FXML private TableColumn<Examen, Void> colActions;
+    @FXML private TableColumn<Examen, String> colCours;
+    @FXML private TableColumn<Examen, String> colEnseignant;
 
     private ObservableList<Examen> list;
     private ExamenService service = new ExamenService();
@@ -49,6 +51,17 @@ public class ExamenController {
         colDuree.setCellValueFactory(data ->
                 new javafx.beans.property.SimpleIntegerProperty(data.getValue().getDuree()).asObject());
 
+        colCours.setCellValueFactory(data ->
+                new javafx.beans.property.SimpleStringProperty(
+                        "Cours #" + data.getValue().getCoursId()
+                )
+        );
+
+        colEnseignant.setCellValueFactory(data ->
+                new javafx.beans.property.SimpleStringProperty(
+                        "Ens #" + data.getValue().getEnseignantId()
+                )
+        );
         loadData();
         addButtons();
     }
@@ -111,4 +124,6 @@ public class ExamenController {
             e.printStackTrace();
         }
     }
+
+
 }

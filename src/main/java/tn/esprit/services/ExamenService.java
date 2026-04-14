@@ -14,7 +14,7 @@ public class ExamenService implements IService<Examen> {
     // ================= CREATE =================
     @Override
     public void create(Examen e) {
-        String sql = "INSERT INTO examen (titre, contenu, type, date_examen, duree) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO examen (titre, contenu, type, date_examen, duree, cours_id, enseignant_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement ps = cnx.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -23,13 +23,14 @@ public class ExamenService implements IService<Examen> {
             ps.setString(3, e.getType());
             ps.setDate(4, Date.valueOf(e.getDateExamen()));
             ps.setInt(5, e.getDuree());
+            ps.setInt(6, e.getCoursId());        // 🔥 important
+            ps.setInt(7, e.getEnseignantId());   // 🔥 important
 
             ps.executeUpdate();
 
-            try (ResultSet rs = ps.getGeneratedKeys()) {
-                if (rs.next()) {
-                    e.setId(rs.getInt(1));
-                }
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                e.setId(rs.getInt(1));
             }
 
             System.out.println("✔ Examen ajouté");
@@ -50,15 +51,17 @@ public class ExamenService implements IService<Examen> {
 
             while (rs.next()) {
 
-                Examen e = new Examen(
-                        rs.getString("titre"),
-                        rs.getString("contenu"),
-                        rs.getString("type"),
-                        rs.getDate("date_examen").toLocalDate(),
-                        rs.getInt("duree")
-                );
+                Examen e = new Examen();
 
                 e.setId(rs.getInt("id"));
+                e.setTitre(rs.getString("titre"));
+                e.setContenu(rs.getString("contenu"));
+                e.setType(rs.getString("type"));
+                e.setDateExamen(rs.getDate("date_examen").toLocalDate());
+                e.setDuree(rs.getInt("duree"));
+                e.setCoursId(rs.getInt("cours_id"));
+                e.setEnseignantId(rs.getInt("enseignant_id"));
+
                 list.add(e);
             }
 
@@ -68,11 +71,10 @@ public class ExamenService implements IService<Examen> {
 
         return list;
     }
-
     // ================= UPDATE =================
     @Override
     public void update(Examen e) {
-        String sql = "UPDATE examen SET titre=?, contenu=?, type=?, date_examen=?, duree=? WHERE id=?";
+        String sql = "UPDATE examen SET titre=?, contenu=?, type=?, date_examen=?, duree=?, cours_id=?, enseignant_id=? WHERE id=?";
 
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
 
@@ -81,7 +83,9 @@ public class ExamenService implements IService<Examen> {
             ps.setString(3, e.getType());
             ps.setDate(4, Date.valueOf(e.getDateExamen()));
             ps.setInt(5, e.getDuree());
-            ps.setInt(6, e.getId());
+            ps.setInt(6, e.getCoursId());        // 🔥 ajout
+            ps.setInt(7, e.getEnseignantId());   // 🔥 ajout
+            ps.setInt(8, e.getId());
 
             ps.executeUpdate();
 
