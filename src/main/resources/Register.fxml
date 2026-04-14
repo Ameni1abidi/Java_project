@@ -104,6 +104,7 @@
                            -fx-border-color: transparent;
                            -fx-text-fill: #7E57C2; -fx-font-size: 12px;
                            -fx-cursor: hand; -fx-underline: true;"/>
+            <Button text="⬅ Retour" onAction="#goBack"/>
         </HBox>
     </VBox>
 </VBox>

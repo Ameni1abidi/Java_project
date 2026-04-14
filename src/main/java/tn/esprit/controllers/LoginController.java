@@ -1,5 +1,6 @@
 package tn.esprit.controllers;
 
+import javafx.event.ActionEvent;
 import tn.esprit.entities.User;
 import tn.esprit.services.UserService;
 import javafx.fxml.FXML;
@@ -66,6 +67,20 @@ public class LoginController {
         Parent root = FXMLLoader.load(getClass().getResource("/Register.fxml"));
         Stage stage = (Stage) emailField.getScene().getWindow();
         stage.setScene(new Scene(root));
+    }
+    @FXML
+    private void goBack(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Home.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void showError(String msg) {

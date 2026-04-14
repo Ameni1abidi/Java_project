@@ -183,6 +183,7 @@
             <Label text="·" style="-fx-text-fill: #CE93D8; -fx-font-size: 11px;"/>
             <Label text="Gestion des utilisateurs"
                    style="-fx-text-fill: #CE93D8; -fx-font-size: 11px;"/>
+            <Button text="⬅ Retour" onAction="#goBack"/>
         </HBox>
     </bottom>
 
