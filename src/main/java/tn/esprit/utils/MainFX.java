@@ -1,24 +1,31 @@
 package tn.esprit.utils;
 
+import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import javafx.application.Application;
 
 public class MainFX extends Application {
 
+    @Override
     public void start(Stage stage) throws Exception {
 
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/listeRessources.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/Home.fxml"));
+
+
+        //FXMLLoader loader = new FXMLLoader(getClass().getResource("/listeRessources.fxml"));
         //FXMLLoader loader = new FXMLLoader(getClass().getResource("/CategorieList.fxml"));
 
         //FXMLLoader loader = new FXMLLoader(getClass().getResource("/CoursList.fxml"));
         //FXMLLoader loader = new FXMLLoader(getClass().getResource("/CategorieList.fxml"));
         //FXMLLoader loader = new FXMLLoader(getClass().getResource("/ajouterCours.fxml"));
+
         Scene scene = new Scene(loader.load());
-        stage.setTitle("EduFlex - Ressources");
+
+        stage.setTitle("EDUFLEX");
         stage.setScene(scene);
         stage.show();
+
 
 
         /*FXMLLoader loader1 = new FXMLLoader(getClass().getResource("/forum.fxml"));
@@ -45,9 +52,10 @@ public class MainFX extends Application {
         stage.setScene(scene);
         stage.show();*/
 
+
     }
 
     public static void main(String[] args) {
-        launch();
+        launch(args);
     }
 }
