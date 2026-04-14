@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,6 +43,7 @@ public class UserController {
 
     // ── Filtre + compteur ────────────────────────────────────────────────────
     @FXML private ComboBox<String> filterRoleCombo;
+    @FXML private ComboBox<String> sortCombo;
     @FXML private Label            countLabel;
     @FXML private Label            totalUsersLabel;
     @FXML private Label            totalAdminsLabel;
@@ -74,6 +76,17 @@ public class UserController {
         filterRoleCombo.setValue("Tous");
         filterRoleCombo.setOnAction(e -> applyFilter());
 
+        // ComboBox tri
+        sortCombo.getItems().addAll(
+                "Nom A-Z",
+                "Nom Z-A",
+                "Role A-Z",
+                "Plus recents (ID)",
+                "Plus anciens (ID)"
+        );
+        sortCombo.setValue("Nom A-Z");
+        sortCombo.setOnAction(e -> applySorting());
+
         loadUsers();
         table.setOnMouseClicked(e -> selectUser());
     }
@@ -85,9 +98,9 @@ public class UserController {
             allUsers = FXCollections.observableArrayList(userService.getAllUsers());
             table.setItems(allUsers);
             filterRoleCombo.setValue("Tous");
+            if (sortCombo != null) sortCombo.setValue("Nom A-Z");
             if (searchField != null) searchField.clear();
-            updateCount(allUsers.size());
-            updateStatistics(allUsers);
+            applySearchFilterSort();
         } catch (SQLException e) {
             e.printStackTrace();
             showAlert("Erreur", "Impossible de charger les utilisateurs : " + e.getMessage());
@@ -97,24 +110,18 @@ public class UserController {
     // ── Recherche par nom ────────────────────────────────────────────────────
     @FXML
     public void handleSearch() {
-        String keyword = searchField.getText().trim().toLowerCase();
-        String roleFilter = filterRoleCombo.getValue();
-
-        List<User> filtered = allUsers.stream()
-                .filter(u -> keyword.isEmpty() || u.getNom().toLowerCase().contains(keyword))
-                .filter(u -> roleFilter == null || roleFilter.equals("Tous")
-                        || u.getRole().name().equals(roleFilter))
-                .collect(Collectors.toList());
-
-        table.setItems(FXCollections.observableArrayList(filtered));
-        updateCount(filtered.size());
-        updateStatistics(filtered);
+        applySearchFilterSort();
     }
 
     // ── Filtrage par rôle ────────────────────────────────────────────────────
     @FXML
     public void applyFilter() {
-        handleSearch(); // réutilise la logique de recherche combinée
+        applySearchFilterSort();
+    }
+
+    @FXML
+    public void applySorting() {
+        applySearchFilterSort();
     }
 
     // ── Ajouter user ─────────────────────────────────────────────────────────
@@ -256,6 +263,31 @@ public class UserController {
     private void updateCount(int count) {
         if (countLabel != null)
             countLabel.setText(count + " utilisateur(s)");
+    }
+
+    private void applySearchFilterSort() {
+        String keyword = searchField != null ? searchField.getText().trim().toLowerCase() : "";
+        String roleFilter = filterRoleCombo != null ? filterRoleCombo.getValue() : "Tous";
+        String sortMode = sortCombo != null ? sortCombo.getValue() : "Nom A-Z";
+
+        Comparator<User> comparator = switch (sortMode) {
+            case "Nom Z-A" -> Comparator.comparing(User::getNom, String.CASE_INSENSITIVE_ORDER).reversed();
+            case "Role A-Z" -> Comparator.comparing(u -> u.getRole().name(), String.CASE_INSENSITIVE_ORDER);
+            case "Plus recents (ID)" -> Comparator.comparingInt(User::getId).reversed();
+            case "Plus anciens (ID)" -> Comparator.comparingInt(User::getId);
+            default -> Comparator.comparing(User::getNom, String.CASE_INSENSITIVE_ORDER);
+        };
+
+        List<User> processed = allUsers.stream()
+                .filter(u -> keyword.isEmpty() || u.getNom().toLowerCase().contains(keyword))
+                .filter(u -> roleFilter == null || roleFilter.equals("Tous")
+                        || u.getRole().name().equals(roleFilter))
+                .sorted(comparator)
+                .collect(Collectors.toList());
+
+        table.setItems(FXCollections.observableArrayList(processed));
+        updateCount(processed.size());
+        updateStatistics(processed);
     }
 
     private void updateStatistics(List<User> users) {

@@ -144,6 +144,14 @@
                               onAction="#applyFilter"
                               style="-fx-font-size: 13px;"/>
 
+                    <Label text="↕  Tri :"
+                           style="-fx-font-weight: bold; -fx-text-fill: #7E57C2;
+                                  -fx-font-size: 13px;"/>
+
+                    <ComboBox fx:id="sortCombo" prefWidth="170"
+                              onAction="#applySorting"
+                              style="-fx-font-size: 13px;"/>
+
                     <Button text="↺  Réinitialiser" onAction="#loadUsers"
                             style="-fx-background-color: #E8F5E9; -fx-text-fill: #388E3C;
                                    -fx-font-size: 12px; -fx-font-weight: bold;
