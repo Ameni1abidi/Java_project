@@ -1,11 +1,15 @@
 package tn.esprit.controllers;
 
-import javafx.fxml.*;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.layout.*;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import tn.esprit.entities.Cours;
 import tn.esprit.services.CoursService;
@@ -30,8 +34,39 @@ public class CoursList {
         List<Cours> list = service.getAll();
 
         for (Cours c : list) {
-            VBox card = createCard(c);
-            coursContainer.getChildren().add(card);
+            coursContainer.getChildren().add(createCard(c));
+        }
+    }
+    @FXML
+    private TextField searchField;
+    @FXML
+    void searchCours() {
+
+        String keyword = searchField.getText().toLowerCase();
+
+        coursContainer.getChildren().clear();
+
+        List<Cours> list = service.getAll();
+
+        for (Cours c : list) {
+
+            if (c.getTitre().toLowerCase().contains(keyword)) {
+                coursContainer.getChildren().add(createCard(c));
+            }
+        }
+    }
+    @FXML
+    void goToAdd() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/CoursForm.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = (Stage) coursContainer.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -44,51 +79,41 @@ public class CoursList {
             -fx-background-radius:15;
             -fx-effect:dropshadow(gaussian,rgba(0,0,0,0.1),10,0,0,5);
         """);
-        card.setPrefWidth(250);
 
         Label titre = new Label(c.getTitre());
         titre.setStyle("-fx-font-size:16px; -fx-font-weight:bold;");
 
         Label desc = new Label(c.getDescription());
-        desc.setStyle("-fx-text-fill:#555;");
         desc.setWrapText(true);
 
         Label date = new Label("Créé le: " + c.getDateCreation());
-        date.setStyle("-fx-font-size:11px; -fx-text-fill:#999;");
 
-        // 🔘 Buttons
         HBox actions = new HBox(10);
 
-        Button edit = new Button("Modifier");
-        edit.setStyle("-fx-border-color:#007bff; -fx-text-fill:#007bff;");
-        edit.setOnAction(e -> openForm(c));
+        Button chapitres = new Button("Chapitres");
+        chapitres.setStyle("-fx-border-color:#28a745; -fx-text-fill:#28a745;");
+        chapitres.setOnAction(e -> openChapitres(c));
 
         Button delete = new Button("Supprimer");
-        delete.setStyle("-fx-border-color:#dc3545; -fx-text-fill:#dc3545;");
         delete.setOnAction(e -> {
             service.supprimer(c.getId());
             loadCours();
         });
 
-        actions.getChildren().addAll(edit, delete);
+        actions.getChildren().addAll(chapitres, delete);
 
         card.getChildren().addAll(titre, desc, date, actions);
 
         return card;
     }
 
-    @FXML
-    void goToAdd() {
-        openForm(null);
-    }
-
-    private void openForm(Cours c) {
+    private void openChapitres(Cours c) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/CoursForm.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ChapitreList.fxml"));
             Parent root = loader.load();
 
-            CoursForm controller = loader.getController();
-            controller.setCours(c);
+            ChapitreList controller = loader.getController();
+            controller.setCoursId(c.getId());
 
             Stage stage = (Stage) coursContainer.getScene().getWindow();
             stage.setScene(new Scene(root));

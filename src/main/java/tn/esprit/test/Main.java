@@ -71,7 +71,7 @@ public class Main {
         chapitreService.ajouter(ch);
 
         // READ Chapitre
-        chapitreService.afficher().forEach(System.out::println);
+
 
         // UPDATE Chapitre
         ch.setId(1);

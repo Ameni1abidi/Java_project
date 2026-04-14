@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<VBox spacing="20"
+      style="-fx-padding:30; -fx-background-color:#f0f2f5;"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="tn.esprit.controllers.ChapitreList">
+
+    <HBox spacing="10">
+        <TextField fx:id="searchField" promptText="Rechercher un chapitre"
+                   HBox.hgrow="ALWAYS"
+                   style="-fx-padding:8; -fx-background-radius:8; -fx-border-radius:8;"/>
+
+        <Button text="🔍 Rechercher"
+                onAction="#searchChapitre"
+                style="-fx-background-color:#007bff; -fx-text-fill:white; -fx-background-radius:8;"/>
+    </HBox>
+
+    <!-- HEADER -->
+    <HBox spacing="20" alignment="CENTER_LEFT">
+
+        <Label fx:id="titreCours"
+               text="Chapitres du cours"
+               style="-fx-font-size:20px; -fx-font-weight:bold;"/>
+
+        <Region HBox.hgrow="ALWAYS"/>
+
+        <Button text="Ajouter Chapitre"
+                onAction="#goToAdd"
+                style="-fx-background-color: linear-gradient(to right,#ff416c,#ff4b2b);
+                       -fx-text-fill:white;
+                       -fx-font-weight:bold;
+                       -fx-background-radius:30;
+                       -fx-padding:10 20;"/>
+    </HBox>
+
+    <!-- LIST -->
+    <ScrollPane fitToWidth="true" style="-fx-background-color:transparent;">
+        <FlowPane fx:id="chapitreContainer"
+                  hgap="20"
+                  vgap="20"
+                  prefWrapLength="900"/>
+    </ScrollPane>
+
+</VBox>
