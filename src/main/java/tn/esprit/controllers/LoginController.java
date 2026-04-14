@@ -23,7 +23,7 @@ public class LoginController {
     @FXML
     private void handleLogin() {
         String email = emailField.getText().trim();
-        String pw    = passwordField.getText();
+        String pw    = passwordField.getText().trim();
 
         if (email.isEmpty() || pw.isEmpty()) {
             showError("Veuillez remplir tous les champs.");
@@ -54,8 +54,17 @@ public class LoginController {
             case ROLE_PARENT   -> "/ParentDashboard.fxml";
             default            -> "/Login.fxml";
         };
+        var resource = getClass().getResource(fxml);
+        if (resource == null) {
+            // Fallback to Home when specific dashboard is not yet created.
+            resource = getClass().getResource("/Home.fxml");
+            showError("Dashboard indisponible pour ce role. Redirection vers l'accueil.");
+            if (resource == null) {
+                throw new IllegalStateException("Home.fxml introuvable");
+            }
+        }
 
-        Parent root = FXMLLoader.load(getClass().getResource(fxml));
+        Parent root = FXMLLoader.load(resource);
         Stage stage = (Stage) emailField.getScene().getWindow();
         stage.setScene(new Scene(root));
         stage.setTitle("EduFlex — " + user.getNom());

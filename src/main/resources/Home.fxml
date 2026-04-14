@@ -27,7 +27,7 @@
             <HBox spacing="15">
                 <Button text="Home" onAction="#goHome"/>
                 <Button text="Services" onAction="#goServices"/>
-                <Button text="Courses" onAction="#goCourses"/>
+                <Button text="Nos Cours" onAction="#goCourses"/>
                 <Button text="Team" onAction="#goTeam"/>
                 <Button text="Events" onAction="#goEvents"/>
                 <Button text="Inscription" onAction="#goInscription"/>
@@ -72,7 +72,8 @@
                            style="-fx-text-fill: white;" />
 
                     <HBox spacing="15">
-                        <Button text="Request Demo"
+                        <Button text="Nos Cours"
+                                onAction="#goCourses"
                                 style="-fx-background-color: white; -fx-text-fill: #6a5acd; -fx-background-radius: 20;" />
 
                         <Button text="▶ What's Scholar?"
