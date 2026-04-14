@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.controllers.HomeController"
+            prefHeight="700" prefWidth="1200"
+            style="-fx-background-color: linear-gradient(to right, #6a5acd, #7b68ee);">
+
+    <VBox>
+
+        <!-- NAVBAR -->
+        <HBox spacing="20" alignment="CENTER_LEFT"
+              style="-fx-padding: 15;">
+
+            <Label text="EDUFLEX"
+                   style="-fx-text-fill: white; -fx-font-size: 22px; -fx-font-weight: bold;" />
+
+            <TextField promptText="Type Something"
+                       prefWidth="200"
+                       style="-fx-background-radius: 20;" />
+
+            <HBox spacing="15">
+                <Button text="Home" style="-fx-background-color: transparent; -fx-text-fill: white;" />
+                <Button text="Services" style="-fx-background-color: transparent; -fx-text-fill: white;" />
+                <Button text="Courses" style="-fx-background-color: transparent; -fx-text-fill: white;" />
+                <Button text="Team" style="-fx-background-color: transparent; -fx-text-fill: white;" />
+                <Button text="Events" style="-fx-background-color: transparent; -fx-text-fill: white;" />
+                <Button text="Inscription" style="-fx-background-color: transparent; -fx-text-fill: white;" />
+                <Button text="Connexion" style="-fx-background-color: transparent; -fx-text-fill: white;" />
+            </HBox>
+
+        </HBox>
+
+        <!-- HERO CENTER -->
+        <StackPane alignment="CENTER" prefHeight="600">
+
+            <StackPane prefWidth="1100" prefHeight="500"
+                       style="-fx-background-radius: 25;">
+
+                <!-- IMAGE -->
+                <ImageView fx:id="imageView"
+                           fitWidth="1020" fitHeight="500"
+                           preserveRatio="false">
+                    <image>
+                        <Image url="@/images/bg.jpg"/>
+                    </image>
+                </ImageView>
+
+                <!-- OVERLAY -->
+                <Pane style="-fx-background-color: rgba(0,0,0,0.5); -fx-background-radius: 25;" />
+
+                <!-- TEXT -->
+                <VBox spacing="20" alignment="CENTER_LEFT"
+                      style="-fx-padding: 60;">
+
+                    <Label text="OUR COURSES"
+                           style="-fx-background-color: #b19cd9; -fx-text-fill: white; -fx-padding: 5 15; -fx-background-radius: 20;" />
+
+                    <Label text="With Scholar Teachers,"
+                           style="-fx-text-fill: white; -fx-font-size: 36px; -fx-font-weight: bold;" />
+
+                    <Label text="Everything Is Easier"
+                           style="-fx-text-fill: white; -fx-font-size: 36px; -fx-font-weight: bold;" />
+
+                    <Label wrapText="true"
+                           text="Scholar is free CSS template designed by TemplateMo for online educational related websites."
+                           style="-fx-text-fill: white;" />
+
+                    <HBox spacing="15">
+                        <Button text="Request Demo"
+                                style="-fx-background-color: white; -fx-text-fill: #6a5acd; -fx-background-radius: 20;" />
+
+                        <Button text="▶ What's Scholar?"
+                                style="-fx-background-color: transparent; -fx-text-fill: white; -fx-border-color: white;" />
+                    </HBox>
+
+                </VBox>
+
+            </StackPane>
+
+        </StackPane>
+
+    </VBox>
+
+</AnchorPane>

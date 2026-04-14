@@ -71,7 +71,7 @@ public class Main {
         chapitreService.ajouter(ch);
 
         // READ Chapitre
-        chapitreService.afficher().forEach(System.out::println);
+
 
         // UPDATE Chapitre
         ch.setId(1);
@@ -142,17 +142,17 @@ public class Main {
 
         // ===== EXAMEN =====
         ExamenService es = new ExamenService();
-        //Examen e = new Examen("Examen BD", "SQL", "Final", LocalDate.now(), 90);
-        //es.create(e);
-        //es.getAll().forEach(System.out::println);
+        Examen e = new Examen("Examen BD", "SQL", "Final", LocalDate.now(), 90);
+        es.create(e);
+        es.getAll().forEach(System.out::println);
         //e.setTitre("Examen Update");
         //es.update(e);
         //es.delete(e.getId());
 
         // ===== EVALUATION =====
         EvaluationService evs = new EvaluationService();
-        //Evaluation ev = new Evaluation(16, "Bien");
-        //evs.create(ev);
+        Evaluation ev = new Evaluation(16, "Bien",1);
+        evs.create(ev);
         evs.getAll().forEach(System.out::println);
         //ev.setNote(19);
         //ev.setAppreciation("Excellent");

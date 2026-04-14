@@ -5,12 +5,14 @@ public class Evaluation {
     private int id;
     private double note;
     private String appreciation;
+    private int examenId;
 
     public Evaluation() {}
 
-    public Evaluation(double note, String appreciation) {
+    public Evaluation(double note, String appreciation, int examenId) {
         this.note = note;
         this.appreciation = appreciation;
+        this.examenId = examenId;
     }
 
     public int getId() { return id; }
@@ -22,6 +24,8 @@ public class Evaluation {
     public String getAppreciation() { return appreciation; }
     public void setAppreciation(String appreciation) { this.appreciation = appreciation; }
 
+    public int getExamenId() { return examenId; }
+    public void setExamenId(int examenId) { this.examenId = examenId; }
     @Override
     public String toString() {
         return "Evaluation{" +

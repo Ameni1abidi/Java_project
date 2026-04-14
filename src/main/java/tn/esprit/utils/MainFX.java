@@ -11,7 +11,7 @@ public class MainFX extends Application {
     public void start(Stage stage) throws Exception {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/GestionUsers.fxml"));
         Scene scene = new Scene(loader.load());
-        stage.setTitle("EduFlex — Connexion");
+        stage.setTitle("EduFlex — User Management");
         stage.setScene(scene);
         stage.show();
     }
