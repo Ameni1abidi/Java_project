@@ -30,8 +30,8 @@ public class MainFX extends Application {
 
 
         //FXMLLoader loader2 = new FXMLLoader(getClass().getResource("/EvaluationView.fxml"));
-        //FXMLLoader loader2 = new FXMLLoader(getClass().getResource("/ExamenView.fxml"));
-        FXMLLoader loader2 = new FXMLLoader(getClass().getResource("/home.fxml"));
+        FXMLLoader loader2 = new FXMLLoader(getClass().getResource("/ExamenView.fxml"));
+        //FXMLLoader loader2 = new FXMLLoader(getClass().getResource("/home.fxml"));
         Scene scene3 = new Scene(loader2.load());
         scene3.getStylesheets().add(getClass().getResource("/style.css").toExternalForm());
         stage.setTitle("EduFlex - Résultats");
