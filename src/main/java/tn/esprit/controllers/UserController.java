@@ -9,11 +9,15 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import tn.esprit.entities.User;
 import tn.esprit.entities.User.Role;
 import tn.esprit.services.UserService;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,6 +43,11 @@ public class UserController {
     // ── Filtre + compteur ────────────────────────────────────────────────────
     @FXML private ComboBox<String> filterRoleCombo;
     @FXML private Label            countLabel;
+    @FXML private Label            totalUsersLabel;
+    @FXML private Label            totalAdminsLabel;
+    @FXML private Label            totalProfsLabel;
+    @FXML private Label            totalEtudiantsLabel;
+    @FXML private Label            totalParentsLabel;
 
     // ── Service + données ────────────────────────────────────────────────────
     private final UserService userService = new UserService();
@@ -78,6 +87,7 @@ public class UserController {
             filterRoleCombo.setValue("Tous");
             if (searchField != null) searchField.clear();
             updateCount(allUsers.size());
+            updateStatistics(allUsers);
         } catch (SQLException e) {
             e.printStackTrace();
             showAlert("Erreur", "Impossible de charger les utilisateurs : " + e.getMessage());
@@ -98,6 +108,7 @@ public class UserController {
 
         table.setItems(FXCollections.observableArrayList(filtered));
         updateCount(filtered.size());
+        updateStatistics(filtered);
     }
 
     // ── Filtrage par rôle ────────────────────────────────────────────────────
@@ -191,6 +202,41 @@ public class UserController {
         passwordField.clear();
         roleAddCombo.setValue("ROLE_ETUDIANT");
     }
+
+    @FXML
+    private void exportVisibleUsers() {
+        List<User> visibleUsers = table.getItems();
+        if (visibleUsers == null || visibleUsers.isEmpty()) {
+            showAlert("Information", "Aucun utilisateur a exporter.");
+            return;
+        }
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Exporter les utilisateurs (CSV)");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("CSV files", "*.csv")
+        );
+        fileChooser.setInitialFileName("utilisateurs_export.csv");
+
+        Stage stage = (Stage) table.getScene().getWindow();
+        File file = fileChooser.showSaveDialog(stage);
+        if (file == null) return;
+
+        try (FileWriter writer = new FileWriter(file)) {
+            writer.write("id,nom,email,role\n");
+            for (User user : visibleUsers) {
+                writer.write(
+                        user.getId() + "," +
+                        csv(user.getNom()) + "," +
+                        csv(user.getEmail()) + "," +
+                        csv(user.getRole().name()) + "\n"
+                );
+            }
+            showAlert("Succes", "Export termine : " + file.getAbsolutePath());
+        } catch (IOException e) {
+            showAlert("Erreur", "Echec export CSV : " + e.getMessage());
+        }
+    }
     @FXML
     private void goBack(ActionEvent event) {
         try {
@@ -210,6 +256,25 @@ public class UserController {
     private void updateCount(int count) {
         if (countLabel != null)
             countLabel.setText(count + " utilisateur(s)");
+    }
+
+    private void updateStatistics(List<User> users) {
+        if (users == null) return;
+        long admins = users.stream().filter(u -> u.getRole() == Role.ROLE_ADMIN).count();
+        long profs = users.stream().filter(u -> u.getRole() == Role.ROLE_PROF).count();
+        long etudiants = users.stream().filter(u -> u.getRole() == Role.ROLE_ETUDIANT).count();
+        long parents = users.stream().filter(u -> u.getRole() == Role.ROLE_PARENT).count();
+
+        if (totalUsersLabel != null) totalUsersLabel.setText(String.valueOf(users.size()));
+        if (totalAdminsLabel != null) totalAdminsLabel.setText(String.valueOf(admins));
+        if (totalProfsLabel != null) totalProfsLabel.setText(String.valueOf(profs));
+        if (totalEtudiantsLabel != null) totalEtudiantsLabel.setText(String.valueOf(etudiants));
+        if (totalParentsLabel != null) totalParentsLabel.setText(String.valueOf(parents));
+    }
+
+    private String csv(String value) {
+        if (value == null) return "\"\"";
+        return "\"" + value.replace("\"", "\"\"") + "\"";
     }
 
     public void showAlert(String title, String message) {

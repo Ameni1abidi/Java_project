@@ -149,6 +149,30 @@
                                    -fx-font-size: 12px; -fx-font-weight: bold;
                                    -fx-padding: 8 14; -fx-background-radius: 8;
                                    -fx-cursor: hand;"/>
+                    <Button text="⬇ Export CSV" onAction="#exportVisibleUsers"
+                            style="-fx-background-color: #E3F2FD; -fx-text-fill: #1565C0;
+                                   -fx-font-size: 12px; -fx-font-weight: bold;
+                                   -fx-padding: 8 14; -fx-background-radius: 8;
+                                   -fx-cursor: hand;"/>
+                </HBox>
+
+                <!-- Statistiques dynamiques -->
+                <HBox spacing="10" alignment="CENTER_LEFT"
+                      style="-fx-background-color: white; -fx-padding: 10 14;
+                             -fx-background-radius: 12;
+                             -fx-effect: dropshadow(gaussian, rgba(156,120,210,0.10), 6, 0, 0, 2);">
+                    <Label text="Statistiques (vue actuelle):"
+                           style="-fx-text-fill: #7E57C2; -fx-font-weight: bold;"/>
+                    <Label text="Total:" style="-fx-text-fill: #6A1B9A;"/>
+                    <Label fx:id="totalUsersLabel" text="0" style="-fx-font-weight: bold;"/>
+                    <Label text="Admin:" style="-fx-text-fill: #6A1B9A;"/>
+                    <Label fx:id="totalAdminsLabel" text="0" style="-fx-font-weight: bold;"/>
+                    <Label text="Prof:" style="-fx-text-fill: #6A1B9A;"/>
+                    <Label fx:id="totalProfsLabel" text="0" style="-fx-font-weight: bold;"/>
+                    <Label text="Etudiant:" style="-fx-text-fill: #6A1B9A;"/>
+                    <Label fx:id="totalEtudiantsLabel" text="0" style="-fx-font-weight: bold;"/>
+                    <Label text="Parent:" style="-fx-text-fill: #6A1B9A;"/>
+                    <Label fx:id="totalParentsLabel" text="0" style="-fx-font-weight: bold;"/>
                 </HBox>
 
                 <!-- TableView -->
