@@ -9,6 +9,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
@@ -38,6 +39,9 @@ public class ResourceListController {
 
     @FXML
     private TableColumn<resources, Void> actionColumn;
+
+    @FXML
+    private TextField searchField;
 
     @FXML
     private Button createButton;
@@ -99,6 +103,20 @@ public class ResourceListController {
     private void loadResources() {
         List<resources> resources = resourceService.getAll();
         resourceTable.setItems(FXCollections.observableArrayList(resources));
+    }
+
+    private void loadSearchResults(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            loadResources();
+            return;
+        }
+        List<resources> resources = resourceService.search(keyword.trim());
+        resourceTable.setItems(FXCollections.observableArrayList(resources));
+    }
+
+    @FXML
+    private void onSearchClick() {
+        loadSearchResults(searchField.getText());
     }
 
     @FXML
