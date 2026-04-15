@@ -54,19 +54,21 @@ public class CoursList {
         Label date = new Label("Créé le: " + c.getDateCreation());
 
         // BUTTONS
-        Button btnChapitre = new Button("liste Chapitres");
-        btnChapitre.setStyle("-fx-border-color:#28a745; -fx-text-fill:#28a745;");
+
+        Button btnChapitre = new Button("Liste Chapitres");
+        btnChapitre.setStyle("-fx-border-color:#007bff; -fx-text-fill:#007bff;");
         btnChapitre.setOnAction(e -> goToChapitres(c));
 
         Button btnModifier = new Button("Modifier");
-        btnModifier.setStyle("-fx-border-color:#007bff; -fx-text-fill:#007bff;");
+        btnModifier.setStyle("-fx-border-color:#28a745; -fx-text-fill:#28a745;");
         btnModifier.setOnAction(e -> modifierCours(c));
 
         Button btnDelete = new Button("Supprimer");
         btnDelete.setStyle("-fx-border-color:#dc3545; -fx-text-fill:#dc3545;");
         btnDelete.setOnAction(e -> deleteCours(c));
 
-        HBox actions = new HBox(10, btnModifier, btnChapitre, btnDelete);
+// ORDER: Chapitre → Modifier → Delete
+        HBox actions = new HBox(10, btnChapitre, btnModifier, btnDelete);
 
         card.getChildren().addAll(titre, desc, date, actions);
 
