@@ -4,6 +4,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.FlowPane;
@@ -13,6 +14,8 @@ import javafx.stage.Stage;
 import tn.esprit.entities.Chapitre;
 import tn.esprit.services.ChapitreService;
 
+import java.awt.*;
+import java.io.File;
 import java.util.List;
 
 public class ChapitreList {
@@ -38,7 +41,7 @@ public class ChapitreList {
         loadChapitres();
 
         if (coursTitle != null) {
-            coursTitle.setText("Chapitres du cours ID: " + id);
+            coursTitle.setText("Chapitres du cours: " + id);
         }
     }
 
@@ -99,20 +102,44 @@ public class ChapitreList {
             contenu.setWrapText(true);
         }
 
-        Label file = new Label();
+        Hyperlink fileLink = new Hyperlink();
+
         if (chapitre.getContenuFichier() != null && !chapitre.getContenuFichier().isEmpty()) {
-            file.setText("Fichier : " + chapitre.getContenuFichier());
-            file.setStyle("-fx-text-fill:blue;");
+
+            fileLink.setText("Ouvrir fichier");
+
+            fileLink.setOnAction(e -> {
+                try {
+                    File file = new File(chapitre.getContenuFichier());
+
+                    if (file.exists()) {
+                        Desktop.getDesktop().open(file);
+                    } else {
+                        System.out.println("Fichier introuvable !");
+                    }
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            });
+
+        } else {
+            fileLink.setText("Aucun fichier");
+            fileLink.setDisable(true);
         }
 
         Label info = new Label(
                 "Ordre: " + chapitre.getOrdre() +
                         " | Durée: " + chapitre.getDureeEstimee() + " min"
         );
+        Label durée = new Label(
+                        " Durée: " + chapitre.getDureeEstimee() + " min"
+        );
         info.setStyle("-fx-text-fill:#888; -fx-font-size:11px;");
 
         javafx.scene.control.Button edit = new javafx.scene.control.Button("Modifier");
         edit.setStyle("-fx-border-color:#007bff; -fx-text-fill:#007bff;");
+        edit.setOnAction(e -> openForm(chapitre));
 
         javafx.scene.control.Button delete = new javafx.scene.control.Button("Supprimer");
         delete.setStyle("-fx-border-color:#dc3545; -fx-text-fill:#dc3545;");
@@ -123,7 +150,7 @@ public class ChapitreList {
 
         HBox actions = new HBox(10, edit, delete);
 
-        card.getChildren().addAll(titre, type, contenu, file, info, actions);
+        card.getChildren().addAll(titre, type, contenu, fileLink, info, actions);
 
         return card;
     }

@@ -5,9 +5,12 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import tn.esprit.entities.Chapitre;
 import tn.esprit.services.ChapitreService;
+
+import java.io.File;
 
 public class ChapitreForm {
 
@@ -187,6 +190,43 @@ public class ChapitreForm {
 
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+    @FXML
+    void chooseFile() {
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Choisir un fichier");
+
+        String type = typeContenuField.getValue();
+
+        // filters كيما Symfony
+        if ("PDF".equalsIgnoreCase(type)) {
+            fileChooser.getExtensionFilters().add(
+                    new FileChooser.ExtensionFilter("PDF Files", "*.pdf")
+            );
+        }
+        else if ("IMAGE".equalsIgnoreCase(type)) {
+            fileChooser.getExtensionFilters().add(
+                    new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg")
+            );
+        }
+        else if ("VIDEO".equalsIgnoreCase(type)) {
+            fileChooser.getExtensionFilters().add(
+                    new FileChooser.ExtensionFilter("Videos", "*.mp4", "*.avi")
+            );
+        }
+        else {
+            fileChooser.getExtensionFilters().add(
+                    new FileChooser.ExtensionFilter("All Files", "*.*")
+            );
+        }
+
+        Stage stage = (Stage) titreField.getScene().getWindow();
+        File file = fileChooser.showOpenDialog(stage);
+
+        if (file != null) {
+            contenuFichierField.setText(file.getAbsolutePath());
         }
     }
 
