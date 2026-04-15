@@ -76,7 +76,7 @@
             <!-- ELEVE -->
             <VBox spacing="5">
                 <Label text="Élève"/>
-                <ComboBox fx:id="cbEleve" promptText="Choisir un élève"/>
+                <ComboBox fx:id="cbUser" promptText="Choisir un élève"/>
             </VBox>
 
             <!-- EXAMEN -->
