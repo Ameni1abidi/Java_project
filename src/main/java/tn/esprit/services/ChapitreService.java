@@ -13,9 +13,10 @@ public class ChapitreService {
 
     // CREATE
     public void ajouter(Chapitre c) {
+
         String sql = "INSERT INTO chapitre (titre, ordre, type_contenu, contenu_texte, contenu_fichier, duree_estimee, resume, cours_id) VALUES (?,?,?,?,?,?,?,?)";
 
-        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+        try (PreparedStatement ps = cnx.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, c.getTitre());
             ps.setInt(2, c.getOrdre());
@@ -24,9 +25,15 @@ public class ChapitreService {
             ps.setString(5, c.getContenuFichier());
             ps.setInt(6, c.getDureeEstimee());
             ps.setString(7, c.getResume());
-            ps.setInt(8, c.getCoursId()); // ✅ FIX relation object
+            ps.setInt(8, c.getCoursId());
 
             ps.executeUpdate();
+
+            // ✅ récupérer ID généré
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                c.setId(rs.getInt(1));
+            }
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -105,6 +112,20 @@ public class ChapitreService {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+    public int getLastInsertedId() {
+        try {
+            String sql = "SELECT LAST_INSERT_ID()";
+            Statement st = cnx.createStatement();
+            ResultSet rs = st.executeQuery(sql);
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 }
 

@@ -12,10 +12,13 @@ public class CoursService {
     Connection cnx = MyDatabase.getInstance().getConnection();
 
     // CREATE
-    public void ajouter(Cours c) {
+    public int ajouter(Cours c) {
+        int id = -1;
+
         try {
             String sql = "INSERT INTO cours (titre, description, niveau, date_creation, titre_traduit, description_traduit, badge) VALUES (?,?,?,?,?,?,?)";
-            PreparedStatement ps = cnx.prepareStatement(sql);
+
+            PreparedStatement ps = cnx.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
             ps.setString(1, c.getTitre());
             ps.setString(2, c.getDescription());
@@ -27,9 +30,17 @@ public class CoursService {
 
             ps.executeUpdate();
 
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                id = rs.getInt(1);
+                c.setId(id);
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        return id;
     }
 
     // READ ✅
@@ -95,6 +106,22 @@ public class CoursService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    public int getLastInsertedId() {
+        try {
+            String sql = "SELECT MAX(id) FROM cours";
+            Statement st = cnx.createStatement();
+            ResultSet rs = st.executeQuery(sql);
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0;
     }
 }
 

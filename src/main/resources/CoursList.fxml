@@ -14,12 +14,9 @@
                    style="-fx-padding:8; -fx-background-radius:8; -fx-border-radius:8;"/>
         <Button text="🔍 Rechercher"
                 onAction="#searchCours"
-                style="-fx-background-color:#007bff; -fx-text-fill:white; -fx-background-radius:8;"/>
-    </HBox>
-    <FlowPane fx:id="coursContainer"
-              hgap="20" vgap="20"
-              prefWrapLength="800"/>
+                style="-fx-background-color:#007bff; -fx-text-fill:white; -fx-background-radius:6;"/>
 
+    </HBox>
     <!-- ➕ ADD BUTTON -->
     <HBox alignment="CENTER_RIGHT">
         <Button text="Ajouter Cours"
@@ -30,6 +27,9 @@
                        -fx-background-radius:50;
                        -fx-padding:10 20;"/>
     </HBox>
+    <FlowPane fx:id="coursContainer"
+              hgap="20" vgap="20"
+              prefWrapLength="800"/>
 
 
 </VBox>

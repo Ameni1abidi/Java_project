@@ -1,9 +1,15 @@
 package tn.esprit.controllers;
 
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
 import tn.esprit.entities.Evaluation;
 import tn.esprit.services.EvaluationService;
 
@@ -15,39 +21,45 @@ public class EvaluationController {
     @FXML private TableColumn<Evaluation, Double> colNote;
     @FXML private TableColumn<Evaluation, String> colAppreciation;
     @FXML private TableColumn<Evaluation, Integer> colExamen;
-
-    @FXML private TextField txtNote;
-    @FXML private TextField txtAppreciation;
-    @FXML private TextField txtExamenId;
+    @FXML private TableColumn<Evaluation, Integer> colEleve;
+    @FXML private TableColumn<Evaluation, Void> colActions;
 
     private ObservableList<Evaluation> list;
-    private EvaluationService service = new EvaluationService();
+    private final EvaluationService service = new EvaluationService();
 
     @FXML
     public void initialize() {
-
         colId.setCellValueFactory(data ->
-                new javafx.beans.property.SimpleIntegerProperty(data.getValue().getId()).asObject());
+                new SimpleIntegerProperty(data.getValue().getId()).asObject());
 
         colNote.setCellValueFactory(data ->
-                new javafx.beans.property.SimpleDoubleProperty(data.getValue().getNote()).asObject());
+                new SimpleDoubleProperty(data.getValue().getNote()).asObject());
 
         colAppreciation.setCellValueFactory(data ->
-                new javafx.beans.property.SimpleStringProperty(data.getValue().getAppreciation()));
+                new SimpleStringProperty(data.getValue().getAppreciation()));
 
         colExamen.setCellValueFactory(data ->
-                new javafx.beans.property.SimpleIntegerProperty(data.getValue().getExamenId()).asObject());
+                new SimpleIntegerProperty(data.getValue().getExamenId()).asObject());
 
-        loadData();
+        colEleve.setCellValueFactory(data ->
+                new SimpleIntegerProperty(data.getValue().getEleveId()).asObject());
 
-        // select row
-        tableEvaluations.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null) {
-                txtNote.setText(String.valueOf(newVal.getNote()));
-                txtAppreciation.setText(newVal.getAppreciation());
-                txtExamenId.setText(String.valueOf(newVal.getExamenId()));
+        tableEvaluations.setRowFactory(tv -> new TableRow<Evaluation>() {
+            @Override
+            protected void updateItem(Evaluation item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setStyle("");
+                } else {
+                    setStyle(getIndex() % 2 == 0
+                            ? "-fx-background-color: white;"
+                            : "-fx-background-color: #fafafa;");
+                }
             }
         });
+
+        loadData();
+        addButtons();
     }
 
     private void loadData() {
@@ -55,64 +67,72 @@ public class EvaluationController {
         tableEvaluations.setItems(list);
     }
 
-    // ===== ADD =====
     @FXML
-    void handleAdd() {
+    void goToCreateEvaluation() {
         try {
-            Evaluation e = new Evaluation();
-            e.setNote(Double.parseDouble(txtNote.getText()));
-            e.setAppreciation(txtAppreciation.getText());
-            e.setExamenId(Integer.parseInt(txtExamenId.getText()));
-
-            service.create(e);
-            loadData();
-            clearFields();
-
-        } catch (Exception ex) {
-            showAlert("Erreur", "Vérifie les champs !");
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/CreateEvaluation.fxml"));
+            Parent root = loader.load();
+            tableEvaluations.getScene().setRoot(root);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-    // ===== UPDATE =====
-    @FXML
-    void handleUpdate() {
-        Evaluation selected = tableEvaluations.getSelectionModel().getSelectedItem();
+    private void addButtons() {
+        if (colActions == null) {
+            return;
+        }
 
-        if (selected != null) {
-            try {
-                selected.setNote(Double.parseDouble(txtNote.getText()));
-                selected.setAppreciation(txtAppreciation.getText());
-                selected.setExamenId(Integer.parseInt(txtExamenId.getText()));
+        colActions.setCellFactory(param -> new TableCell<Evaluation, Void>() {
 
-                service.update(selected);
-                loadData();
+            private final Button btnVoir = new Button("Voir");
+            private final Button btnSupprimer = new Button("Supprimer");
+            private final HBox pane = new HBox(8, btnVoir, btnSupprimer);
 
-            } catch (Exception e) {
-                showAlert("Erreur", "Erreur modification !");
+            {
+                pane.setAlignment(javafx.geometry.Pos.CENTER);
+
+                btnVoir.setStyle(
+                        "-fx-background-color: white; -fx-text-fill: #555;" +
+                                "-fx-border-color: #ccc; -fx-border-radius: 6;" +
+                                "-fx-background-radius: 6; -fx-padding: 4 12;");
+
+                btnSupprimer.setStyle(
+                        "-fx-background-color: #e53935; -fx-text-fill: white;" +
+                                "-fx-background-radius: 6; -fx-padding: 4 12;");
+
+                btnVoir.setOnAction(event -> {
+                    Evaluation e = getTableView().getItems().get(getIndex());
+                    showAlert("Évaluation", e.toString());
+                });
+
+                btnSupprimer.setOnAction(event -> {
+                    Evaluation e = getTableView().getItems().get(getIndex());
+
+                    Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+                    confirm.setTitle("Confirmation");
+                    confirm.setHeaderText(null);
+                    confirm.setContentText("Supprimer l'évaluation #" + e.getId() + " ?");
+
+                    if (confirm.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+                        service.delete(e.getId());
+                        loadData();
+                    }
+                });
             }
-        }
-    }
 
-    // ===== DELETE =====
-    @FXML
-    void handleDelete() {
-        Evaluation selected = tableEvaluations.getSelectionModel().getSelectedItem();
-
-        if (selected != null) {
-            service.delete(selected.getId());
-            loadData();
-        }
-    }
-
-    private void clearFields() {
-        txtNote.clear();
-        txtAppreciation.clear();
-        txtExamenId.clear();
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : pane);
+            }
+        });
     }
 
     private void showAlert(String title, String msg) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
+        alert.setHeaderText(null);
         alert.setContentText(msg);
         alert.show();
     }
