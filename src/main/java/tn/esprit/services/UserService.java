@@ -38,7 +38,9 @@ public class UserService {
     //  LOGIN
     // ─────────────────────────────────────────────────────────────────────────
     public Optional<User> login(String email, String password) throws SQLException {
-        String sql = "SELECT * FROM utilisateur WHERE email = ? AND password = ?";
+        String sql = "SELECT * FROM utilisateur " +
+                "WHERE LOWER(TRIM(email)) = LOWER(TRIM(?)) " +
+                "AND TRIM(password) = TRIM(?)";
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
             ps.setString(1, email);
             ps.setString(2, password);
