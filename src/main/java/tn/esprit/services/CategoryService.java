@@ -13,6 +13,16 @@ import java.util.List;
 public class CategoryService {
     private final Connection connection = MyDatabase.getInstance().getConnection();
 
+    private boolean hasIdColumn() {
+        String sql = "SHOW COLUMNS FROM categorie LIKE 'id'";
+        try (PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            return rs.next();
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur lors de la verification de la colonne id", e);
+        }
+    }
+
     public void add(categorie categorie) {
         String sql = "INSERT INTO categorie(nom) VALUES(?)";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -24,30 +34,37 @@ public class CategoryService {
     }
 
     public List<categorie> getAll() {
-        String sql = "SELECT nom FROM categorie";
         List<categorie> categories = new ArrayList<>();
+        boolean withId = hasIdColumn();
+        String sql = withId ? "SELECT id, nom FROM categorie" : "SELECT nom FROM categorie";
 
         try (PreparedStatement ps = connection.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
+            int fallbackId = 1;
             while (rs.next()) {
-                categories.add(new categorie(rs.getString("nom")));
+                Integer id = withId ? rs.getInt("id") : fallbackId++;
+                String nom = rs.getString("nom");
+                if (nom != null && !nom.isBlank()) {
+                    categories.add(new categorie(id, nom));
+                }
             }
         } catch (SQLException e) {
             throw new RuntimeException("Erreur lors de la recuperation des categories", e);
         }
-
         return categories;
     }
 
     public categorie getByNom(String nom) {
-        String sql = "SELECT nom FROM categorie WHERE nom = ?";
+        boolean withId = hasIdColumn();
+        String sql = withId ? "SELECT id, nom FROM categorie WHERE nom = ?" : "SELECT nom FROM categorie WHERE nom = ?";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, nom);
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return new categorie(rs.getString("nom"));
+                    Integer id = withId ? rs.getInt("id") : null;
+                    return new categorie(id, rs.getString("nom"));
                 }
             }
         } catch (SQLException e) {
@@ -92,7 +109,7 @@ public class CategoryService {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Erreur lors de la vérification du nom", e);
+            throw new RuntimeException("Erreur lors de la verification du nom", e);
         }
 
         return false;
