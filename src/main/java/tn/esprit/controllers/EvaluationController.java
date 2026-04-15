@@ -1,15 +1,15 @@
 package tn.esprit.controllers;
 
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
+import javafx.stage.Stage;
 import tn.esprit.entities.Evaluation;
 import tn.esprit.services.EvaluationService;
 
@@ -21,45 +21,39 @@ public class EvaluationController {
     @FXML private TableColumn<Evaluation, Double> colNote;
     @FXML private TableColumn<Evaluation, String> colAppreciation;
     @FXML private TableColumn<Evaluation, Integer> colExamen;
-    @FXML private TableColumn<Evaluation, Integer> colEleve;
-    @FXML private TableColumn<Evaluation, Void> colActions;
+
+    @FXML private TextField txtNote;
+    @FXML private TextField txtAppreciation;
+    @FXML private TextField txtExamenId;
 
     private ObservableList<Evaluation> list;
-    private final EvaluationService service = new EvaluationService();
+    private EvaluationService service = new EvaluationService();
 
     @FXML
     public void initialize() {
+
         colId.setCellValueFactory(data ->
-                new SimpleIntegerProperty(data.getValue().getId()).asObject());
+                new javafx.beans.property.SimpleIntegerProperty(data.getValue().getId()).asObject());
 
         colNote.setCellValueFactory(data ->
-                new SimpleDoubleProperty(data.getValue().getNote()).asObject());
+                new javafx.beans.property.SimpleDoubleProperty(data.getValue().getNote()).asObject());
 
         colAppreciation.setCellValueFactory(data ->
-                new SimpleStringProperty(data.getValue().getAppreciation()));
+                new javafx.beans.property.SimpleStringProperty(data.getValue().getAppreciation()));
 
         colExamen.setCellValueFactory(data ->
-                new SimpleIntegerProperty(data.getValue().getExamenId()).asObject());
-
-        colEleve.setCellValueFactory(data ->
-                new SimpleIntegerProperty(data.getValue().getEleveId()).asObject());
-
-        tableEvaluations.setRowFactory(tv -> new TableRow<Evaluation>() {
-            @Override
-            protected void updateItem(Evaluation item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setStyle("");
-                } else {
-                    setStyle(getIndex() % 2 == 0
-                            ? "-fx-background-color: white;"
-                            : "-fx-background-color: #fafafa;");
-                }
-            }
-        });
+                new javafx.beans.property.SimpleIntegerProperty(data.getValue().getExamenId()).asObject());
 
         loadData();
-        addButtons();
+
+        // select row
+        tableEvaluations.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                txtNote.setText(String.valueOf(newVal.getNote()));
+                txtAppreciation.setText(newVal.getAppreciation());
+                txtExamenId.setText(String.valueOf(newVal.getExamenId()));
+            }
+        });
     }
 
     private void loadData() {
@@ -67,73 +61,120 @@ public class EvaluationController {
         tableEvaluations.setItems(list);
     }
 
+    // ===== ADD =====
     @FXML
-    void goToCreateEvaluation() {
+    void handleAdd() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/CreateEvaluation.fxml"));
-            Parent root = loader.load();
-            tableEvaluations.getScene().setRoot(root);
-        } catch (Exception e) {
-            e.printStackTrace();
+            Evaluation e = new Evaluation();
+            e.setNote(Double.parseDouble(txtNote.getText()));
+            e.setAppreciation(txtAppreciation.getText());
+            e.setExamenId(Integer.parseInt(txtExamenId.getText()));
+
+            service.create(e);
+            loadData();
+            clearFields();
+
+        } catch (Exception ex) {
+            showAlert("Erreur", "Vérifie les champs !");
         }
     }
 
-    private void addButtons() {
-        if (colActions == null) {
-            return;
+    // ===== UPDATE =====
+    @FXML
+    void handleUpdate() {
+        Evaluation selected = tableEvaluations.getSelectionModel().getSelectedItem();
+
+        if (selected != null) {
+            try {
+                selected.setNote(Double.parseDouble(txtNote.getText()));
+                selected.setAppreciation(txtAppreciation.getText());
+                selected.setExamenId(Integer.parseInt(txtExamenId.getText()));
+
+                service.update(selected);
+                loadData();
+
+            } catch (Exception e) {
+                showAlert("Erreur", "Erreur modification !");
+            }
         }
+    }
 
-        colActions.setCellFactory(param -> new TableCell<Evaluation, Void>() {
+    // ===== DELETE =====
+    @FXML
+    void handleDelete() {
+        Evaluation selected = tableEvaluations.getSelectionModel().getSelectedItem();
 
-            private final Button btnVoir = new Button("Voir");
-            private final Button btnSupprimer = new Button("Supprimer");
-            private final HBox pane = new HBox(8, btnVoir, btnSupprimer);
+        if (selected != null) {
+            service.delete(selected.getId());
+            loadData();
+        }
+    }
 
-            {
-                pane.setAlignment(javafx.geometry.Pos.CENTER);
-
-                btnVoir.setStyle(
-                        "-fx-background-color: white; -fx-text-fill: #555;" +
-                                "-fx-border-color: #ccc; -fx-border-radius: 6;" +
-                                "-fx-background-radius: 6; -fx-padding: 4 12;");
-
-                btnSupprimer.setStyle(
-                        "-fx-background-color: #e53935; -fx-text-fill: white;" +
-                                "-fx-background-radius: 6; -fx-padding: 4 12;");
-
-                btnVoir.setOnAction(event -> {
-                    Evaluation e = getTableView().getItems().get(getIndex());
-                    showAlert("Évaluation", e.toString());
-                });
-
-                btnSupprimer.setOnAction(event -> {
-                    Evaluation e = getTableView().getItems().get(getIndex());
-
-                    Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-                    confirm.setTitle("Confirmation");
-                    confirm.setHeaderText(null);
-                    confirm.setContentText("Supprimer l'évaluation #" + e.getId() + " ?");
-
-                    if (confirm.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
-                        service.delete(e.getId());
-                        loadData();
-                    }
-                });
-            }
-
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                setGraphic(empty ? null : pane);
-            }
-        });
+    private void clearFields() {
+        txtNote.clear();
+        txtAppreciation.clear();
+        txtExamenId.clear();
     }
 
     private void showAlert(String title, String msg) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
-        alert.setHeaderText(null);
         alert.setContentText(msg);
         alert.show();
+    }
+
+    @FXML
+    private void goDashboard(ActionEvent event) {
+        loadPage(event, "/ProfDashboard.fxml");
+    }
+
+    @FXML
+    private void goForum(ActionEvent event) {
+        loadPage(event, "/forum.fxml");
+    }
+
+    @FXML
+    private void goCours(ActionEvent event) {
+        loadPage(event, "/CoursList.fxml");
+    }
+
+    @FXML
+    private void goRessources(ActionEvent event) {
+        loadPage(event, "/listeRessources.fxml");
+    }
+
+    @FXML
+    private void goCategories(ActionEvent event) {
+        loadPage(event, "/CategorieList.fxml");
+    }
+
+    @FXML
+    private void goExamens(ActionEvent event) {
+        loadPage(event, "/ExamenView.fxml");
+    }
+
+    @FXML
+    private void goResultats(ActionEvent event) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Resultats");
+        alert.setHeaderText(null);
+        alert.setContentText("La page resultats sera bientot disponible.");
+        alert.showAndWait();
+    }
+
+    @FXML
+    private void goLogout(ActionEvent event) {
+        loadPage(event, "/Login.fxml");
+    }
+
+    private void loadPage(ActionEvent event, String fxmlPath) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
