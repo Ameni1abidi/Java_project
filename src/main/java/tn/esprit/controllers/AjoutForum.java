@@ -34,7 +34,14 @@ public class AjoutForum {
     @FXML
     private TextArea contenuField;
 
+    @FXML
+    private Label pageLabel;
+
     private ForumService fs = new ForumService();
+
+    private int currentPage = 1;
+    private final int pageSize = 2;
+    private int totalPages;
 
     @FXML
     public void initialize() {
@@ -63,12 +70,10 @@ public class AjoutForum {
                 new Timestamp(System.currentTimeMillis())
         );
 
-        // 🔥 VALIDATION
         String erreur = f.valider();
 
         if (erreur != null) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Erreur");
             alert.setContentText(erreur);
             alert.showAndWait();
             return;
@@ -84,12 +89,15 @@ public class AjoutForum {
         loadForums();
     }
 
-    // ================= READ =================
+    // ================= READ + PAGINATION =================
     private void loadForums() {
 
         forumContainer.getChildren().clear();
 
-        fs.afficher().forEach(f -> {
+        int totalItems = fs.countForums();
+        totalPages = (int) Math.ceil((double) totalItems / pageSize);
+
+        fs.getPaginated(currentPage, pageSize).forEach(f -> {
 
             try {
                 VBox card = new VBox(10);
@@ -112,13 +120,11 @@ public class AjoutForum {
                 Button delete = new Button("Supprimer");
                 delete.setStyle(btnStyle);
 
-                // 🔹 DELETE
                 delete.setOnAction(e -> {
                     fs.supprimer(f.getId());
                     loadForums();
                 });
 
-                // 🔹 UPDATE
                 edit.setOnAction(e -> {
                     TextInputDialog dialog = new TextInputDialog(f.getContenu());
                     dialog.setTitle("Modifier forum");
@@ -132,7 +138,6 @@ public class AjoutForum {
 
                 HBox actions = new HBox(10, edit, delete);
 
-                // 🔹 COMMENTAIRES
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/commentaire.fxml"));
                 Parent commentUI = loader.load();
 
@@ -147,8 +152,28 @@ public class AjoutForum {
                 e.printStackTrace();
             }
         });
+
+        pageLabel.setText("Page " + currentPage + " / " + totalPages);
     }
 
+    // ================= PAGINATION =================
+    @FXML
+    void nextPage(ActionEvent event) {
+        if (currentPage < totalPages) {
+            currentPage++;
+            loadForums();
+        }
+    }
+
+    @FXML
+    void previousPage(ActionEvent event) {
+        if (currentPage > 1) {
+            currentPage--;
+            loadForums();
+        }
+    }
+
+    // ================= NAVIGATION =================
     @FXML
     private void goDashboard(ActionEvent event) {
         loadPage(event, "/ProfDashboard.fxml");
@@ -182,8 +207,6 @@ public class AjoutForum {
     @FXML
     private void goResultats(ActionEvent event) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Resultats");
-        alert.setHeaderText(null);
         alert.setContentText("La page resultats sera bientot disponible.");
         alert.showAndWait();
     }
