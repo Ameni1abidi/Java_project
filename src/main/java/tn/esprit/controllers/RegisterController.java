@@ -1,4 +1,5 @@
 package tn.esprit.controllers;
+import javafx.event.ActionEvent;
 import tn.esprit.entities.User;
 import tn.esprit.entities.User.Role;
 import tn.esprit.services.UserService;
@@ -85,6 +86,20 @@ public class RegisterController {
         Parent root = FXMLLoader.load(getClass().getResource("/Login.fxml"));
         Stage stage = (Stage) nomField.getScene().getWindow();
         stage.setScene(new Scene(root));
+    }
+    @FXML
+    private void goBack(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Home.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void showError(String msg) {

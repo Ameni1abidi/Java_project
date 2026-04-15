@@ -11,6 +11,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.Alert;
+import javafx.scene.layout.HBox;
+import javafx.geometry.Pos;
 import javafx.stage.Stage;
 import tn.esprit.entities.categorie;
 import tn.esprit.services.CategoryService;
@@ -36,16 +38,19 @@ public class CategorieListController {
         idCol.setCellValueFactory(new PropertyValueFactory<>("id"));
         nomCol.setCellValueFactory(new PropertyValueFactory<>("nom"));
         tableCategorie.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        actionCol.setSortable(false);
 
         actionCol.setCellFactory(column -> new TableCell<>() {
             private final Button editButton = new Button("Modifier");
+            private final HBox container = new HBox(editButton);
 
             {
                 editButton.setStyle("-fx-background-color: #1abc9c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6;");
+                container.setAlignment(Pos.CENTER);
                 editButton.setOnAction(event -> {
                     categorie item = getTableRow().getItem();
                     if (item != null) {
-                        openEdit(item);
+                        showCategorieForm(item);
                     }
                 });
             }
@@ -56,13 +61,14 @@ public class CategorieListController {
                 if (empty || getTableRow() == null || getTableRow().getItem() == null) {
                     setGraphic(null);
                 } else {
-                    setGraphic(editButton);
+                    setGraphic(container);
                 }
             }
         });
 
         try {
             tableCategorie.setItems(FXCollections.observableArrayList(service.getAll()));
+            tableCategorie.refresh();
         } catch (Exception e) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Erreur de base de données");
@@ -74,14 +80,10 @@ public class CategorieListController {
 
     @FXML
     void goToAdd() {
-        loadForm(null);
+        showCategorieForm(null);
     }
 
-    private void openEdit(categorie categorie) {
-        loadForm(categorie);
-    }
-
-    private void loadForm(categorie categorie) {
+    private void showCategorieForm(categorie categorie) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/categorieView.fxml"));
             Parent root = loader.load();

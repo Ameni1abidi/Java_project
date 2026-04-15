@@ -13,47 +13,58 @@ import java.util.List;
 public class CategoryService {
     private final Connection connection = MyDatabase.getInstance().getConnection();
 
+    private boolean hasIdColumn() {
+        String sql = "SHOW COLUMNS FROM categorie LIKE 'id'";
+        try (PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            return rs.next();
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur lors de la verification de la colonne id", e);
+        }
+    }
+
     public void add(categorie categorie) {
         String sql = "INSERT INTO categorie(nom) VALUES(?)";
-        try (PreparedStatement ps = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, categorie.getNom());
             ps.executeUpdate();
-
-            try (ResultSet keys = ps.getGeneratedKeys()) {
-                if (keys.next()) {
-                    categorie.setId(keys.getInt(1));
-                }
-            }
         } catch (SQLException e) {
             throw new RuntimeException("Erreur lors de l'ajout de la categorie", e);
         }
     }
 
     public List<categorie> getAll() {
-        String sql = "SELECT id, nom FROM categorie";
         List<categorie> categories = new ArrayList<>();
+        boolean withId = hasIdColumn();
+        String sql = withId ? "SELECT id, nom FROM categorie" : "SELECT nom FROM categorie";
 
         try (PreparedStatement ps = connection.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
+            int fallbackId = 1;
             while (rs.next()) {
-                categories.add(new categorie(rs.getInt("id"), rs.getString("nom")));
+                Integer id = withId ? rs.getInt("id") : fallbackId++;
+                String nom = rs.getString("nom");
+                if (nom != null && !nom.isBlank()) {
+                    categories.add(new categorie(id, nom));
+                }
             }
         } catch (SQLException e) {
             throw new RuntimeException("Erreur lors de la recuperation des categories", e);
         }
-
         return categories;
     }
 
-    public categorie getById(int id) {
-        String sql = "SELECT id, nom FROM categorie WHERE id = ?";
+    public categorie getByNom(String nom) {
+        boolean withId = hasIdColumn();
+        String sql = withId ? "SELECT id, nom FROM categorie WHERE nom = ?" : "SELECT nom FROM categorie WHERE nom = ?";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, id);
+            ps.setString(1, nom);
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return new categorie(rs.getInt("id"), rs.getString("nom"));
+                    Integer id = withId ? rs.getInt("id") : null;
+                    return new categorie(id, rs.getString("nom"));
                 }
             }
         } catch (SQLException e) {
@@ -63,40 +74,34 @@ public class CategoryService {
         return null;
     }
 
-    public boolean update(categorie categorie) {
-        String sql = "UPDATE categorie SET nom = ? WHERE id = ?";
+    public boolean update(String ancienNom, String nouveauNom) {
+        String sql = "UPDATE categorie SET nom = ? WHERE nom = ?";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, categorie.getNom());
-            ps.setInt(2, categorie.getId());
+            ps.setString(1, nouveauNom);
+            ps.setString(2, ancienNom);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             throw new RuntimeException("Erreur lors de la mise a jour de la categorie", e);
         }
     }
 
-    public boolean delete(int id) {
-        String sql = "DELETE FROM categorie WHERE id = ?";
+    public boolean delete(String nom) {
+        String sql = "DELETE FROM categorie WHERE nom = ?";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, id);
+            ps.setString(1, nom);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             throw new RuntimeException("Erreur lors de la suppression de la categorie", e);
         }
     }
 
-    public boolean existsByName(String nom, Integer excludeId) {
+    public boolean existsByName(String nom) {
         String sql = "SELECT COUNT(*) FROM categorie WHERE nom = ?";
-        if (excludeId != null) {
-            sql += " AND id != ?";
-        }
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, nom);
-            if (excludeId != null) {
-                ps.setInt(2, excludeId);
-            }
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -104,7 +109,7 @@ public class CategoryService {
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Erreur lors de la vérification du nom", e);
+            throw new RuntimeException("Erreur lors de la verification du nom", e);
         }
 
         return false;
