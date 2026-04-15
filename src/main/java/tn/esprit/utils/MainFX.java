@@ -32,7 +32,7 @@ public class MainFX extends Application {
         stage.show();*/
 
 
-        FXMLLoader loader2 = new FXMLLoader(getClass().getResource("/EvaluationView.fxml"));
+        /*FXMLLoader loader2 = new FXMLLoader(getClass().getResource("/EvaluationView.fxml"));
         //FXMLLoader loader2 = new FXMLLoader(getClass().getResource("/ExamenView.fxml"));
         //FXMLLoader loader2 = new FXMLLoader(getClass().getResource("/home.fxml"));
         Scene scene3 = new Scene(loader2.load());
