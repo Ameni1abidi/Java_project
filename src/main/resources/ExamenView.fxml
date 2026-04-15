@@ -9,7 +9,7 @@
       fx:controller="tn.esprit.controllers.ExamenController">
 
     <!-- ===== SIDEBAR ===== -->
-    <VBox prefWidth="220" style="-fx-background-color: #c4b5e8; -fx-padding: 20;">
+    <VBox prefWidth="220" style="-fx-background-color: #c4b5e8; -fx-padding: 20; -fx-spacing: 10;">
 
         <!-- Logo -->
         <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 20 0;">
@@ -25,7 +25,7 @@
 
         <!-- Profile -->
         <VBox alignment="CENTER" spacing="5"
-              style="-fx-background-color: #d6c9f0; -fx-background-radius: 12; -fx-padding: 15;">
+              style="-fx-background-color: #d6c9f0; -fx-background-radius: 12; -fx-padding: 15; -fx-margin: 0 0 10 0;">
             <Label text="A"
                    style="-fx-background-color: #a08cc8; -fx-text-fill: white;
                           -fx-font-weight: bold; -fx-font-size: 18;
@@ -35,19 +35,35 @@
         </VBox>
 
         <!-- Navigation -->
-        <VBox spacing="5" style="-fx-padding: 20 0 0 0;">
-            <Button text="🏠  Tableau de bord" maxWidth="Infinity" styleClass="menu-btn"/>
-            <Button text="💬  Forum"            maxWidth="Infinity" styleClass="menu-btn"/>
-            <Button text="🏫  Mes classes"      maxWidth="Infinity" styleClass="menu-btn"/>
-            <Button text="📚  Cours"            maxWidth="Infinity" styleClass="menu-btn"/>
-            <Button text="📁  Ressources"       maxWidth="Infinity" styleClass="menu-btn"/>
+        <VBox spacing="4" style="-fx-padding: 10 0 0 0;">
+            <Button text="DB  Tableau de bord" maxWidth="Infinity"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333;
+                           -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="FO  Forum" maxWidth="Infinity"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333;
+                           -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+
+            <Button text="C   Cours" maxWidth="Infinity"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333;
+                           -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="RS  Ressources" maxWidth="Infinity"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333;
+                           -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
 
             <!-- ACTIVE -->
-            <Button text="📝  Examens" maxWidth="Infinity"
-                    style="-fx-background-color: #7c5cbf; -fx-text-fill: white;
-                           -fx-background-radius: 8; -fx-font-weight: bold;"/>
+            <Button text="EX  Examens" maxWidth="Infinity"
+                    style="-fx-background-color: #b39ddb; -fx-text-fill: #333;
+                           -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
 
-            <Button text="📊  Evaluations" maxWidth="Infinity" styleClass="menu-btn"/>
+            <Button text="EV  Evaluations" maxWidth="Infinity"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333;
+                           -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="RS  Resultats" maxWidth="Infinity"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333;
+                           -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="LO  Logout" maxWidth="Infinity"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333;
+                           -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
         </VBox>
     </VBox>
 
@@ -55,44 +71,43 @@
     <VBox style="-fx-padding: 40; -fx-background-color: #f5f3fb;" HBox.hgrow="ALWAYS">
 
         <VBox spacing="20"
-              style="-fx-background-color: white; -fx-padding: 20;
-                     -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, #ddd, 8, 0, 0, 2);">
+              style="-fx-background-color: white; -fx-padding: 30;
+                     -fx-background-radius: 12;
+                     -fx-effect: dropshadow(gaussian, #ddd, 8, 0, 0, 2);">
 
             <!-- Header -->
             <HBox alignment="CENTER_LEFT">
-                <Label text="📝  Examens"
-                       style="-fx-font-size: 20; -fx-font-weight: bold;" />
+                <Label text="Examens"
+                       style="-fx-font-size: 22; -fx-font-weight: bold;" />
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button text="+ Créer un examen"
+                <Button text="Créer un examen"
                         fx:id="btnCreate"
                         onAction="#goToCreateExamen"
-                        style="-fx-background-color: #7c5cbf; -fx-text-fill: white;
-                               -fx-background-radius: 10; -fx-font-weight: bold;
-                               -fx-padding: 8 16;"/>
+                        style="-fx-background-color: #4CAF50; -fx-text-fill: white;
+                               -fx-background-radius: 8; -fx-font-size: 13;
+                               -fx-padding: 10 20;"/>
             </HBox>
 
             <!-- TABLE -->
             <TableView fx:id="tableExamens" VBox.vgrow="ALWAYS"
-                       style="-fx-background-radius: 8; -fx-border-color: #e0e0e0;
-                              -fx-border-radius: 8;">
+                       style="-fx-border-color: #e0e0e0; -fx-border-radius: 8;
+                  -fx-table-cell-border-color: #f0f0f0;">
                 <columns>
-                    <TableColumn fx:id="colId"          text="ID"          prefWidth="50"/>
-                    <TableColumn fx:id="colTitre"       text="Titre"       prefWidth="150"/>
-                    <TableColumn fx:id="colFichier"     text="Fichier"     prefWidth="100"/>
-                    <TableColumn fx:id="colType"        text="Type"        prefWidth="100"/>
-                    <TableColumn fx:id="colDate"        text="Date"        prefWidth="100"/>
-                    <TableColumn fx:id="colDuree"       text="Durée (min)" prefWidth="90"/>
-                    <TableColumn fx:id="colCours"       text="Cours"       prefWidth="130"/>
-                    <TableColumn fx:id="colEnseignant"  text="Enseignant"  prefWidth="130"/>
-                    <TableColumn fx:id="colActions"     text="Actions"     prefWidth="150"/>
+                    <TableColumn fx:id="colId"         text="ID"          prefWidth="50"  style="-fx-alignment: CENTER;"/>
+                    <TableColumn fx:id="colTitre"      text="Titre"       prefWidth="180"/>
+                    <TableColumn fx:id="colFichier"    text="Fichier"     prefWidth="110" style="-fx-alignment: CENTER;"/>
+                    <TableColumn fx:id="colType"       text="Type"        prefWidth="90"  style="-fx-alignment: CENTER;"/>
+                    <TableColumn fx:id="colDate"       text="Date"        prefWidth="110" style="-fx-alignment: CENTER;"/>
+                    <TableColumn fx:id="colDuree"      text="Duree"       prefWidth="80"  style="-fx-alignment: CENTER;"/>
+                    <TableColumn fx:id="colCours"      text="Cours"       prefWidth="110" style="-fx-alignment: CENTER;"/>
+                    <TableColumn fx:id="colEnseignant" text="Enseignant"  prefWidth="120" style="-fx-alignment: CENTER;"/>
+                    <TableColumn fx:id="colActions"    text="Actions"     prefWidth="160" style="-fx-alignment: CENTER;"/>
                 </columns>
 
-                <!-- Message si table vide -->
                 <placeholder>
                     <Label text="Aucun examen disponible."
-                           style="-fx-text-fill: #aaa; -fx-font-size: 14;"/>
+                           style="-fx-text-fill: #aaa; -fx-font-size: 13;"/>
                 </placeholder>
-
             </TableView>
 
         </VBox>
