@@ -2,6 +2,7 @@ package tn.esprit.controllers;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.event.ActionEvent;
 import javafx.scene.*;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
@@ -140,5 +141,60 @@ public class CoursList {
     void deleteCours(Cours c) {
         service.supprimer(c.getId());
         loadData();
+    }
+
+    @FXML
+    private void goDashboard(ActionEvent event) {
+        loadPage(event, "/ProfDashboard.fxml");
+    }
+
+    @FXML
+    private void goForum(ActionEvent event) {
+        loadPage(event, "/forum.fxml");
+    }
+
+    @FXML
+    private void goRessources(ActionEvent event) {
+        loadPage(event, "/listeRessources.fxml");
+    }
+
+    @FXML
+    private void goCategories(ActionEvent event) {
+        loadPage(event, "/CategorieList.fxml");
+    }
+
+    @FXML
+    private void goExamens(ActionEvent event) {
+        loadPage(event, "/ExamenView.fxml");
+    }
+
+    @FXML
+    private void goEvaluations(ActionEvent event) {
+        loadPage(event, "/EvaluationView.fxml");
+    }
+
+    @FXML
+    private void goResultats(ActionEvent event) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Resultats");
+        alert.setHeaderText(null);
+        alert.setContentText("La page resultats sera bientot disponible.");
+        alert.showAndWait();
+    }
+
+    @FXML
+    private void goLogout(ActionEvent event) {
+        loadPage(event, "/Login.fxml");
+    }
+
+    private void loadPage(ActionEvent event, String fxmlPath) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
