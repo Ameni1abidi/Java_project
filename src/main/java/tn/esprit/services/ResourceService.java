@@ -21,15 +21,74 @@ public class ResourceService {
 
     private void ensureSchema() {
         try {
+            if (!hasColumn("categorie_nom") && hasColumn("categorie_id")) {
+                // Drop any foreign key constraints on categorie_id before renaming the column
+                try {
+                    for (String fkName : getForeignKeyNamesOnColumn("ressource", "categorie_id")) {
+                        try {
+                            executeUpdate("ALTER TABLE ressource DROP FOREIGN KEY " + fkName);
+                        } catch (SQLException ignored) {
+                            // FK might not exist
+                        }
+                    }
+                    executeUpdate("ALTER TABLE ressource CHANGE categorie_id categorie_nom VARCHAR(255)");
+                } catch (SQLException ignored) {
+                    // Column might already be renamed or not exist
+                }
+            }
+            
+            // Ensure foreign key constraint
+            if (hasColumn("categorie_nom") && !hasForeignKey("fk_ressource_categorie")) {
+                try {
+                    executeUpdate("ALTER TABLE ressource ADD CONSTRAINT fk_ressource_categorie FOREIGN KEY (categorie_nom) REFERENCES categorie(nom)");
+                } catch (SQLException ignored) {
+                    // FK constraint might already exist
+                }
+            }
+            
             if (!hasColumn("type")) {
-                executeUpdate("ALTER TABLE ressource ADD COLUMN type VARCHAR(50)");
+                try {
+                    executeUpdate("ALTER TABLE ressource ADD COLUMN type VARCHAR(50)");
+                } catch (SQLException ignored) {
+                    // Column might already exist
+                }
             }
             if (!hasColumn("disponible_le")) {
-                executeUpdate("ALTER TABLE ressource ADD COLUMN disponible_le VARCHAR(100)");
+                try {
+                    executeUpdate("ALTER TABLE ressource ADD COLUMN disponible_le VARCHAR(100)");
+                } catch (SQLException ignored) {
+                    // Column might already exist
+                }
             }
         } catch (SQLException e) {
             throw new RuntimeException("Erreur lors de l'initialisation du schéma des ressources", e);
         }
+    }
+
+    private boolean hasForeignKey(String constraintName) throws SQLException {
+        String sql = "SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS " +
+                     "WHERE TABLE_NAME = 'ressource' AND CONSTRAINT_TYPE = 'FOREIGN KEY' AND CONSTRAINT_NAME = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, constraintName);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    private List<String> getForeignKeyNamesOnColumn(String tableName, String columnName) throws SQLException {
+        List<String> fkNames = new ArrayList<>();
+        DatabaseMetaData metaData = connection.getMetaData();
+        try (ResultSet rs = metaData.getImportedKeys(connection.getCatalog(), null, tableName)) {
+            while (rs.next()) {
+                String fkColumn = rs.getString("FKCOLUMN_NAME");
+                String fkName = rs.getString("FK_NAME");
+                if (columnName.equalsIgnoreCase(fkColumn) && fkName != null && !fkName.isBlank()) {
+                    fkNames.add(fkName);
+                }
+            }
+        }
+        return fkNames;
     }
 
     private boolean hasColumn(String columnName) throws SQLException {
