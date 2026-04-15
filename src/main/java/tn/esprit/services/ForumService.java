@@ -35,18 +35,19 @@ public class ForumService {
     }
 
     // ================= READ =================
-    public List<forum> afficher() {
+    public List<forum> getPaginated(int page, int size) {
 
         List<forum> list = new ArrayList<>();
-
-        String sql = "SELECT * FROM forum";
+        String sql = "SELECT * FROM forum LIMIT ? OFFSET ?";
 
         try {
-            Statement st = cnx.createStatement();
-            ResultSet rs = st.executeQuery(sql);
+            PreparedStatement ps = cnx.prepareStatement(sql);
+            ps.setInt(1, size);
+            ps.setInt(2, (page - 1) * size);
+
+            ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-
                 forum f = new forum(
                         rs.getInt("id"),
                         rs.getString("titre"),
@@ -54,7 +55,6 @@ public class ForumService {
                         rs.getString("type"),
                         rs.getTimestamp("date_creation")
                 );
-
                 list.add(f);
             }
 
@@ -95,5 +95,17 @@ public class ForumService {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public int countForums() {
+        String sql = "SELECT COUNT(*) FROM forum";
+        try {
+            PreparedStatement ps = cnx.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getInt(1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 }

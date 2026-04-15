@@ -74,7 +74,15 @@
 
             <ScrollPane fitToWidth="true" style="-fx-background-color:transparent;" VBox.vgrow="ALWAYS">
                 <FlowPane fx:id="forumContainer" hgap="20" vgap="20" prefWrapLength="800"/>
+
             </ScrollPane>
+
+            <!-- ✅ PAGINATION ICI -->
+            <HBox spacing="10" alignment="CENTER">
+                <Button text="Previous" onAction="#previousPage"/>
+                <Label fx:id="pageLabel"/>
+                <Button text="Next" onAction="#nextPage"/>
+            </HBox>
         </VBox>
 
         <VBox fx:id="formPane"
@@ -93,6 +101,9 @@
                 <Button text="Creer" onAction="#ajouterForum" style="-fx-background-color:#2ecc71; -fx-text-fill:white;"/>
                 <Button text="Retour" onAction="#showList" style="-fx-background-color:#2ecc71; -fx-text-fill:white;"/>
             </HBox>
+
+
+
         </VBox>
     </StackPane>
 </HBox>
