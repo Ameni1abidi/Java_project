@@ -14,14 +14,14 @@ public class MainFX extends Application {
         //FXMLLoader loader = new FXMLLoader(getClass().getResource("/CategorieList.fxml"));
 
         //FXMLLoader loader = new FXMLLoader(getClass().getResource("/CoursList.fxml"));
-        //FXMLLoader loader = new FXMLLoader(getClass().getResource("/CategorieList.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ProfDashboard.fxml"));
         //FXMLLoader loader = new FXMLLoader(getClass().getResource("/ajouterCours.fxml"));
 
-        /*Scene scene = new Scene(loader.load());
+        Scene scene = new Scene(loader.load());
 
         stage.setTitle("EDUFLEX");
         stage.setScene(scene);
-        stage.show();*/
+        stage.show();
 
 
 
@@ -43,7 +43,7 @@ public class MainFX extends Application {
         stage.show();
 
 
-        /*FXMLLoader loader = new FXMLLoader(getClass().getResource("/GestionUsers.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/GestionUsers.fxml"));
         Scene scene = new Scene(loader.load());
         stage.setTitle("EduFlex — Connexion");
         stage.setScene(scene);
