@@ -5,13 +5,17 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import tn.esprit.entities.Evaluation;
 import tn.esprit.services.EvaluationService;
+
+import java.io.IOException;
 
 public class EvaluationController {
 
@@ -21,13 +25,11 @@ public class EvaluationController {
     @FXML private TableColumn<Evaluation, Double> colNote;
     @FXML private TableColumn<Evaluation, String> colAppreciation;
     @FXML private TableColumn<Evaluation, Integer> colExamen;
-
-    @FXML private TextField txtNote;
-    @FXML private TextField txtAppreciation;
-    @FXML private TextField txtExamenId;
+    @FXML private TableColumn<Evaluation, Integer> colEleve;
+    @FXML private TableColumn<Evaluation, Void> colActions;
 
     private ObservableList<Evaluation> list;
-    private EvaluationService service = new EvaluationService();
+    private final EvaluationService service = new EvaluationService();
 
     @FXML
     public void initialize() {
@@ -44,14 +46,41 @@ public class EvaluationController {
         colExamen.setCellValueFactory(data ->
                 new javafx.beans.property.SimpleIntegerProperty(data.getValue().getExamenId()).asObject());
 
+        colEleve.setCellValueFactory(data ->
+                new javafx.beans.property.SimpleIntegerProperty(data.getValue().getEleveId()).asObject());
+
         loadData();
 
-        // select row
-        tableEvaluations.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null) {
-                txtNote.setText(String.valueOf(newVal.getNote()));
-                txtAppreciation.setText(newVal.getAppreciation());
-                txtExamenId.setText(String.valueOf(newVal.getExamenId()));
+        colActions.setCellFactory(param -> new TableCell<>() {
+
+            private final Button btnDelete = new Button("Supprimer");
+            private final Button btnEdit = new Button("Modifier");
+
+            {
+                btnDelete.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-background-radius: 6; -fx-padding: 4 12;");
+                btnEdit.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-background-radius: 6; -fx-padding: 4 12;");
+
+                btnDelete.setOnAction(event -> {
+                    Evaluation e = getTableView().getItems().get(getIndex());
+                    if (confirmDelete(e)) {
+                        service.delete(e.getId());
+                        loadData();
+                    }
+                });
+
+                btnEdit.setOnAction(event -> {
+                    Evaluation e = getTableView().getItems().get(getIndex());
+                    openEditEvaluation(e);
+                });
+            }
+
+            private final HBox pane = new HBox(8, btnEdit, btnDelete);
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                pane.setAlignment(Pos.CENTER);
+                setGraphic(empty ? null : pane);
             }
         });
     }
@@ -61,66 +90,29 @@ public class EvaluationController {
         tableEvaluations.setItems(list);
     }
 
-    // ===== ADD =====
-    @FXML
-    void handleAdd() {
+    private boolean confirmDelete(Evaluation evaluation) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirmation");
+        alert.setHeaderText(null);
+        alert.setContentText("Supprimer l'évaluation #" + evaluation.getId() + " ?");
+        return alert.showAndWait().filter(ButtonType.OK::equals).isPresent();
+    }
+
+    private void openEditEvaluation(Evaluation evaluation) {
         try {
-            Evaluation e = new Evaluation();
-            e.setNote(Double.parseDouble(txtNote.getText()));
-            e.setAppreciation(txtAppreciation.getText());
-            e.setExamenId(Integer.parseInt(txtExamenId.getText()));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/CreateEvaluation.fxml"));
+            Parent root = loader.load();
 
-            service.create(e);
-            loadData();
-            clearFields();
+            CreateEvaluationController controller = loader.getController();
+            controller.setEvaluation(evaluation);
 
-        } catch (Exception ex) {
-            showAlert("Erreur", "Vérifie les champs !");
+            Stage stage = (Stage) tableEvaluations.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-    }
-
-    // ===== UPDATE =====
-    @FXML
-    void handleUpdate() {
-        Evaluation selected = tableEvaluations.getSelectionModel().getSelectedItem();
-
-        if (selected != null) {
-            try {
-                selected.setNote(Double.parseDouble(txtNote.getText()));
-                selected.setAppreciation(txtAppreciation.getText());
-                selected.setExamenId(Integer.parseInt(txtExamenId.getText()));
-
-                service.update(selected);
-                loadData();
-
-            } catch (Exception e) {
-                showAlert("Erreur", "Erreur modification !");
-            }
-        }
-    }
-
-    // ===== DELETE =====
-    @FXML
-    void handleDelete() {
-        Evaluation selected = tableEvaluations.getSelectionModel().getSelectedItem();
-
-        if (selected != null) {
-            service.delete(selected.getId());
-            loadData();
-        }
-    }
-
-    private void clearFields() {
-        txtNote.clear();
-        txtAppreciation.clear();
-        txtExamenId.clear();
-    }
-
-    private void showAlert(String title, String msg) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setContentText(msg);
-        alert.show();
     }
 
     @FXML
@@ -174,6 +166,21 @@ public class EvaluationController {
             stage.setScene(new Scene(root));
             stage.show();
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void goToCreateEvaluation() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/CreateEvaluation.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = (Stage) tableEvaluations.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

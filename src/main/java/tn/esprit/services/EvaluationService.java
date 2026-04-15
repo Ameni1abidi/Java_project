@@ -61,14 +61,15 @@ public class EvaluationService {
 
     // UPDATE
     public void update(Evaluation e) {
-        String sql = "UPDATE resultat SET note=?, appreciation=?, eleve_id=? WHERE id=?";
+        String sql = "UPDATE resultat SET note=?, appreciation=?, examen_id=?, eleve_id=? WHERE id=?";
 
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
 
             ps.setDouble(1, e.getNote());
             ps.setString(2, e.getAppreciation());
-            ps.setInt(3, e.getEleveId());
-            ps.setInt(4, e.getId());
+            ps.setInt(3, e.getExamenId());
+            ps.setInt(4, e.getEleveId());
+            ps.setInt(5, e.getId());
 
             ps.executeUpdate();
             System.out.println("✔ Evaluation modifiée");
