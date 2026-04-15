@@ -281,7 +281,7 @@ public class ajouterRessource {
             case "image":
                 return "image";
             case "video":
-            case "vidéo":
+            //case "vidï¿½o":
             case "vidÃ©o":
                 return "video";
             case "audio":
