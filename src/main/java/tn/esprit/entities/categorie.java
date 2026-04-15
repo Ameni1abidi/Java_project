@@ -1,6 +1,7 @@
 package tn.esprit.entities;
 
 public class categorie {
+    private Integer id;
     private String nom;
 
     public categorie() {
@@ -8,6 +9,19 @@ public class categorie {
 
     public categorie(String nom) {
         this.nom = nom;
+    }
+
+    public categorie(Integer id, String nom) {
+        this.id = id;
+        this.nom = nom;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public String getNom() {

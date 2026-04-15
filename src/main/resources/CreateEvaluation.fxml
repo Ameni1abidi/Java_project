@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<HBox prefHeight="700" prefWidth="1100" style="-fx-background-color: #f0edf8;"
+      xmlns:fx="http://javafx.com/fxml/1"
+      xmlns="http://javafx.com/javafx/17.0.12"
+      fx:controller="tn.esprit.controllers.CreateEvaluationController">
+
+    <!-- SIDEBAR -->
+    <VBox prefWidth="220" style="-fx-background-color: #c4b5e8;">
+        <padding>
+            <Insets top="20" left="20"/>
+        </padding>
+        <Label text="EduFlex"
+               style="-fx-text-fill: white; -fx-font-size: 18; -fx-font-weight: bold;"/>
+    </VBox>
+
+    <!-- FORM CONTAINER -->
+    <VBox HBox.hgrow="ALWAYS" alignment="TOP_CENTER" style="-fx-padding: 40;">
+
+        <VBox spacing="15"
+              maxWidth="520"
+              style="-fx-background-color: white; -fx-padding: 30;
+                     -fx-background-radius: 10;
+                     -fx-border-radius: 10; -fx-border-color: #ddd;">
+
+            <!-- TITLE -->
+            <Label text="Créer une évaluation"
+                   style="-fx-font-size: 22; -fx-font-weight: bold;"/>
+
+            <!-- NOTE -->
+            <VBox spacing="5">
+                <Label text="Note"/>
+                <TextField fx:id="txtNote" promptText="Note"/>
+            </VBox>
+
+            <!-- APPRECIATION -->
+            <VBox spacing="5">
+                <Label text="Appréciation"/>
+                <TextField fx:id="txtAppreciation" promptText="Appréciation"/>
+            </VBox>
+
+            <!-- ELEVE -->
+            <VBox spacing="5">
+                <Label text="Élève"/>
+                <ComboBox fx:id="cbEleve" promptText="Choisir un élève"/>
+            </VBox>
+
+            <!-- EXAMEN -->
+            <VBox spacing="5">
+                <Label text="Examen"/>
+                <ComboBox fx:id="cbExamen" promptText="Choisir un examen"/>
+            </VBox>
+
+            <!-- BUTTON -->
+            <Button text="Enregistrer"
+                    onAction="#handleSave"
+                    style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-background-radius: 8;"/>
+
+            <!-- RETOUR -->
+            <Hyperlink text="Retour à la liste" onAction="#goBack"/>
+        </VBox>
+
+    </VBox>
+
+</HBox>
