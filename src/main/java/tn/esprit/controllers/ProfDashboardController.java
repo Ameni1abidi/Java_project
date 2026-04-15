@@ -43,8 +43,7 @@ public class ProfDashboardController {
     }
 
     @FXML
-    private void goResources(ActionEvent event) {
-        loadPage(event, "/listeRessources.fxml");
+    private void goResources(ActionEvent event) {loadPage(event, "/listeRessources.fxml");
     }
 
     @FXML
