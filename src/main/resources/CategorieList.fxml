@@ -27,7 +27,6 @@
                    style="-fx-background-color: white; -fx-border-color: #dfe3e7; -fx-border-radius: 10; -fx-background-radius: 10;">
 
             <columns>
-                <TableColumn fx:id="idCol" text="ID" prefWidth="80"/>
                 <TableColumn fx:id="nomCol" text="Nom" prefWidth="300"/>
                 <TableColumn fx:id="actionCol" text="Actions" prefWidth="150"/>
             </columns>

@@ -3,14 +3,11 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>espritPI</groupId>
     <artifactId>Pijava</artifactId>
     <version>1.0-SNAPSHOT</version>
-
-
     <packaging>jar</packaging>
 
     <properties>
@@ -41,6 +38,12 @@
             <version>21.0.2</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.1</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -51,10 +54,10 @@
                 <version>0.0.8</version>
                 <configuration>
                     <mainClass>tn.esprit.utils.MainFX</mainClass>
-                    
                 </configuration>
             </plugin>
         </plugins>
     </build>
+
 
 </project>

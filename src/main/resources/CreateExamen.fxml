@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
+<HBox prefHeight="700" prefWidth="1100"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="tn.esprit.controllers.CreateExamenController">
+
+    <!-- SIDEBAR -->
+    <VBox prefWidth="220" style="-fx-background-color: #c4b5e8;">
+        <padding>
+            <Insets top="20" left="20"/>
+        </padding>
+        <Label text="EduFlex"
+               style="-fx-text-fill: white; -fx-font-size: 18; -fx-font-weight: bold;"/>
+    </VBox>
+
+    <!-- FORM CONTAINER -->
+    <VBox HBox.hgrow="ALWAYS" alignment="TOP_CENTER">
+
+        <VBox spacing="15"
+              maxWidth="500"
+              style="-fx-background-color: white; -fx-padding: 30; -fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #ddd;">
+
+            <!-- TITLE -->
+            <Label text="Créer un examen"
+                   style="-fx-font-size: 22; -fx-font-weight: bold;"/>
+
+            <!-- TITRE -->
+            <VBox spacing="5">
+                <Label text="Titre"/>
+                <TextField fx:id="txtTitre"/>
+            </VBox>
+
+            <!-- FICHIER -->
+            <VBox spacing="5">
+                <Label text="Fichier d'examen"/>
+                <Button text="Choisir un fichier" onAction="#chooseFile"/>
+            </VBox>
+
+            <!-- TYPE -->
+            <VBox spacing="5">
+                <Label text="Type"/>
+                <ComboBox fx:id="cbType">
+                    <items>
+                        <FXCollections fx:factory="observableArrayList">
+
+                        </FXCollections>
+                    </items>
+                </ComboBox>
+            </VBox>
+
+            <!-- DATE -->
+            <VBox spacing="5">
+                <Label text="Date examen"/>
+                <DatePicker fx:id="dateExamen"/>
+            </VBox>
+
+            <!-- DUREE -->
+            <VBox spacing="5">
+                <Label text="Durée (minutes)"/>
+                <TextField fx:id="txtDuree"/>
+            </VBox>
+
+            <!-- COURS -->
+            <VBox spacing="5">
+                <Label text="Cours"/>
+                <ComboBox fx:id="cbCours" promptText="Choisir un cours"/>
+            </VBox>
+
+            <!-- ENSEIGNANT -->
+            <VBox spacing="5">
+                <Label text="Enseignant"/>
+                <ComboBox fx:id="cbEnseignant" promptText="Choisir un enseignant"/>
+            </VBox>
+
+            <!-- BUTTON -->
+            <Button text="Créer"
+                    onAction="#handleSave"
+                    style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-background-radius: 8;"/>
+
+            <!-- RETOUR -->
+            <Hyperlink text="Retour à la liste" onAction="#goBack"/>
+
+        </VBox>
+
+    </VBox>
+
+</HBox>

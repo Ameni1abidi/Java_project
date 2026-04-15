@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<VBox spacing="20" style="-fx-padding:20; -fx-font-family:'Manrope';"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="tn.esprit.controllers.CoursList">
+
+    <!-- 🔍 SEARCH -->
+    <HBox spacing="10">
+        <TextField fx:id="searchField" promptText="Rechercher un cours"
+                   HBox.hgrow="ALWAYS"
+                   style="-fx-padding:8; -fx-background-radius:8; -fx-border-radius:8;"/>
+        <Button text="🔍 Rechercher"
+                onAction="#searchCours"
+                style="-fx-background-color:#007bff; -fx-text-fill:white; -fx-background-radius:8;"/>
+    </HBox>
+    <FlowPane fx:id="coursContainer"
+              hgap="20" vgap="20"
+              prefWrapLength="800"/>
+
+    <!-- ➕ ADD BUTTON -->
+    <HBox alignment="CENTER_RIGHT">
+        <Button text="Ajouter Cours"
+                onAction="#goToAdd"
+                style="-fx-background-color: linear-gradient(to right,#ff416c,#ff4b2b);
+                       -fx-text-fill:white;
+                       -fx-font-weight:bold;
+                       -fx-background-radius:50;
+                       -fx-padding:10 20;"/>
+    </HBox>
+
+
+</VBox>

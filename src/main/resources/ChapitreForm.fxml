@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.controllers.ChapitreForm"
+            style="-fx-background-color:#f4f6f9;">
+
+    <VBox spacing="12"
+          layoutX="40"
+          layoutY="20"
+          prefWidth="650"
+          style="-fx-background-color:white;
+                 -fx-padding:25;
+                 -fx-background-radius:10;
+                 -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 10, 0, 0, 5);">
+
+        <Label text="Ajouter Chapitre"
+               style="-fx-font-size:20px; -fx-font-weight:bold;" />
+
+        <TextField fx:id="titreField" promptText="Titre" />
+        <Label fx:id="titreError" style="-fx-text-fill:red;" />
+
+        <TextField fx:id="ordreField" promptText="Ordre" />
+        <Label fx:id="ordreError" style="-fx-text-fill:red;" />
+
+        <ChoiceBox fx:id="typeContenuField" />
+        <Label fx:id="typeError" style="-fx-text-fill:red;" />
+
+        <TextArea fx:id="contenuTexteField" promptText="Contenu texte" />
+        <Label fx:id="contenuError" style="-fx-text-fill:red;" />
+
+        <TextField fx:id="dureeField" promptText="Durée estimée" />
+        <Label fx:id="dureeError" style="-fx-text-fill:red;" />
+        <!-- COURS -->
+        <Label text="Cours associé" style="-fx-font-weight:bold;" />
+        <TextField fx:id="coursIdField" editable="false" />
+
+        <!-- BUTTON -->
+        <Button text="Enregistrer"
+                onAction="#saveChapitre"
+                style="-fx-background-color:#28a745;
+               -fx-text-fill:white;
+               -fx-font-weight:bold;" />
+
+        <Button text="Retour"
+                onAction="#goToList"
+                style="-fx-background-color:#6c757d;
+               -fx-text-fill:white;" />
+
+    </VBox>
+
+</AnchorPane>

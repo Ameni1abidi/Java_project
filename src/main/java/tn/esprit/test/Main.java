@@ -21,7 +21,7 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-
+    /*
         // 🔹 Service Categorie
         CategoryService categoryService = new CategoryService();
 
@@ -31,8 +31,7 @@ public class Main {
         System.out.println("Categorie ajoutée");
 
         // UPDATE Categorie
-        c.setNom("Categorie Modifiée");
-        categoryService.update(c);
+        categoryService.update("Categorie Test", "Categorie Modifiée");
         System.out.println("Categorie modifiée");
 
         // 🔹 Service Ressource
@@ -42,7 +41,9 @@ public class Main {
         resources r = new resources(
                 "Ressource Test",
                 "Contenu Test",
-                c.getId()
+                "Categorie Test",
+                "pdf",
+                "2024-01-01"
         );
         resourceService.add(r);
         System.out.println("Ressource ajoutée");
@@ -50,7 +51,7 @@ public class Main {
         // UPDATE Ressource
         r.setTitre("Ressource Modifiée");
         r.setContenu("Contenu Modifié");
-        r.setCategorieId(c.getId());
+        r.setCategorieNom("Categorie Test");
         resourceService.update(r);
         System.out.println("Ressource modifiée");
 
@@ -71,7 +72,7 @@ public class Main {
         chapitreService.ajouter(ch);
 
         // READ Chapitre
-        chapitreService.afficher().forEach(System.out::println);
+
 
         // UPDATE Chapitre
         ch.setId(1);
@@ -96,8 +97,7 @@ public class Main {
         );
         coursService.ajouter(cours);
 
-        // READ Cours
-        coursService.afficher().forEach(System.out::println);
+
 
         // UPDATE Cours
         cours.setId(1);
@@ -140,20 +140,20 @@ public class Main {
         // 🔹 AFFICHAGE COMMENTAIRES
         System.out.println("---- Commentaires ----");
         cs.afficher().forEach(System.out::println);
-
+*/
         // ===== EXAMEN =====
         ExamenService es = new ExamenService();
-        //Examen e = new Examen("Examen BD", "SQL", "Final", LocalDate.now(), 90);
-        //es.create(e);
-        //es.getAll().forEach(System.out::println);
+        Examen e = new Examen("Examen BD", "SQL", "Final", LocalDate.now(), 90,1,1);
+        es.create(e);
+        es.getAll().forEach(System.out::println);
         //e.setTitre("Examen Update");
         //es.update(e);
         //es.delete(e.getId());
 
         // ===== EVALUATION =====
         EvaluationService evs = new EvaluationService();
-        //Evaluation ev = new Evaluation(16, "Bien");
-        //evs.create(ev);
+        Evaluation ev = new Evaluation(16, "Bien",1);
+        evs.create(ev);
         evs.getAll().forEach(System.out::println);
         //ev.setNote(19);
         //ev.setAppreciation("Excellent");
