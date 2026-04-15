@@ -33,9 +33,10 @@
             </HBox>
             <TableView fx:id="resourceTable" prefHeight="500.0" prefWidth="920.0" VBox.vgrow="ALWAYS">
                <columns>
-                  <TableColumn fx:id="titreColumn" prefWidth="320.0" text="TITRE" />
-                  <TableColumn fx:id="categorieColumn" prefWidth="240.0" text="CATEGORIE" />
-                  <TableColumn fx:id="dateColumn" prefWidth="240.0" text="DISPONIBLE LE" />
+                  <TableColumn fx:id="titreColumn" prefWidth="250.0" text="TITRE" />
+                  <TableColumn fx:id="categorieColumn" prefWidth="170.0" text="CATEGORIE" />
+                  <TableColumn fx:id="dateColumn" prefWidth="170.0" text="DISPONIBLE LE" />
+                  <TableColumn fx:id="fileColumn" prefWidth="170.0" text="FICHIER" />
                   <TableColumn fx:id="actionColumn" prefWidth="160.0" text="ACTIONS" />
                </columns>
             </TableView>

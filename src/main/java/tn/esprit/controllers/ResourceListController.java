@@ -5,20 +5,30 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import tn.esprit.entities.categorie;
 import tn.esprit.entities.resources;
 import tn.esprit.services.CategoryService;
 import tn.esprit.services.ResourceService;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +48,9 @@ public class ResourceListController {
     private TableColumn<resources, String> dateColumn;
 
     @FXML
+    private TableColumn<resources, Void> fileColumn;
+
+    @FXML
     private TableColumn<resources, Void> actionColumn;
 
     @FXML
@@ -46,9 +59,9 @@ public class ResourceListController {
     @FXML
     private Button createButton;
 
-    private ResourceService resourceService = new ResourceService();
-    private CategoryService categoryService = new CategoryService();
-    private Map<String, String> categoryNames = new HashMap<>();
+    private final ResourceService resourceService = new ResourceService();
+    private final CategoryService categoryService = new CategoryService();
+    private final Map<String, String> categoryNames = new HashMap<>();
 
     @FXML
     public void initialize() {
@@ -73,14 +86,42 @@ public class ResourceListController {
             return new javafx.beans.property.SimpleStringProperty(name);
         });
 
-        dateColumn.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue().getDisponibleLe()));
+        dateColumn.setCellValueFactory(cellData ->
+                new javafx.beans.property.SimpleStringProperty(cellData.getValue().getDisponibleLe()));
 
-        actionColumn.setCellFactory(column -> new TableCell<resources, Void>() {
+        fileColumn.setCellFactory(column -> new TableCell<>() {
+            private final Hyperlink downloadLink = new Hyperlink("Telecharger");
+
+            {
+                downloadLink.setOnAction(event -> {
+                    resources resource = getTableView().getItems().get(getIndex());
+                    downloadResource(resource);
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                    return;
+                }
+
+                resources resource = getTableView().getItems().get(getIndex());
+                boolean hasContent = resource != null
+                        && resource.getContenu() != null
+                        && !resource.getContenu().trim().isEmpty();
+
+                downloadLink.setDisable(!hasContent);
+                setGraphic(downloadLink);
+            }
+        });
+
+        actionColumn.setCellFactory(column -> new TableCell<>() {
             private final Button editButton = new Button("Modifier");
 
             {
                 editButton.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 4;");
-
                 editButton.setOnAction(event -> {
                     resources resource = getTableView().getItems().get(getIndex());
                     openResourceForm(resource);
@@ -93,11 +134,135 @@ public class ResourceListController {
                 if (empty) {
                     setGraphic(null);
                 } else {
-                    HBox box = new HBox(8, editButton);
-                    setGraphic(box);
+                    setGraphic(new HBox(8, editButton));
                 }
             }
         });
+    }
+
+    private void downloadResource(resources resource) {
+        if (resource == null || resource.getContenu() == null || resource.getContenu().trim().isEmpty()) {
+            showError("Aucun fichier a telecharger pour cette ressource.");
+            return;
+        }
+
+        String contenu = resource.getContenu().trim();
+        if (contenu.startsWith("http://") || contenu.startsWith("https://")) {
+            downloadFromUrl(contenu, resource.getTitre());
+            return;
+        }
+
+        Path source = resolveLocalResourcePath(contenu);
+        if (source == null) {
+            showError("Fichier introuvable pour cette ressource:\n" + contenu);
+            return;
+        }
+
+        downloadFromLocalPath(source);
+    }
+
+    private Path resolveLocalResourcePath(String rawContent) {
+        try {
+            Path direct = Paths.get(rawContent).toAbsolutePath().normalize();
+            if (Files.exists(direct)) {
+                return direct;
+            }
+        } catch (Exception ignored) {
+        }
+
+        try {
+            Path fromProject = Paths.get("").toAbsolutePath().resolve(rawContent).normalize();
+            if (Files.exists(fromProject)) {
+                return fromProject;
+            }
+        } catch (Exception ignored) {
+        }
+
+        try {
+            Path fileName = Paths.get(rawContent).getFileName();
+            if (fileName != null) {
+                Path fromStorage = Paths.get("storage", "resources")
+                        .toAbsolutePath()
+                        .resolve(fileName.toString())
+                        .normalize();
+                if (Files.exists(fromStorage)) {
+                    return fromStorage;
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
+        return null;
+    }
+
+    private void downloadFromLocalPath(Path source) {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Telecharger le fichier");
+        chooser.setInitialFileName(source.getFileName().toString());
+        File targetFile = chooser.showSaveDialog(resourceTable.getScene().getWindow());
+        if (targetFile == null) {
+            return;
+        }
+
+        try {
+            Files.copy(source, targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            showInfo("Telechargement termine", "Fichier enregistre:\n" + targetFile.getAbsolutePath());
+        } catch (IOException e) {
+            showError("Erreur de telechargement: " + e.getMessage());
+        }
+    }
+
+    private void downloadFromUrl(String url, String titre) {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Telecharger le fichier");
+        chooser.setInitialFileName(buildDefaultFileName(url, titre));
+        File targetFile = chooser.showSaveDialog(resourceTable.getScene().getWindow());
+        if (targetFile == null) {
+            return;
+        }
+
+        try (InputStream in = new URL(url).openStream()) {
+            Files.copy(in, targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            showInfo("Telechargement termine", "Fichier enregistre:\n" + targetFile.getAbsolutePath());
+        } catch (IOException e) {
+            showError("Impossible de telecharger ce lien: " + e.getMessage());
+        }
+    }
+
+    private String buildDefaultFileName(String url, String titre) {
+        try {
+            String path = new URL(url).getPath();
+            if (path != null && !path.isBlank()) {
+                int idx = path.lastIndexOf('/');
+                String name = idx >= 0 ? path.substring(idx + 1) : path;
+                if (!name.isBlank()) {
+                    return name;
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
+        if (titre != null && !titre.isBlank()) {
+            return titre;
+        }
+
+        return "fichier";
+    }
+
+    private void showError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Erreur");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void showInfo(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
     private void loadResources() {
@@ -133,7 +298,7 @@ public class ResourceListController {
                 controller.setResource(resource);
             }
             Stage stage = new Stage();
-            stage.setTitle(resource == null ? "Créer une ressource" : "Modifier la ressource");
+            stage.setTitle(resource == null ? "Creer une ressource" : "Modifier la ressource");
             stage.setScene(new Scene(root));
             stage.setOnHidden(event -> loadResources());
             stage.show();
