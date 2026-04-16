@@ -34,7 +34,8 @@ public class ExamenController {
     @FXML private TableColumn<Examen, Void>    colActions;
     @FXML private TableColumn<Examen, String>  colCours;
     @FXML private TableColumn<Examen, String>  colEnseignant;
-
+    @FXML
+    private TextField searchField;
     private ObservableList<Examen> list;
     private final ExamenService service      = new ExamenService();
     private final CoursService  coursService = new CoursService();
@@ -123,6 +124,14 @@ public class ExamenController {
                             ? "-fx-background-color: white;"
                             : "-fx-background-color: #fafafa;");
                 }
+            }
+        });
+
+        searchField.textProperty().addListener((obs, oldValue, newValue) -> {
+            if (newValue.isEmpty()) {
+                tableExamens.setItems(FXCollections.observableArrayList(service.getAll()));
+            } else {
+                filtrerParTitre(newValue);
             }
         });
 
@@ -240,6 +249,23 @@ public class ExamenController {
             stage.show();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private void filtrerParTitre(String titre) {
+        list = FXCollections.observableArrayList(
+                service.rechercherParTitre(titre)
+        );
+        tableExamens.setItems(list);
+    }
+    @FXML
+    private void rechercherExamen() {
+        String titre = searchField.getText();
+
+        if (titre == null || titre.isEmpty()) {
+            tableExamens.setItems(FXCollections.observableArrayList(service.getAll()));
+        } else {
+            filtrerParTitre(titre);
         }
     }
 }

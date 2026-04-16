@@ -89,8 +89,13 @@
                         style="-fx-background-color: #4CAF50; -fx-text-fill: white;
                                -fx-background-radius: 8; -fx-font-size: 13;
                                -fx-padding: 10 20;"/>
-            </HBox>
 
+            </HBox>
+            <HBox spacing="10">
+                <TextField fx:id="searchField" promptText="🔍 Rechercher un examen..." />
+                <Button text="Rechercher" onAction="#rechercherExamen"
+                        style="-fx-background-color: #7c5cbf; -fx-text-fill: white;" />
+            </HBox>
             <!-- TABLE -->
             <TableView fx:id="tableExamens" VBox.vgrow="ALWAYS"
                        style="-fx-border-color: #e0e0e0; -fx-border-radius: 8;
