@@ -6,7 +6,7 @@
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="tn.esprit.controllers.UserController"
             style="-fx-background-color: linear-gradient(to bottom right, #EDE7F6, #E8F5E9);"
-            prefWidth="980" prefHeight="700">
+            prefWidth="1280" prefHeight="760">
 
     <!-- ══ HEADER ══════════════════════════════════════════════════════════ -->
     <top>
@@ -24,6 +24,11 @@
                    style="-fx-background-color: #9575CD; -fx-text-fill: white;
                           -fx-padding: 6 16; -fx-background-radius: 20;
                           -fx-font-size: 12px; -fx-font-weight: bold;"/>
+            <Button text="⬅ Retour Home" onAction="#goBack"
+                    style="-fx-background-color: white; -fx-text-fill: #5E35B1;
+                           -fx-font-size: 12px; -fx-font-weight: bold;
+                           -fx-padding: 8 14; -fx-background-radius: 10;
+                           -fx-cursor: hand;"/>
         </HBox>
     </top>
 
@@ -32,7 +37,7 @@
         <HBox spacing="18" style="-fx-padding: 20;">
 
             <!-- ── FORMULAIRE GAUCHE ─────────────────────────────────────── -->
-            <VBox spacing="14" prefWidth="290"
+            <VBox spacing="14" minWidth="320" prefWidth="320" maxWidth="340"
                   style="-fx-background-color: white; -fx-padding: 24;
                          -fx-background-radius: 16;
                          -fx-effect: dropshadow(gaussian, rgba(156,120,210,0.2), 12, 0, 0, 4);">
@@ -108,6 +113,14 @@
                                -fx-padding: 11; -fx-background-radius: 10;
                                -fx-cursor: hand;"/>
 
+                <!-- Bouton Modifier -->
+                <Button text="✎  Modifier" onAction="#updateSelectedUser"
+                        maxWidth="Infinity"
+                        style="-fx-background-color: #90CAF9; -fx-text-fill: #0D47A1;
+                               -fx-font-size: 13px; -fx-font-weight: bold;
+                               -fx-padding: 11; -fx-background-radius: 10;
+                               -fx-cursor: hand;"/>
+
                 <!-- Bouton Vider -->
                 <Button text="✖  Vider" onAction="#clearFields"
                         maxWidth="Infinity"
@@ -121,14 +134,15 @@
             <VBox spacing="12" HBox.hgrow="ALWAYS">
 
                 <!-- Barre recherche + filtre -->
-                <HBox spacing="12" alignment="CENTER_LEFT"
+                <VBox spacing="10"
                       style="-fx-background-color: white; -fx-padding: 14 18;
                              -fx-background-radius: 12;
                              -fx-effect: dropshadow(gaussian, rgba(156,120,210,0.15), 8, 0, 0, 3);">
 
+                    <HBox spacing="12" alignment="CENTER_LEFT">
                     <TextField fx:id="searchField"
                                promptText="🔍  Rechercher par nom..."
-                               prefWidth="220"
+                               prefWidth="260"
                                onKeyReleased="#handleSearch"
                                style="-fx-padding: 9 14; -fx-font-size: 13px;
                                       -fx-border-color: #CE93D8; -fx-border-radius: 8;
@@ -144,17 +158,47 @@
                               onAction="#applyFilter"
                               style="-fx-font-size: 13px;"/>
 
-                    <Button text="↺  Réinitialiser" onAction="#loadUsers"
-                            style="-fx-background-color: #E8F5E9; -fx-text-fill: #388E3C;
+                    <Label text="↕  Tri :"
+                           style="-fx-font-weight: bold; -fx-text-fill: #7E57C2;
+                                  -fx-font-size: 13px;"/>
+
+                    <ComboBox fx:id="sortCombo" prefWidth="180"
+                              onAction="#applySorting"
+                              style="-fx-font-size: 13px;"/>
+
+                    <Label text="🎯  Bulk role :"
+                           style="-fx-font-weight: bold; -fx-text-fill: #7E57C2;
+                                  -fx-font-size: 13px;"/>
+
+                    <ComboBox fx:id="bulkRoleCombo" prefWidth="150"
+                              style="-fx-font-size: 13px;"/>
+                    </HBox>
+
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Button text="Appliquer role" onAction="#applyBulkRole" minWidth="130"
+                            style="-fx-background-color: #FB8C00; -fx-text-fill: white;
                                    -fx-font-size: 12px; -fx-font-weight: bold;
                                    -fx-padding: 8 14; -fx-background-radius: 8;
                                    -fx-cursor: hand;"/>
-                    <Button text="⬇ Export CSV" onAction="#exportVisibleUsers"
-                            style="-fx-background-color: #E3F2FD; -fx-text-fill: #1565C0;
+
+                    <Button text="Supprimer selection" onAction="#deleteSelectedUsers" minWidth="150"
+                            style="-fx-background-color: #E53935; -fx-text-fill: white;
                                    -fx-font-size: 12px; -fx-font-weight: bold;
                                    -fx-padding: 8 14; -fx-background-radius: 8;
                                    -fx-cursor: hand;"/>
-                </HBox>
+
+                    <Button text="↺  Réinitialiser" onAction="#loadUsers" minWidth="130"
+                            style="-fx-background-color: #43A047; -fx-text-fill: white;
+                                   -fx-font-size: 12px; -fx-font-weight: bold;
+                                   -fx-padding: 8 14; -fx-background-radius: 8;
+                                   -fx-cursor: hand;"/>
+                    <Button text="Exporter CSV" onAction="#exportVisibleUsers" minWidth="120"
+                            style="-fx-background-color: #1E88E5; -fx-text-fill: white;
+                                   -fx-font-size: 12px; -fx-font-weight: bold;
+                                   -fx-padding: 8 14; -fx-background-radius: 8;
+                                   -fx-cursor: hand;"/>
+                    </HBox>
+                </VBox>
 
                 <!-- Statistiques dynamiques -->
                 <HBox spacing="10" alignment="CENTER_LEFT"
@@ -193,6 +237,10 @@
                                style="-fx-text-fill: #B39DDB; -fx-font-size: 14px;"/>
                     </placeholder>
                 </TableView>
+
+                <HBox alignment="CENTER_RIGHT" style="-fx-padding: 6 0 0 0;">
+                    <Pagination fx:id="pagination" maxPageIndicatorCount="7"/>
+                </HBox>
             </VBox>
         </HBox>
     </center>
