@@ -51,8 +51,9 @@ public class CategoryServiceTest {
         assertFalse(existe);
     }
 
-    @AfterEach
-    void cleanUp() throws SQLException {
+    @AfterAll
+    static void cleanUp() throws SQLException {
+        CategoryService service = new CategoryService();
         List<categorie> categories = service.getAll();
         categories.forEach(cat -> {
             try {

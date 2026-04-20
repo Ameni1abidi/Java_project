@@ -2,6 +2,7 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
 
 <?import javafx.collections.FXCollections?>
 <?import java.lang.String?>
@@ -9,36 +10,114 @@
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="tn.esprit.controllers.CreateExamenController">
 
-    <!-- SIDEBAR (copier coller même code) -->
-    <VBox prefWidth="220" style="-fx-background-color: #c4b5e8; -fx-padding: 20;">
-        <Label text="EduFlex" style="-fx-text-fill: white; -fx-font-size: 18;"/>
+    <VBox prefWidth="220" style="-fx-background-color: #c4b5e8; -fx-padding: 20; -fx-spacing: 10;">
+        <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 20 0;">
+            <Label text="EF"
+                   style="-fx-background-color: #7c5cbf; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16; -fx-background-radius: 10; -fx-padding: 8 10;" />
+            <VBox>
+                <Label text="EduFlex" style="-fx-font-weight: bold; -fx-font-size: 15;" />
+                <Label text="Espace enseignant" style="-fx-font-size: 11; -fx-text-fill: #555;" />
+            </VBox>
+        </HBox>
+
+        <VBox alignment="CENTER" spacing="5"
+              style="-fx-background-color: #d6c9f0; -fx-background-radius: 12; -fx-padding: 15;">
+            <Label text="A"
+                   style="-fx-background-color: #a08cc8; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 18; -fx-background-radius: 30; -fx-padding: 12 16;" />
+            <Label text="Ameni" style="-fx-font-weight: bold; -fx-font-size: 13;" />
+            <Label text="Enseignante" style="-fx-font-size: 11; -fx-text-fill: #666;" />
+        </VBox>
+
+        <VBox spacing="4" style="-fx-padding: 10 0 0 0;">
+            <Button text="DB  Tableau de bord" maxWidth="Infinity" onAction="#goDashboard"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="FO  Forum" maxWidth="Infinity" onAction="#goForum"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="C   Cours" maxWidth="Infinity" onAction="#goCours"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="RS  Ressources" maxWidth="Infinity" onAction="#goRessources"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="CT  Categories" maxWidth="Infinity" onAction="#goCategories"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="EX  Examens" maxWidth="Infinity" onAction="#goExamens"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="EV  Evaluations" maxWidth="Infinity"
+                    style="-fx-background-color: #b39ddb; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="RS  Resultats" maxWidth="Infinity" onAction="#goResultats"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="LO  Logout" maxWidth="Infinity" onAction="#goLogout"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+        </VBox>
     </VBox>
 
-    <!-- FORM -->
-    <VBox spacing="15" style="-fx-padding: 40;" HBox.hgrow="ALWAYS">
+    <!-- FORM CONTAINER -->
+    <VBox HBox.hgrow="ALWAYS" alignment="TOP_CENTER">
 
-        <Label text="Créer un examen"
-               style="-fx-font-size: 22; -fx-font-weight: bold;"/>
+        <VBox spacing="15"
+              maxWidth="500"
+              style="-fx-background-color: white; -fx-padding: 30; -fx-background-radius: 10; -fx-border-radius: 10; -fx-border-color: #ddd;">
 
-        <TextField fx:id="txtTitre" promptText="Titre"/>
+            <!-- TITLE -->
+            <Label text="Créer un examen"
+                   style="-fx-font-size: 22; -fx-font-weight: bold;"/>
 
-        <Button text="Choisir un fichier" onAction="#chooseFile"/>
+            <!-- TITRE -->
+            <VBox spacing="5">
+                <Label text="Titre"/>
+                <TextField fx:id="txtTitre"/>
+            </VBox>
 
-        <ComboBox fx:id="cbType">
-            <items>
-                <FXCollections fx:factory="observableArrayList">
-                    <String fx:value="examen"/>
-                    <String fx:value="controle"/>
-                </FXCollections>
-            </items>
-        </ComboBox>
+            <!-- FICHIER -->
+            <VBox spacing="5">
+                <Label text="Fichier d'examen"/>
+                <Button text="Choisir un fichier" onAction="#chooseFile"/>
+            </VBox>
 
-        <DatePicker fx:id="dateExamen"/>
+            <!-- TYPE -->
+            <VBox spacing="5">
+                <Label text="Type"/>
+                <ComboBox fx:id="cbType">
+                    <items>
+                        <FXCollections fx:factory="observableArrayList">
 
-        <TextField fx:id="txtDuree" promptText="Durée (minutes)"/>
+                        </FXCollections>
+                    </items>
+                </ComboBox>
+            </VBox>
 
-        <Button text="Enregistrer" onAction="#handleSave"
-                style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+            <!-- DATE -->
+            <VBox spacing="5">
+                <Label text="Date examen"/>
+                <DatePicker fx:id="dateExamen"/>
+            </VBox>
+
+            <!-- DUREE -->
+            <VBox spacing="5">
+                <Label text="Durée (minutes)"/>
+                <TextField fx:id="txtDuree"/>
+            </VBox>
+
+            <!-- COURS -->
+            <VBox spacing="5">
+                <Label text="Cours"/>
+                <ComboBox fx:id="cbCours" promptText="Choisir un cours"/>
+            </VBox>
+
+            <!-- ENSEIGNANT -->
+            <VBox spacing="5">
+                <Label text="Enseignant"/>
+                <ComboBox fx:id="cbEnseignant" promptText="Choisir un enseignant"/>
+            </VBox>
+
+            <!-- BUTTON -->
+            <Button text="Créer"
+                    onAction="#handleSave"
+                    style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-background-radius: 8;"/>
+
+            <!-- RETOUR -->
+            <Hyperlink text="Retour à la liste" onAction="#goBack"/>
+
+        </VBox>
 
     </VBox>
 

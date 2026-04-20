@@ -152,7 +152,7 @@ public class Main {
 
         // ===== EVALUATION =====
         EvaluationService evs = new EvaluationService();
-        Evaluation ev = new Evaluation(16, "Bien",1);
+        Evaluation ev = new Evaluation(16, "Bien",1,3);
         evs.create(ev);
         evs.getAll().forEach(System.out::println);
         //ev.setNote(19);

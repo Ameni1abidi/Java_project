@@ -21,15 +21,74 @@ public class ResourceService {
 
     private void ensureSchema() {
         try {
+            if (!hasColumn("categorie_nom") && hasColumn("categorie_id")) {
+                // Drop any foreign key constraints on categorie_id before renaming the column
+                try {
+                    for (String fkName : getForeignKeyNamesOnColumn("ressource", "categorie_id")) {
+                        try {
+                            executeUpdate("ALTER TABLE ressource DROP FOREIGN KEY " + fkName);
+                        } catch (SQLException ignored) {
+                            // FK might not exist
+                        }
+                    }
+                    executeUpdate("ALTER TABLE ressource CHANGE categorie_id categorie_nom VARCHAR(255)");
+                } catch (SQLException ignored) {
+                    // Column might already be renamed or not exist
+                }
+            }
+            
+            // Ensure foreign key constraint
+            if (hasColumn("categorie_nom") && !hasForeignKey("fk_ressource_categorie")) {
+                try {
+                    executeUpdate("ALTER TABLE ressource ADD CONSTRAINT fk_ressource_categorie FOREIGN KEY (categorie_nom) REFERENCES categorie(nom)");
+                } catch (SQLException ignored) {
+                    // FK constraint might already exist
+                }
+            }
+            
             if (!hasColumn("type")) {
-                executeUpdate("ALTER TABLE ressource ADD COLUMN type VARCHAR(50)");
+                try {
+                    executeUpdate("ALTER TABLE ressource ADD COLUMN type VARCHAR(50)");
+                } catch (SQLException ignored) {
+                    // Column might already exist
+                }
             }
             if (!hasColumn("disponible_le")) {
-                executeUpdate("ALTER TABLE ressource ADD COLUMN disponible_le VARCHAR(100)");
+                try {
+                    executeUpdate("ALTER TABLE ressource ADD COLUMN disponible_le VARCHAR(100)");
+                } catch (SQLException ignored) {
+                    // Column might already exist
+                }
             }
         } catch (SQLException e) {
             throw new RuntimeException("Erreur lors de l'initialisation du schéma des ressources", e);
         }
+    }
+
+    private boolean hasForeignKey(String constraintName) throws SQLException {
+        String sql = "SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS " +
+                     "WHERE TABLE_NAME = 'ressource' AND CONSTRAINT_TYPE = 'FOREIGN KEY' AND CONSTRAINT_NAME = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, constraintName);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    private List<String> getForeignKeyNamesOnColumn(String tableName, String columnName) throws SQLException {
+        List<String> fkNames = new ArrayList<>();
+        DatabaseMetaData metaData = connection.getMetaData();
+        try (ResultSet rs = metaData.getImportedKeys(connection.getCatalog(), null, tableName)) {
+            while (rs.next()) {
+                String fkColumn = rs.getString("FKCOLUMN_NAME");
+                String fkName = rs.getString("FK_NAME");
+                if (columnName.equalsIgnoreCase(fkColumn) && fkName != null && !fkName.isBlank()) {
+                    fkNames.add(fkName);
+                }
+            }
+        }
+        return fkNames;
     }
 
     private boolean hasColumn(String columnName) throws SQLException {
@@ -48,34 +107,33 @@ public class ResourceService {
         }
     }
 
-    public void add(resources resource) {
-        String sql = "INSERT INTO ressource(titre, contenu, categorie_nom, type, disponible_le) VALUES(?, ?, ?, ?, ?)";
-        try (PreparedStatement ps = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, resource.getTitre());
-            ps.setString(2, resource.getContenu());
-            ps.setString(3, resource.getCategorieNom());
-            ps.setString(4, resource.getType());
-            ps.setString(5, resource.getDisponibleLe());
-            ps.executeUpdate();
+    public void add(resources r) {
+        String sql = "INSERT INTO ressource(titre, contenu, categorie_id, type, disponible_le) " +
+                "VALUES(?, ?, (SELECT id FROM categorie WHERE nom = ?), ?, ?)";
 
-            try (ResultSet keys = ps.getGeneratedKeys()) {
-                if (keys.next()) {
-                    resource.setId(keys.getInt(1));
-                }
-            }
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, r.getTitre());
+            ps.setString(2, r.getContenu());
+            ps.setString(3, r.getCategorieNom());
+            ps.setString(4, r.getType());
+            ps.setString(5, r.getDisponibleLe());
+            ps.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("Erreur lors de l'ajout de la ressource", e);
+            throw new RuntimeException(e);
         }
     }
 
     public List<resources> getAll() {
-        String sql = "SELECT id, titre, contenu, categorie_nom, type, disponible_le FROM ressource";
-        List<resources> resourceList = new ArrayList<>();
+        String sql = "SELECT r.id, r.titre, r.contenu, c.nom AS categorie_nom, r.type, r.disponible_le " +
+                "FROM ressource r JOIN categorie c ON r.categorie_id = c.id";
+
+        List<resources> list = new ArrayList<>();
 
         try (PreparedStatement ps = connection.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
+
             while (rs.next()) {
-                resourceList.add(new resources(
+                list.add(new resources(
                         rs.getInt("id"),
                         rs.getString("titre"),
                         rs.getString("contenu"),
@@ -85,61 +143,62 @@ public class ResourceService {
                 ));
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Erreur lors de la recuperation des ressources", e);
+            throw new RuntimeException(e);
         }
 
-        return resourceList;
+        return list;
     }
 
     public resources getById(int id) {
-        String sql = "SELECT id, titre, contenu, categorie_nom, type, disponible_le FROM ressource WHERE id = ?";
+        String sql = "SELECT r.id, r.titre, r.contenu, c.nom AS categorie_nom, r.type, r.disponible_le " +
+                "FROM ressource r JOIN categorie c ON r.categorie_id = c.id WHERE r.id = ?";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
 
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return new resources(
-                            rs.getInt("id"),
-                            rs.getString("titre"),
-                            rs.getString("contenu"),
-                            rs.getString("categorie_nom"),
-                            rs.getString("type"),
-                            rs.getString("disponible_le")
-                    );
-                }
+            if (rs.next()) {
+                return new resources(
+                        rs.getInt("id"),
+                        rs.getString("titre"),
+                        rs.getString("contenu"),
+                        rs.getString("categorie_nom"),
+                        rs.getString("type"),
+                        rs.getString("disponible_le")
+                );
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Erreur lors de la recuperation de la ressource", e);
+            throw new RuntimeException(e);
         }
 
         return null;
     }
 
-    public boolean update(resources resource) {
-        String sql = "UPDATE ressource SET titre = ?, contenu = ?, categorie_nom = ?, type = ?, disponible_le = ? WHERE id = ?";
+    public boolean update(resources r) {
+        String sql = "UPDATE ressource SET titre=?, contenu=?, categorie_id=(SELECT id FROM categorie WHERE nom=?), type=?, disponible_le=? WHERE id=?";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, resource.getTitre());
-            ps.setString(2, resource.getContenu());
-            ps.setString(3, resource.getCategorieNom());
-            ps.setString(4, resource.getType());
-            ps.setString(5, resource.getDisponibleLe());
-            ps.setInt(6, resource.getId());
+            ps.setString(1, r.getTitre());
+            ps.setString(2, r.getContenu());
+            ps.setString(3, r.getCategorieNom());
+            ps.setString(4, r.getType());
+            ps.setString(5, r.getDisponibleLe());
+            ps.setInt(6, r.getId());
+
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            throw new RuntimeException("Erreur lors de la mise a jour de la ressource", e);
+            throw new RuntimeException(e);
         }
     }
 
     public boolean delete(int id) {
-        String sql = "DELETE FROM ressource WHERE id = ?";
+        String sql = "DELETE FROM ressource WHERE id=?";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, id);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            throw new RuntimeException("Erreur lors de la suppression de la ressource", e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -170,34 +229,33 @@ public class ResourceService {
     }
 
     public List<resources> search(String keyword) {
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return getAll();
-        }
+        String sql = "SELECT r.id, r.titre, r.contenu, c.nom AS categorie_nom, r.type, r.disponible_le " +
+                "FROM ressource r JOIN categorie c ON r.categorie_id = c.id " +
+                "WHERE r.titre LIKE ? OR r.contenu LIKE ?";
 
-        String sql = "SELECT id, titre, contenu, categorie_nom, type, disponible_le FROM ressource WHERE titre LIKE ? OR contenu LIKE ?";
-        List<resources> resourceList = new ArrayList<>();
-        String searchPattern = "%" + keyword + "%";
+        List<resources> list = new ArrayList<>();
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, searchPattern);
-            ps.setString(2, searchPattern);
+            String k = "%" + keyword + "%";
+            ps.setString(1, k);
+            ps.setString(2, k);
 
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    resourceList.add(new resources(
-                            rs.getInt("id"),
-                            rs.getString("titre"),
-                            rs.getString("contenu"),
-                            rs.getString("categorie_nom"),
-                            rs.getString("type"),
-                            rs.getString("disponible_le")
-                    ));
-                }
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                list.add(new resources(
+                        rs.getInt("id"),
+                        rs.getString("titre"),
+                        rs.getString("contenu"),
+                        rs.getString("categorie_nom"),
+                        rs.getString("type"),
+                        rs.getString("disponible_le")
+                ));
             }
         } catch (SQLException e) {
             throw new RuntimeException("Erreur lors de la recherche de ressources", e);
         }
 
-        return resourceList;
+        return list;
     }
 }

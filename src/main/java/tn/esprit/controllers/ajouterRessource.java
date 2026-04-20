@@ -19,8 +19,13 @@ import tn.esprit.services.CategoryService;
 import tn.esprit.services.ResourceService;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 public class ajouterRessource {
 
@@ -57,8 +62,8 @@ public class ajouterRessource {
     @FXML
     private Button supprimerButton;
 
-    private ResourceService resourceService = new ResourceService();
-    private CategoryService categoryService = new CategoryService();
+    private final ResourceService resourceService = new ResourceService();
+    private final CategoryService categoryService = new CategoryService();
     private resources currentResource;
     private String selectedFilePath = "";
 
@@ -75,7 +80,7 @@ public class ajouterRessource {
     private void handleCategoryChange(categorie categorie) {
         errorLabel.setText("");
         selectedFilePath = "";
-        selectedFileLabel.setText("Aucun fichier sélectionné");
+        selectedFileLabel.setText("Aucun fichier selectionne");
 
         String type = mapCategoryToType(categorie);
         if (type == null) {
@@ -100,7 +105,7 @@ public class ajouterRessource {
         categorie categorie = categorieCombo.getValue();
         String type = mapCategoryToType(categorie);
         if (type == null) {
-            errorLabel.setText("Catégorie invalide : utilisez image, vidéo, audio, pdf ou lien.");
+            errorLabel.setText("Categorie invalide : utilisez image, video, audio, pdf ou lien.");
             return;
         }
 
@@ -111,8 +116,8 @@ public class ajouterRessource {
             case "image":
                 fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Images", "*.jpg", "*.png", "*.gif", "*.bmp"));
                 break;
-            case "vidéo":
-                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Vidéos", "*.mp4", "*.avi", "*.mkv", "*.mov"));
+            case "video":
+                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Videos", "*.mp4", "*.avi", "*.mkv", "*.mov"));
                 break;
             case "audio":
                 fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Audios", "*.mp3", "*.wav", "*.flac", "*.m4a"));
@@ -136,7 +141,7 @@ public class ajouterRessource {
             List<categorie> categories = categoryService.getAll();
             categorieCombo.setItems(javafx.collections.FXCollections.observableArrayList(categories));
         } catch (Exception e) {
-            errorLabel.setText("Erreur lors du chargement des catégories.");
+            errorLabel.setText("Erreur lors du chargement des categories.");
             e.printStackTrace();
         }
     }
@@ -146,7 +151,7 @@ public class ajouterRessource {
         if (resource != null) {
             titreField.setText(resource.getTitre());
             selectedFilePath = resource.getContenu();
-            selectedFileLabel.setText(resource.getContenu());
+            selectedFileLabel.setText(extractFileName(resource.getContenu()));
             urlField.setText("lien".equals(resource.getType()) ? resource.getContenu() : "");
 
             if (resource.getDisponibleLe() != null && !resource.getDisponibleLe().isEmpty()) {
@@ -182,16 +187,17 @@ public class ajouterRessource {
             return;
         }
         if (categorie == null) {
-            errorLabel.setText("Veuillez sélectionner une catégorie.");
+            errorLabel.setText("Veuillez selectionner une categorie.");
             return;
         }
+
         String type = mapCategoryToType(categorie);
         if (type == null) {
-            errorLabel.setText("Catégorie non prise en charge : image, vidéo, audio, pdf ou lien seulement.");
+            errorLabel.setText("Categorie non prise en charge : image, video, audio, pdf ou lien seulement.");
             return;
         }
         if (date == null) {
-            errorLabel.setText("Veuillez sélectionner une date de disponibilité.");
+            errorLabel.setText("Veuillez selectionner une date de disponibilite.");
             return;
         }
 
@@ -208,10 +214,15 @@ public class ajouterRessource {
             }
         } else {
             if (selectedFilePath.isEmpty()) {
-                errorLabel.setText("Veuillez sélectionner un fichier.");
+                errorLabel.setText("Veuillez selectionner un fichier.");
                 return;
             }
-            contenu = selectedFilePath;
+            try {
+                contenu = prepareStoredFilePath(selectedFilePath);
+            } catch (IOException e) {
+                errorLabel.setText("Impossible de sauvegarder le fichier: " + e.getMessage());
+                return;
+            }
         }
 
         String disponibleLe = date.toString();
@@ -220,7 +231,7 @@ public class ajouterRessource {
             if (currentResource == null) {
                 resources newResource = new resources(titre, contenu, categorie.getNom(), type, disponibleLe);
                 resourceService.add(newResource);
-                showAlert("Succès", "Ressource créée avec succès !");
+                showAlert("Succes", "Ressource creee avec succes !");
             } else {
                 currentResource.setTitre(titre);
                 currentResource.setContenu(contenu);
@@ -228,7 +239,7 @@ public class ajouterRessource {
                 currentResource.setType(type);
                 currentResource.setDisponibleLe(disponibleLe);
                 resourceService.update(currentResource);
-                showAlert("Succès", "Ressource modifiée avec succès !");
+                showAlert("Succes", "Ressource modifiee avec succes !");
             }
             fermerFenetre();
         } catch (Exception e) {
@@ -246,12 +257,12 @@ public class ajouterRessource {
         Alert confirmation = new Alert(AlertType.CONFIRMATION);
         confirmation.setTitle("Confirmation");
         confirmation.setHeaderText("Supprimer la ressource");
-        confirmation.setContentText("Êtes-vous sûr de vouloir supprimer cette ressource ?");
+        confirmation.setContentText("Etes-vous sur de vouloir supprimer cette ressource ?");
 
         if (confirmation.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
             try {
                 resourceService.delete(currentResource.getId());
-                showAlert("Succès", "Ressource supprimée avec succès !");
+                showAlert("Succes", "Ressource supprimee avec succes !");
                 fermerFenetre();
             } catch (Exception e) {
                 errorLabel.setText("Erreur lors de la suppression: " + e.getMessage());
@@ -264,13 +275,15 @@ public class ajouterRessource {
         if (categorie == null || categorie.getNom() == null) {
             return null;
         }
+
         String nom = categorie.getNom().trim().toLowerCase();
         switch (nom) {
             case "image":
                 return "image";
-            case "vidéo":
             case "video":
-                return "vidéo";
+            //case "vid�o":
+            case "vidéo":
+                return "video";
             case "audio":
                 return "audio";
             case "pdf":
@@ -280,6 +293,47 @@ public class ajouterRessource {
                 return "lien";
             default:
                 return null;
+        }
+    }
+
+    private String prepareStoredFilePath(String sourcePath) throws IOException {
+        Path source = Path.of(sourcePath);
+        if (!Files.exists(source)) {
+            throw new IOException("fichier introuvable");
+        }
+
+        Path storageDir = Path.of("storage", "resources").toAbsolutePath().normalize();
+        Files.createDirectories(storageDir);
+
+        Path absoluteSource = source.toAbsolutePath().normalize();
+        if (absoluteSource.startsWith(storageDir)) {
+            return absoluteSource.toString();
+        }
+
+        String originalName = source.getFileName().toString();
+        String extension = "";
+        int dot = originalName.lastIndexOf('.');
+        if (dot >= 0) {
+            extension = originalName.substring(dot);
+        }
+
+        String targetName = UUID.randomUUID() + extension;
+        Path target = storageDir.resolve(targetName);
+        Files.copy(absoluteSource, target, StandardCopyOption.REPLACE_EXISTING);
+        return target.toString();
+    }
+
+    private String extractFileName(String content) {
+        if (content == null || content.isBlank()) {
+            return "Aucun fichier selectionne";
+        }
+        if (content.startsWith("http://") || content.startsWith("https://")) {
+            return content;
+        }
+        try {
+            return Path.of(content).getFileName().toString();
+        } catch (Exception ignored) {
+            return content;
         }
     }
 

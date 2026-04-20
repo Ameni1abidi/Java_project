@@ -109,15 +109,17 @@ public class CategorieController {
 
     @FXML
     void retourListe() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/CategorieList.fxml"));
-            Parent root = loader.load();
+        navigateTo("/CategorieList.fxml", "Liste des catégories");
+    }
 
+    private void navigateTo(String fxmlFile, String title) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlFile));
+            Parent root = loader.load();
             Stage stage = (Stage) nomField.getScene().getWindow();
             stage.setScene(new Scene(root));
-            stage.setTitle("Liste des catégories");
+            stage.setTitle(title);
             stage.show();
-
         } catch (Exception e) {
             e.printStackTrace();
         }
