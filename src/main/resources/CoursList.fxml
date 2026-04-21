@@ -7,8 +7,6 @@
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="tn.esprit.controllers.CoursList">
 
-
-
     <!-- 🔍 SEARCH -->
     <HBox spacing="10">
         <TextField fx:id="searchField" promptText="Rechercher un cours"

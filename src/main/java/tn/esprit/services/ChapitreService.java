@@ -11,7 +11,6 @@ public class ChapitreService {
 
     Connection cnx = MyDatabase.getInstance().getConnection();
 
-    // CREATE
     public void ajouter(Chapitre c) {
 
         String sql = "INSERT INTO chapitre (titre, ordre, type_contenu, contenu_texte, contenu_fichier, duree_estimee, resume, cours_id) VALUES (?,?,?,?,?,?,?,?)";
@@ -29,7 +28,6 @@ public class ChapitreService {
 
             ps.executeUpdate();
 
-            // ✅ récupérer ID généré
             ResultSet rs = ps.getGeneratedKeys();
             if (rs.next()) {
                 c.setId(rs.getInt(1));
@@ -40,7 +38,6 @@ public class ChapitreService {
         }
     }
 
-    // READ BY COURS
     public List<Chapitre> getAll(int coursId) {
 
         List<Chapitre> list = new ArrayList<>();
@@ -75,7 +72,6 @@ public class ChapitreService {
         return list;
     }
 
-    // UPDATE ✅ FIX
     public void modifier(Chapitre c) {
 
         String sql = "UPDATE chapitre SET titre=?, ordre=?, type_contenu=?, contenu_texte=?, contenu_fichier=?, duree_estimee=?, resume=?, cours_id=? WHERE id=?";
@@ -102,8 +98,6 @@ public class ChapitreService {
         }
     }
 
-
-    // DELETE
     public void supprimer(int id) {
         String sql = "DELETE FROM chapitre WHERE id=?";
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {

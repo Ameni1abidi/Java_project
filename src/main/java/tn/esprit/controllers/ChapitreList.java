@@ -1,9 +1,12 @@
 package tn.esprit.controllers;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
@@ -33,9 +36,6 @@ public class ChapitreList {
 
     private int coursId;
 
-    // =========================
-    // INIT Cours
-    // =========================
     public void setCoursId(int id) {
         this.coursId = id;
         loadChapitres();
@@ -45,9 +45,6 @@ public class ChapitreList {
         }
     }
 
-    // =========================
-    // LOAD
-    // =========================
     private void loadChapitres() {
         chapitreContainer.getChildren().clear();
 
@@ -57,10 +54,6 @@ public class ChapitreList {
             chapitreContainer.getChildren().add(createCard(ch));
         }
     }
-
-    // =========================
-    // SEARCH
-    // =========================
     @FXML
     void searchChapitre() {
 
@@ -77,10 +70,6 @@ public class ChapitreList {
             }
         }
     }
-
-    // =========================
-    // CARD UI
-    // =========================
     private VBox createCard(Chapitre chapitre) {
 
         VBox card = new VBox(10);
@@ -154,18 +143,11 @@ public class ChapitreList {
 
         return card;
     }
-
-    // =========================
-    // ADD
-    // =========================
     @FXML
     void goToAdd() {
         openForm(null);
     }
 
-    // =========================
-    // OPEN FORM
-    // =========================
     private void openForm(Chapitre ch) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ChapitreForm.fxml"));
@@ -181,10 +163,6 @@ public class ChapitreList {
             e.printStackTrace();
         }
     }
-
-    // =========================
-    // BACK BUTTON
-    // =========================
     @FXML
     void goBack() {
         try {
@@ -198,5 +176,4 @@ public class ChapitreList {
             e.printStackTrace();
         }
     }
-
 }

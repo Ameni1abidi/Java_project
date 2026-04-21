@@ -11,7 +11,6 @@ public class CoursService {
 
     Connection cnx = MyDatabase.getInstance().getConnection();
 
-    // CREATE
     public int ajouter(Cours c) {
         int id = -1;
 
@@ -42,8 +41,6 @@ public class CoursService {
 
         return id;
     }
-
-    // READ ✅
     public List<Cours> getAll() {
         List<Cours> list = new ArrayList<>();
 
@@ -73,7 +70,6 @@ public class CoursService {
         return list;
     }
 
-    // UPDATE
     public void modifier(Cours c) {
         try {
             String sql = "UPDATE cours SET titre=?, description=?, niveau=?, date_creation=?, titre_traduit=?, description_traduit=?, badge=? WHERE id=?";
@@ -95,7 +91,6 @@ public class CoursService {
         }
     }
 
-    // DELETE
     public void supprimer(int id) {
         try {
             String sql = "DELETE FROM cours WHERE id=?";
