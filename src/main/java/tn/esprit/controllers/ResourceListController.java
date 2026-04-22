@@ -355,12 +355,18 @@ public class ResourceListController {
 
     private void loadPage(ActionEvent event, String fxmlPath) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Parent root = loader.load();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
         } catch (Exception e) {
             e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Erreur de navigation");
+            alert.setHeaderText("Impossible d'ouvrir la page");
+            alert.setContentText("Fichier FXML introuvable ou erreur d'ouverture : " + fxmlPath + "\n" + e.getMessage());
+            alert.showAndWait();
         }
     }
 }
