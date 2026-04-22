@@ -131,4 +131,7 @@ public class CategorieController {
         alert.setContentText(msg);
         alert.show();
     }
+
+
+
 }

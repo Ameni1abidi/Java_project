@@ -108,4 +108,31 @@ public class ForumService {
         }
         return 0;
     }
+
+    public List<forum> afficher() {
+
+        List<forum> list = new ArrayList<>();
+        String sql = "SELECT * FROM forum";
+
+        try {
+            Statement st = cnx.createStatement();
+            ResultSet rs = st.executeQuery(sql);
+
+            while (rs.next()) {
+                forum f = new forum(
+                        rs.getInt("id"),
+                        rs.getString("titre"),
+                        rs.getString("contenu"),
+                        rs.getString("type"),
+                        rs.getTimestamp("date_creation")
+                );
+                list.add(f);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
 }
