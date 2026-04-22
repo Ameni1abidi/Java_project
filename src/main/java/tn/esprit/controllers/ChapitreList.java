@@ -3,11 +3,15 @@ package tn.esprit.controllers;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.event.ActionEvent;
+
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+
 import javafx.scene.control.Hyperlink;
+
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.FlowPane;
@@ -17,8 +21,6 @@ import javafx.stage.Stage;
 import tn.esprit.entities.Chapitre;
 import tn.esprit.services.ChapitreService;
 
-import java.awt.*;
-import java.io.File;
 import java.util.List;
 
 public class ChapitreList {
@@ -41,7 +43,7 @@ public class ChapitreList {
         loadChapitres();
 
         if (coursTitle != null) {
-            coursTitle.setText("Chapitres du cours: " + id);
+            coursTitle.setText("Chapitres du cours ID: " + id);
         }
     }
 
@@ -91,38 +93,15 @@ public class ChapitreList {
             contenu.setWrapText(true);
         }
 
-        Hyperlink fileLink = new Hyperlink();
-
+        Label file = new Label();
         if (chapitre.getContenuFichier() != null && !chapitre.getContenuFichier().isEmpty()) {
-
-            fileLink.setText("Ouvrir fichier");
-
-            fileLink.setOnAction(e -> {
-                try {
-                    File file = new File(chapitre.getContenuFichier());
-
-                    if (file.exists()) {
-                        Desktop.getDesktop().open(file);
-                    } else {
-                        System.out.println("Fichier introuvable !");
-                    }
-
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            });
-
-        } else {
-            fileLink.setText("Aucun fichier");
-            fileLink.setDisable(true);
+            file.setText("Fichier : " + chapitre.getContenuFichier());
+            file.setStyle("-fx-text-fill:blue;");
         }
 
         Label info = new Label(
                 "Ordre: " + chapitre.getOrdre() +
                         " | Durée: " + chapitre.getDureeEstimee() + " min"
-        );
-        Label durée = new Label(
-                        " Durée: " + chapitre.getDureeEstimee() + " min"
         );
         info.setStyle("-fx-text-fill:#888; -fx-font-size:11px;");
 
@@ -139,7 +118,7 @@ public class ChapitreList {
 
         HBox actions = new HBox(10, edit, delete);
 
-        card.getChildren().addAll(titre, type, contenu, fileLink, info, actions);
+        card.getChildren().addAll(titre, type, contenu, file, info, actions);
 
         return card;
     }
@@ -176,4 +155,60 @@ public class ChapitreList {
             e.printStackTrace();
         }
     }
+
+    @FXML
+    private void goDashboard(ActionEvent event) {
+        loadPage(event, "/ProfDashboard.fxml");
+    }
+
+    @FXML
+    private void goForum(ActionEvent event) {
+        loadPage(event, "/forum.fxml");
+    }
+
+    @FXML
+    private void goRessources(ActionEvent event) {
+        loadPage(event, "/listeRessources.fxml");
+    }
+
+    @FXML
+    private void goCategories(ActionEvent event) {
+        loadPage(event, "/CategorieList.fxml");
+    }
+
+    @FXML
+    private void goExamens(ActionEvent event) {
+        loadPage(event, "/ExamenView.fxml");
+    }
+
+    @FXML
+    private void goEvaluations(ActionEvent event) {
+        loadPage(event, "/EvaluationView.fxml");
+    }
+
+    @FXML
+    private void goResultats(ActionEvent event) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Resultats");
+        alert.setHeaderText(null);
+        alert.setContentText("La page resultats sera bientot disponible.");
+        alert.showAndWait();
+    }
+
+    @FXML
+    private void goLogout(ActionEvent event) {
+        loadPage(event, "/Login.fxml");
+    }
+
+    private void loadPage(ActionEvent event, String fxmlPath) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }

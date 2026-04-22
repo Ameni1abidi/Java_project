@@ -2,11 +2,15 @@ package tn.esprit.controllers;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
+import javafx.stage.Stage;
 import tn.esprit.entities.Examen;
 import tn.esprit.entities.Cours;
 import tn.esprit.entities.User;
@@ -30,7 +34,8 @@ public class ExamenController {
     @FXML private TableColumn<Examen, Void>    colActions;
     @FXML private TableColumn<Examen, String>  colCours;
     @FXML private TableColumn<Examen, String>  colEnseignant;
-
+    @FXML
+    private TextField searchField;
     private ObservableList<Examen> list;
     private final ExamenService service      = new ExamenService();
     private final CoursService  coursService = new CoursService();
@@ -122,6 +127,14 @@ public class ExamenController {
             }
         });
 
+        searchField.textProperty().addListener((obs, oldValue, newValue) -> {
+            if (newValue.isEmpty()) {
+                tableExamens.setItems(FXCollections.observableArrayList(service.getAll()));
+            } else {
+                filtrerParTitre(newValue);
+            }
+        });
+
         loadData();
         addButtons();
     }
@@ -185,6 +198,74 @@ public class ExamenController {
             tableExamens.getScene().setRoot(root);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void goDashboard(ActionEvent event) {
+        loadPage(event, "/ProfDashboard.fxml");
+    }
+
+    @FXML
+    private void goForum(ActionEvent event) {
+        loadPage(event, "/forum.fxml");
+    }
+
+    @FXML
+    private void goCours(ActionEvent event) {
+        loadPage(event, "/CoursList.fxml");
+    }
+
+    @FXML
+    private void goRessources(ActionEvent event) {
+        loadPage(event, "/listeRessources.fxml");
+    }
+
+    @FXML
+    private void goCategories(ActionEvent event) {
+        loadPage(event, "/CategorieList.fxml");
+    }
+
+    @FXML
+    private void goEvaluations(ActionEvent event) {
+        loadPage(event, "/EvaluationView.fxml");
+    }
+
+    @FXML
+    private void goResultats(ActionEvent event) {
+        showAlert("Resultats", "La page resultats sera bientot disponible.");
+    }
+
+    @FXML
+    private void goLogout(ActionEvent event) {
+        loadPage(event, "/Login.fxml");
+    }
+
+    private void loadPage(ActionEvent event, String fxmlPath) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void filtrerParTitre(String titre) {
+        list = FXCollections.observableArrayList(
+                service.rechercherParTitre(titre)
+        );
+        tableExamens.setItems(list);
+    }
+    @FXML
+    private void rechercherExamen() {
+        String titre = searchField.getText();
+
+        if (titre == null || titre.isEmpty()) {
+            tableExamens.setItems(FXCollections.observableArrayList(service.getAll()));
+        } else {
+            filtrerParTitre(titre);
         }
     }
 }

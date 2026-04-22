@@ -13,13 +13,14 @@ public class EvaluationService {
 
     // CREATE
     public void create(Evaluation e) {
-        String sql = "INSERT INTO resultat (note, appreciation, examen_id) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO resultat (note, appreciation, examen_id, eleve_id) VALUES (?, ?, ?, ?)";
 
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
 
             ps.setDouble(1, e.getNote());
             ps.setString(2, e.getAppreciation());
             ps.setInt(3, e.getExamenId());
+            ps.setInt(4, e.getEleveId());
 
             ps.executeUpdate();
             System.out.println("✔ Evaluation ajoutée");
@@ -42,7 +43,8 @@ public class EvaluationService {
                 Evaluation e = new Evaluation(
                         rs.getDouble("note"),
                         rs.getString("appreciation"),
-                        rs.getInt("examen_id")
+                        rs.getInt("examen_id"),
+                        rs.getInt("eleve_id")
                 );
 
                 e.setId(rs.getInt("id"));
@@ -59,13 +61,15 @@ public class EvaluationService {
 
     // UPDATE
     public void update(Evaluation e) {
-        String sql = "UPDATE resultat SET note=?, appreciation=? WHERE id=?";
+        String sql = "UPDATE resultat SET note=?, appreciation=?, examen_id=?, eleve_id=? WHERE id=?";
 
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
 
             ps.setDouble(1, e.getNote());
             ps.setString(2, e.getAppreciation());
-            ps.setInt(3, e.getId());
+            ps.setInt(3, e.getExamenId());
+            ps.setInt(4, e.getEleveId());
+            ps.setInt(5, e.getId());
 
             ps.executeUpdate();
             System.out.println("✔ Evaluation modifiée");

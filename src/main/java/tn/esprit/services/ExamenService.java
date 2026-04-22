@@ -113,4 +113,35 @@ public class ExamenService implements IService<Examen> {
             System.out.println("Error DELETE: " + ex.getMessage());
         }
     }
+
+    public List<Examen> rechercherParTitre(String titre) {
+        String sql = "SELECT * FROM examen WHERE titre LIKE ?";
+        List<Examen> list = new ArrayList<>();
+
+        try {
+            PreparedStatement ps = cnx.prepareStatement(sql);
+            ps.setString(1, "%" + titre + "%");
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Examen e = new Examen();
+                e.setId(rs.getInt("id"));
+                e.setTitre(rs.getString("titre"));
+                e.setContenu(rs.getString("contenu"));
+                e.setType(rs.getString("type"));
+                e.setDateExamen(rs.getDate("date_examen").toLocalDate());
+                e.setDuree(rs.getInt("duree"));
+                e.setCoursId(rs.getInt("cours_id"));
+                e.setEnseignantId(rs.getInt("enseignant_id"));
+
+                list.add(e);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
 }
