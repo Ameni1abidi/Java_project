@@ -89,14 +89,18 @@
                         style="-fx-background-color: #4CAF50; -fx-text-fill: white;
                                -fx-background-radius: 8; -fx-font-size: 13;
                                -fx-padding: 10 20;"/>
-            </HBox>
 
+            </HBox>
+            <HBox spacing="10">
+                <TextField fx:id="searchField" promptText="🔍 Rechercher un examen..." />
+                <Button text="Rechercher" onAction="#rechercherExamen"
+                        style="-fx-background-color: #7c5cbf; -fx-text-fill: white;" />
+            </HBox>
             <!-- TABLE -->
             <TableView fx:id="tableExamens" VBox.vgrow="ALWAYS"
                        style="-fx-border-color: #e0e0e0; -fx-border-radius: 8;
                   -fx-table-cell-border-color: #f0f0f0;">
                 <columns>
-                    <TableColumn fx:id="colId"         text="ID"          prefWidth="50"  style="-fx-alignment: CENTER;"/>
                     <TableColumn fx:id="colTitre"      text="Titre"       prefWidth="180"/>
                     <TableColumn fx:id="colFichier"    text="Fichier"     prefWidth="110" style="-fx-alignment: CENTER;"/>
                     <TableColumn fx:id="colType"       text="Type"        prefWidth="90"  style="-fx-alignment: CENTER;"/>
@@ -104,7 +108,7 @@
                     <TableColumn fx:id="colDuree"      text="Duree"       prefWidth="80"  style="-fx-alignment: CENTER;"/>
                     <TableColumn fx:id="colCours"      text="Cours"       prefWidth="110" style="-fx-alignment: CENTER;"/>
                     <TableColumn fx:id="colEnseignant" text="Enseignant"  prefWidth="120" style="-fx-alignment: CENTER;"/>
-                    <TableColumn fx:id="colActions"    text="Actions"     prefWidth="160" style="-fx-alignment: CENTER;"/>
+                    <TableColumn fx:id="colActions"    text="Actions"     prefWidth="240" style="-fx-alignment: CENTER;"/>
                 </columns>
 
                 <placeholder>

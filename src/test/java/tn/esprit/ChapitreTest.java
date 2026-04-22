@@ -21,9 +21,6 @@ public class ChapitreTest {
     static int coursIdTest;
     static int chapitreIdTest;
 
-    // =========================
-    // CREATE COURS FIRST
-    // =========================
     @BeforeAll
     static void init() throws SQLException {
 
@@ -38,9 +35,6 @@ public class ChapitreTest {
         coursIdTest = coursService.getLastInsertedId();
     }
 
-    // =========================
-    // TEST 1 : AJOUT CHAPITRE
-    // =========================
     @Test
     @Order(1)
     void testAjouterChapitre() throws SQLException {
@@ -62,9 +56,6 @@ public class ChapitreTest {
                 .anyMatch(c -> c.getTitre().equals("Chapitre Test")));
     }
 
-    // =========================
-    // TEST 2 : MODIFY
-    // =========================
     @Test
     @Order(2)
     void testModifierChapitre() throws SQLException {
@@ -75,8 +66,6 @@ public class ChapitreTest {
         ch.setTitre("Chapitre Modifie");
         ch.setOrdre(2);
         ch.setTypeContenu("texte");
-
-        // ✅ IMPORTANT : remettre les champs obligatoires
         ch.setContenuTexte("Contenu modifié");
         ch.setContenuFichier(null);
         ch.setDureeEstimee(10);
@@ -91,10 +80,6 @@ public class ChapitreTest {
         assertTrue(list.stream()
                 .anyMatch(c -> c.getTitre().equals("Chapitre Modifie")));
     }
-
-    // =========================
-    // TEST 3 : DELETE
-    // =========================
     @Test
     @Order(3)
     void testSupprimerChapitre() throws SQLException {
@@ -106,10 +91,6 @@ public class ChapitreTest {
         assertFalse(list.stream()
                 .anyMatch(c -> c.getId() == chapitreIdTest));
     }
-
-    // =========================
-    // CLEAN
-    // =========================
     @AfterAll
     static void clean() throws SQLException {
 

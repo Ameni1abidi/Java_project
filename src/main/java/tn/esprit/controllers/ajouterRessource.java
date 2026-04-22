@@ -359,8 +359,7 @@ public class ajouterRessource {
     }
 
     private void fermerFenetre() {
-        Stage stage = (Stage) enregistrerButton.getScene().getWindow();
-        stage.close();
+        navigateToList();
     }
 
     @FXML
@@ -420,6 +419,23 @@ public class ajouterRessource {
             stage.show();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private void navigateToList() {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/listeRessources.fxml"));
+            Stage stage = (Stage) enregistrerButton.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Ressources");
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Erreur de navigation");
+            alert.setHeaderText("Impossible d'ouvrir la liste des ressources");
+            alert.setContentText(e.getMessage());
+            alert.showAndWait();
         }
     }
 }

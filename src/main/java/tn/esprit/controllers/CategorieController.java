@@ -46,7 +46,6 @@ public class CategorieController {
     public void setCategorie(categorie categorie) {
         this.currentCategorie = categorie;
         errorLabel.setText("");
-
         if (categorie != null) {
             titleLabel.setText("Modifier categorie");
             saveButton.setText("Enregistrer");

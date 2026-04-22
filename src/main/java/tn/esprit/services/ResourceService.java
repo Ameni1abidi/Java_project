@@ -107,34 +107,32 @@ public class ResourceService {
         }
     }
 
-    public void add(resources resource) {
-        String sql = "INSERT INTO ressource(titre, contenu, categorie_nom, type, disponible_le) VALUES(?, ?, ?, ?, ?)";
-        try (PreparedStatement ps = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, resource.getTitre());
-            ps.setString(2, resource.getContenu());
-            ps.setString(3, resource.getCategorieNom());
-            ps.setString(4, resource.getType());
-            ps.setString(5, resource.getDisponibleLe());
-            ps.executeUpdate();
+    public void add(resources r) {
+        String sql = "INSERT INTO ressource(titre, contenu, categorie_nom, type, disponible_le) " +
+                "VALUES(?, ?, ?, ?, ?)";
 
-            try (ResultSet keys = ps.getGeneratedKeys()) {
-                if (keys.next()) {
-                    resource.setId(keys.getInt(1));
-                }
-            }
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, r.getTitre());
+            ps.setString(2, r.getContenu());
+            ps.setString(3, r.getCategorieNom());
+            ps.setString(4, r.getType());
+            ps.setString(5, r.getDisponibleLe());
+            ps.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("Erreur lors de l'ajout de la ressource", e);
+            throw new RuntimeException(e);
         }
     }
 
     public List<resources> getAll() {
         String sql = "SELECT id, titre, contenu, categorie_nom, type, disponible_le FROM ressource";
-        List<resources> resourceList = new ArrayList<>();
+
+        List<resources> list = new ArrayList<>();
 
         try (PreparedStatement ps = connection.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
+
             while (rs.next()) {
-                resourceList.add(new resources(
+                list.add(new resources(
                         rs.getInt("id"),
                         rs.getString("titre"),
                         rs.getString("contenu"),
@@ -144,10 +142,10 @@ public class ResourceService {
                 ));
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Erreur lors de la recuperation des ressources", e);
+            throw new RuntimeException(e);
         }
 
-        return resourceList;
+        return list;
     }
 
     public resources getById(int id) {
@@ -155,50 +153,50 @@ public class ResourceService {
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
 
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return new resources(
-                            rs.getInt("id"),
-                            rs.getString("titre"),
-                            rs.getString("contenu"),
-                            rs.getString("categorie_nom"),
-                            rs.getString("type"),
-                            rs.getString("disponible_le")
-                    );
-                }
+            if (rs.next()) {
+                return new resources(
+                        rs.getInt("id"),
+                        rs.getString("titre"),
+                        rs.getString("contenu"),
+                        rs.getString("categorie_nom"),
+                        rs.getString("type"),
+                        rs.getString("disponible_le")
+                );
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Erreur lors de la recuperation de la ressource", e);
+            throw new RuntimeException(e);
         }
 
         return null;
     }
 
-    public boolean update(resources resource) {
-        String sql = "UPDATE ressource SET titre = ?, contenu = ?, categorie_nom = ?, type = ?, disponible_le = ? WHERE id = ?";
+    public boolean update(resources r) {
+        String sql = "UPDATE ressource SET titre=?, contenu=?, categorie_nom=?, type=?, disponible_le=? WHERE id=?";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, resource.getTitre());
-            ps.setString(2, resource.getContenu());
-            ps.setString(3, resource.getCategorieNom());
-            ps.setString(4, resource.getType());
-            ps.setString(5, resource.getDisponibleLe());
-            ps.setInt(6, resource.getId());
+            ps.setString(1, r.getTitre());
+            ps.setString(2, r.getContenu());
+            ps.setString(3, r.getCategorieNom());
+            ps.setString(4, r.getType());
+            ps.setString(5, r.getDisponibleLe());
+            ps.setInt(6, r.getId());
+
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            throw new RuntimeException("Erreur lors de la mise a jour de la ressource", e);
+            throw new RuntimeException(e);
         }
     }
 
     public boolean delete(int id) {
-        String sql = "DELETE FROM ressource WHERE id = ?";
+        String sql = "DELETE FROM ressource WHERE id=?";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, id);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
-            throw new RuntimeException("Erreur lors de la suppression de la ressource", e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -229,34 +227,32 @@ public class ResourceService {
     }
 
     public List<resources> search(String keyword) {
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return getAll();
-        }
+        String sql = "SELECT id, titre, contenu, categorie_nom, type, disponible_le " +
+                "FROM ressource WHERE titre LIKE ? OR contenu LIKE ?";
 
-        String sql = "SELECT id, titre, contenu, categorie_nom, type, disponible_le FROM ressource WHERE titre LIKE ? OR contenu LIKE ?";
-        List<resources> resourceList = new ArrayList<>();
-        String searchPattern = "%" + keyword + "%";
+        List<resources> list = new ArrayList<>();
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, searchPattern);
-            ps.setString(2, searchPattern);
+            String k = "%" + keyword + "%";
+            ps.setString(1, k);
+            ps.setString(2, k);
 
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    resourceList.add(new resources(
-                            rs.getInt("id"),
-                            rs.getString("titre"),
-                            rs.getString("contenu"),
-                            rs.getString("categorie_nom"),
-                            rs.getString("type"),
-                            rs.getString("disponible_le")
-                    ));
-                }
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                list.add(new resources(
+                        rs.getInt("id"),
+                        rs.getString("titre"),
+                        rs.getString("contenu"),
+                        rs.getString("categorie_nom"),
+                        rs.getString("type"),
+                        rs.getString("disponible_le")
+                ));
             }
         } catch (SQLException e) {
             throw new RuntimeException("Erreur lors de la recherche de ressources", e);
         }
 
-        return resourceList;
+        return list;
     }
 }

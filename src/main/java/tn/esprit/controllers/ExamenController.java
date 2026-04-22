@@ -34,11 +34,13 @@ public class ExamenController {
     @FXML private TableColumn<Examen, Void>    colActions;
     @FXML private TableColumn<Examen, String>  colCours;
     @FXML private TableColumn<Examen, String>  colEnseignant;
-
+    @FXML
+    private TextField searchField;
     private ObservableList<Examen> list;
     private final ExamenService service      = new ExamenService();
     private final CoursService  coursService = new CoursService();
     private final UserService userService = new UserService();
+
 
 
     private Map<Integer, String> coursMap;
@@ -62,10 +64,7 @@ public class ExamenController {
         }
 
 
-        // ── Colonnes simples ─────────────────────────────────────────────────
-        colId.setCellValueFactory(data ->
-                new javafx.beans.property.SimpleIntegerProperty(
-                        data.getValue().getId()).asObject());
+
 
         colTitre.setCellValueFactory(data ->
                 new javafx.beans.property.SimpleStringProperty(
@@ -126,6 +125,14 @@ public class ExamenController {
             }
         });
 
+        searchField.textProperty().addListener((obs, oldValue, newValue) -> {
+            if (newValue.isEmpty()) {
+                tableExamens.setItems(FXCollections.observableArrayList(service.getAll()));
+            } else {
+                filtrerParTitre(newValue);
+            }
+        });
+
         loadData();
         addButtons();
     }
@@ -140,28 +147,108 @@ public class ExamenController {
 
             private final Button btnVoir = new Button("Voir");
             private final Button btnEdit = new Button("Editer");
-            private final HBox   pane    = new HBox(8, btnVoir, btnEdit);
+            private final Button btnDelete = new Button("Supprimer");
+            private final HBox pane = new HBox(16, btnVoir, btnEdit, btnDelete);
 
             {
                 pane.setAlignment(javafx.geometry.Pos.CENTER);
 
                 btnVoir.setStyle(
-                        "-fx-background-color: white; -fx-text-fill: #555;" +
-                                "-fx-border-color: #ccc; -fx-border-radius: 6;" +
-                                "-fx-background-radius: 6; -fx-padding: 4 12;");
+                        "-fx-background-color: white;" +
+                                "-fx-text-fill: #555;" +
+                                "-fx-border-color: #ccc;" +
+                                "-fx-border-radius: 6;" +
+                                "-fx-background-radius: 6;" +
+                                "-fx-padding: 6 16;" +
+                                "-fx-min-width: 70;"
+                );
 
                 btnEdit.setStyle(
-                        "-fx-background-color: #4CAF50; -fx-text-fill: white;" +
-                                "-fx-background-radius: 6; -fx-padding: 4 12;");
+                        "-fx-background-color: #4CAF50;" +
+                                "-fx-text-fill: white;" +
+                                "-fx-background-radius: 6;" +
+                                "-fx-padding: 6 16;" +
+                                "-fx-min-width: 70;"
+                );
+
+                btnDelete.setStyle(
+                        "-fx-background-color: #ef130c;" +
+                                "-fx-text-fill: white;" +
+                                "-fx-background-radius: 6;" +
+                                "-fx-padding: 6 16;" +
+                                "-fx-min-width: 90;"
+                );
 
                 btnVoir.setOnAction(event -> {
-                    Examen e = getTableView().getItems().get(getIndex());
-                    showAlert("Examen", e.toString());
+                    try {
+                        Examen e = getTableView().getItems().get(getIndex());
+
+                        FXMLLoader loader = new FXMLLoader(
+                                getClass().getResource("/VoirExamen.fxml"));
+
+                        Parent root = loader.load();
+
+                        VoirExamenController controller = loader.getController();
+                        controller.setExamen(e);
+
+                        Stage stage = (Stage) ((Node) event.getSource())
+                                .getScene().getWindow();
+
+                        stage.setScene(new Scene(root));
+                        stage.show();
+
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
                 });
 
                 btnEdit.setOnAction(event -> {
+                    try {
+                        Examen e = getTableView().getItems().get(getIndex());
+
+                        FXMLLoader loader = new FXMLLoader(
+                                getClass().getResource("/EditExamen.fxml"));
+
+                        Parent root = loader.load();
+
+                        // récupérer le controller
+                        EditExamenController controller = loader.getController();
+
+                        // envoyer l'objet à modifier
+                        controller.setExamen(e);
+
+                        // changer la scène
+                        Stage stage = (Stage) ((Node) event.getSource())
+                                .getScene().getWindow();
+
+                        stage.setScene(new Scene(root));
+                        stage.show();
+
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                });
+
+                btnDelete.setOnAction(event -> {
+
                     Examen e = getTableView().getItems().get(getIndex());
-                    showAlert("Edit", "Modifier : " + e.getTitre());
+
+                    Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+                    confirm.setTitle("Confirmation");
+                    confirm.setHeaderText(null);
+                    confirm.setContentText("Voulez-vous supprimer cet examen ?");
+
+                    if (confirm.showAndWait().get() == ButtonType.OK) {
+
+                        service.delete(e.getId()); // 🔥 DELETE DB
+
+                        loadData(); // refresh table
+
+                        Alert ok = new Alert(Alert.AlertType.INFORMATION);
+                        ok.setTitle("Succès");
+                        ok.setContentText("Examen supprimé !");
+                        ok.showAndWait();
+                    }
                 });
             }
 
@@ -240,6 +327,23 @@ public class ExamenController {
             stage.show();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private void filtrerParTitre(String titre) {
+        list = FXCollections.observableArrayList(
+                service.rechercherParTitre(titre)
+        );
+        tableExamens.setItems(list);
+    }
+    @FXML
+    private void rechercherExamen() {
+        String titre = searchField.getText();
+
+        if (titre == null || titre.isEmpty()) {
+            tableExamens.setItems(FXCollections.observableArrayList(service.getAll()));
+        } else {
+            filtrerParTitre(titre);
         }
     }
 }

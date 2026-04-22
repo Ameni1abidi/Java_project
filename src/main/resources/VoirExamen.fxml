@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<HBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="tn.esprit.controllers.VoirExamenController"
+      style="-fx-background-color: #f5f3fb;">
+
+    <!-- SIDEBAR -->
+    <fx:include source="/Sidebar.fxml"/>
+
+    <!-- CONTENT -->
+    <VBox spacing="20"
+          alignment="CENTER"
+          HBox.hgrow="ALWAYS"
+          style="-fx-padding: 40;">
+
+        <!-- CARD -->
+        <VBox spacing="15"
+              maxWidth="500"
+              style="-fx-background-color: white;
+                     -fx-padding: 30;
+                     -fx-background-radius: 12;
+                     -fx-border-color: #ddd;
+                     -fx-border-radius: 12;
+                     -fx-effect: dropshadow(gaussian, #ccc, 8, 0, 0, 2);">
+
+            <Label text="Détails Examen"
+                   style="-fx-font-size: 20; -fx-font-weight: bold;"/>
+
+            <GridPane hgap="15" vgap="12">
+
+                <Label text="Titre :" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <Label fx:id="lblTitre" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                <Label text="Type :" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <Label fx:id="lblType" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                <Label text="Date :" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <Label fx:id="lblDate" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                <Label text="Durée :" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                <Label fx:id="lblDuree" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+                <Label text="Cours :" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                <Label fx:id="lblCours" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+                <Label text="Enseignant :" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                <Label fx:id="lblEnseignant" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+
+            </GridPane>
+
+            <!-- BUTTONS -->
+            <HBox spacing="10" alignment="CENTER_RIGHT">
+
+                <Button text="Retour"
+                        onAction="#goBack"
+                        style="-fx-background-color: #ccc;
+                               -fx-background-radius: 8;
+                               -fx-padding: 6 16;"/>
+
+                <Button text="Modifier"
+                        onAction="#goEdit"
+                        style="-fx-background-color: #4CAF50;
+                               -fx-text-fill: white;
+                               -fx-background-radius: 8;
+                               -fx-padding: 6 16;"/>
+
+            </HBox>
+
+        </VBox>
+
+    </VBox>
+
+</HBox>

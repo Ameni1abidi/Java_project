@@ -59,6 +59,13 @@
               style="-fx-background-color: white; -fx-padding: 30; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, #ddd, 8, 0, 0, 2);">
             <Label text="Evaluations" style="-fx-font-size: 22; -fx-font-weight: bold;" />
 
+            <Button text="Créer une évaluation"
+                    onAction="#goToCreateEvaluation"
+                    style="-fx-background-color: #4CAF50;
+                               -fx-text-fill: white;
+                               -fx-background-radius: 8;
+                               -fx-padding: 8 15;"/>
+
             <TableView fx:id="tableEvaluations" VBox.vgrow="ALWAYS"
                        style="-fx-background-color: white; -fx-border-color: #e0e0e0; -fx-border-radius: 8; -fx-table-cell-border-color: #f0f0f0;">
                 <columns>
@@ -66,20 +73,11 @@
                     <TableColumn fx:id="colNote" text="Note" />
                     <TableColumn fx:id="colAppreciation" text="Appreciation" />
                     <TableColumn fx:id="colExamen" text="Examen" />
+                    <TableColumn fx:id="colEleve" text="Eleve" />
+                    <TableColumn fx:id="colActions" text="Actions" />
                 </columns>
             </TableView>
 
-            <HBox spacing="10">
-                <TextField fx:id="txtNote" promptText="Note" />
-                <TextField fx:id="txtAppreciation" promptText="Appreciation" />
-                <TextField fx:id="txtExamenId" promptText="Examen ID" />
-            </HBox>
-
-            <HBox spacing="10">
-                <Button text="Ajouter" onAction="#handleAdd"/>
-                <Button text="Modifier" onAction="#handleUpdate"/>
-                <Button text="Supprimer" onAction="#handleDelete"/>
-            </HBox>
         </VBox>
     </VBox>
 </HBox>

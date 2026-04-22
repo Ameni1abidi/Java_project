@@ -343,10 +343,9 @@ public class ResourceListController {
             if (resource != null) {
                 controller.setResource(resource);
             }
-            Stage stage = new Stage();
+            Stage stage = (Stage) resourceTable.getScene().getWindow();
             stage.setTitle(resource == null ? "Creer une ressource" : "Modifier la ressource");
             stage.setScene(new Scene(root));
-            stage.setOnHidden(event -> loadResources());
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();

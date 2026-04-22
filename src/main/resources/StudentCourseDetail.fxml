@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.controllers.StudentCourseDetail"
+            style="-fx-background-color:#f5f7fb;">
+
+    <top>
+        <HBox style="-fx-padding:15; -fx-background-color:white;">
+            <Label fx:id="titleLabel"
+                   style="-fx-font-size:20; -fx-font-weight:bold;" />
+        </HBox>
+    </top>
+
+    <center>
+        <VBox fx:id="chapitreContainer"
+              spacing="10"
+              style="-fx-padding:20;"/>
+    </center>
+
+</BorderPane>
