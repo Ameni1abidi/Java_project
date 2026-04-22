@@ -20,6 +20,8 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import tn.esprit.entities.Chapitre;
 import tn.esprit.services.ChapitreService;
+import tn.esprit.services.CoursService;
+import tn.esprit.entities.Cours;
 
 import java.util.List;
 
@@ -37,13 +39,16 @@ public class ChapitreList {
     private final ChapitreService service = new ChapitreService();
 
     private int coursId;
+    private CoursService coursService = new CoursService();
 
     public void setCoursId(int id) {
         this.coursId = id;
         loadChapitres();
 
-        if (coursTitle != null) {
-            coursTitle.setText("Chapitres du cours ID: " + id);
+        Cours cours = coursService.getById(id);
+
+        if (cours != null && coursTitle != null) {
+            coursTitle.setText("Chapitres du cours : " + cours.getTitre());
         }
     }
 

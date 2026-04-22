@@ -121,5 +121,55 @@ public class ChapitreService {
         }
         return 0;
     }
+    public int countByCoursId(int coursId) {
+        int count = 0;
+
+        try {
+            String sql = "SELECT COUNT(*) FROM chapitre WHERE cours_id = ?";
+            PreparedStatement ps = cnx.prepareStatement(sql);
+            ps.setInt(1, coursId);
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return count;
+    }
+    public List<Chapitre> getByCoursId(int coursId) {
+
+        List<Chapitre> list = new ArrayList<>();
+
+        try {
+            String sql = "SELECT * FROM chapitre WHERE cours_id = ?";
+            PreparedStatement ps = cnx.prepareStatement(sql);
+            ps.setInt(1, coursId);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Chapitre ch = new Chapitre();
+                ch.setId(rs.getInt("id"));
+                ch.setTitre(rs.getString("titre"));
+                ch.setOrdre(rs.getInt("ordre"));
+                ch.setTypeContenu(rs.getString("type_contenu"));
+                ch.setContenuTexte(rs.getString("contenu_texte"));
+                ch.setContenuFichier(rs.getString("contenu_fichier"));
+                ch.setDureeEstimee(rs.getInt("duree_estimee"));
+                ch.setCoursId(rs.getInt("cours_id"));
+
+                list.add(ch);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
 }
 

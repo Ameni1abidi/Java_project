@@ -11,6 +11,8 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import tn.esprit.entities.Chapitre;
 import tn.esprit.services.ChapitreService;
+import tn.esprit.services.CoursService;
+import tn.esprit.entities.Cours;
 
 import java.io.File;
 
@@ -22,9 +24,10 @@ public class ChapitreForm {
     @FXML private TextArea contenuTexteField;
     @FXML private TextField contenuFichierField;
     @FXML private TextField dureeField;
-    @FXML private TextField coursIdField;
+    @FXML private Label coursTitreLabel;
 
     private final ChapitreService service = new ChapitreService();
+    private CoursService coursService = new CoursService();
 
     private int coursId;
     private Chapitre chapitreToEdit;
@@ -34,15 +37,10 @@ public class ChapitreForm {
         this.coursId = coursId;
         this.chapitreToEdit = ch;
 
-        coursIdField.setText(String.valueOf(coursId));
+        Cours cours = coursService.getById(coursId);
 
-        if (ch != null) {
-            titreField.setText(ch.getTitre());
-            ordreField.setText(String.valueOf(ch.getOrdre()));
-            typeContenuField.setValue(ch.getTypeContenu());
-            contenuTexteField.setText(ch.getContenuTexte());
-            contenuFichierField.setText(ch.getContenuFichier());
-            dureeField.setText(String.valueOf(ch.getDureeEstimee()));
+        if (cours != null) {
+            coursTitreLabel.setText(cours.getTitre());
         }
     }
 
