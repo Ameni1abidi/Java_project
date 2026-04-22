@@ -37,8 +37,17 @@ public class EtudiantDashboardController {
     }
 
     @FXML
-    private void goCoursList(ActionEvent event) {
-        loadPage(event, "/CoursList.fxml");
+    public void goCoursList() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/StudentCours.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = (Stage) planningList.getScene().getWindow();
+            stage.setScene(new Scene(root));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML

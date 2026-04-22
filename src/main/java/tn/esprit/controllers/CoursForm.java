@@ -57,9 +57,6 @@ public class CoursForm {
         String badge = badgeField.getText();
         var date = dateField.getValue();
 
-        // ======================
-        // TITRE
-        // ======================
         if (titre == null || titre.trim().isEmpty()) {
             titreError.setText("Titre obligatoire");
             valid = false;
@@ -68,9 +65,6 @@ public class CoursForm {
             valid = false;
         }
 
-        // ======================
-        // DESCRIPTION
-        // ======================
         if (description == null || description.trim().isEmpty()) {
             descriptionError.setText("Description obligatoire");
             valid = false;
@@ -79,25 +73,16 @@ public class CoursForm {
             valid = false;
         }
 
-        // ======================
-        // NIVEAU
-        // ======================
         if (niveau == null || niveau.trim().isEmpty()) {
             niveauError.setText("Niveau obligatoire");
             valid = false;
         }
 
-        // ======================
-        // DATE
-        // ======================
         if (date == null) {
             dateError.setText("Date obligatoire");
             valid = false;
         }
 
-        // ======================
-        // BADGE (optional rule)
-        // ======================
         if (badge != null && badge.length() > 20) {
             badgeError.setText("Badge trop long");
             valid = false;
@@ -105,9 +90,6 @@ public class CoursForm {
 
         if (!valid) return;
 
-// ======================
-// CREATE / UPDATE
-// ======================
         if (currentCours == null) {
 
             Cours c = new Cours();
@@ -143,6 +125,61 @@ public class CoursForm {
             Stage stage = (Stage) titreField.getScene().getWindow();
             stage.setScene(new Scene(root));
 
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void goDashboard(ActionEvent event) {
+        loadPage(event, "/ProfDashboard.fxml");
+    }
+
+    @FXML
+    private void goForum(ActionEvent event) {
+        loadPage(event, "/forum.fxml");
+    }
+
+    @FXML
+    private void goRessources(ActionEvent event) {
+        loadPage(event, "/listeRessources.fxml");
+    }
+
+    @FXML
+    private void goCategories(ActionEvent event) {
+        loadPage(event, "/CategorieList.fxml");
+    }
+
+    @FXML
+    private void goExamens(ActionEvent event) {
+        loadPage(event, "/ExamenView.fxml");
+    }
+
+    @FXML
+    private void goEvaluations(ActionEvent event) {
+        loadPage(event, "/EvaluationView.fxml");
+    }
+
+    @FXML
+    private void goResultats(ActionEvent event) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Resultats");
+        alert.setHeaderText(null);
+        alert.setContentText("La page resultats sera bientot disponible.");
+        alert.showAndWait();
+    }
+
+    @FXML
+    private void goLogout(ActionEvent event) {
+        loadPage(event, "/Login.fxml");
+    }
+
+    private void loadPage(ActionEvent event, String fxmlPath) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
         } catch (Exception e) {
             e.printStackTrace();
         }

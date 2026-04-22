@@ -16,9 +16,6 @@ public class CoursTest {
     static CoursService service = new CoursService();
     static int idCoursTest;
 
-    // =========================
-    // TEST 1 : AJOUTER
-    // =========================
     @Test
     @Order(1)
     void testAjouterCours() throws SQLException {
@@ -26,11 +23,7 @@ public class CoursTest {
         Cours c = new Cours();
         c.setTitre("Cours Test");
         c.setDescription("Description Test");
-
-        // ✅ niveau champ simple
         c.setNiveau("Débutant");
-
-        // ✅ date obligatoire
         c.setDateCreation(new Date(System.currentTimeMillis()));
 
         service.ajouter(c);
@@ -47,9 +40,6 @@ public class CoursTest {
         );
     }
 
-    // =========================
-    // TEST 2 : MODIFIER
-    // =========================
     @Test
     @Order(2)
     void testModifierCours() throws SQLException {
@@ -58,8 +48,6 @@ public class CoursTest {
         c.setId(idCoursTest);
         c.setTitre("Cours Modifie");
         c.setDescription("Desc Modifiee");
-
-        // ❗ لازمهم زادة
         c.setNiveau("Avancé");
         c.setDateCreation(new Date(System.currentTimeMillis()));
 
@@ -72,10 +60,6 @@ public class CoursTest {
 
         assertTrue(trouve);
     }
-
-    // =========================
-    // TEST 3 : SUPPRIMER
-    // =========================
     @Test
     @Order(3)
     void testSupprimerCours() throws SQLException {
@@ -90,9 +74,6 @@ public class CoursTest {
         assertFalse(existe);
     }
 
-    // =========================
-    // CLEAN
-    // =========================
     @AfterAll
     static void cleanUp() throws SQLException {
 
