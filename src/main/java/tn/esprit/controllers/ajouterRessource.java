@@ -1,5 +1,10 @@
 package tn.esprit.controllers;
 
+import javafx.event.ActionEvent;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -73,7 +78,9 @@ public class ajouterRessource {
         categorieCombo.valueProperty().addListener((obs, oldCat, newCat) -> handleCategoryChange(newCat));
 
         fileChooserContainer.setVisible(false);
+        fileChooserContainer.setManaged(false);
         urlContainer.setVisible(false);
+        urlContainer.setManaged(false);
         supprimerButton.setVisible(false);
     }
 
@@ -85,17 +92,23 @@ public class ajouterRessource {
         String type = mapCategoryToType(categorie);
         if (type == null) {
             fileChooserContainer.setVisible(false);
+            fileChooserContainer.setManaged(false);
             urlContainer.setVisible(false);
+            urlContainer.setManaged(false);
             return;
         }
 
         if (type.equals("lien")) {
             fileChooserContainer.setVisible(false);
+            fileChooserContainer.setManaged(false);
             urlContainer.setVisible(true);
+            urlContainer.setManaged(true);
             urlField.setPromptText("https://exemple.com");
         } else {
             fileChooserContainer.setVisible(true);
+            fileChooserContainer.setManaged(true);
             urlContainer.setVisible(false);
+            urlContainer.setManaged(false);
             browseButton.setText("Choisir " + type);
         }
     }
@@ -346,7 +359,83 @@ public class ajouterRessource {
     }
 
     private void fermerFenetre() {
-        Stage stage = (Stage) enregistrerButton.getScene().getWindow();
-        stage.close();
+        navigateToList();
+    }
+
+    @FXML
+    private void retourListe() {
+        fermerFenetre();
+    }
+
+    @FXML
+    private void goDashboard(ActionEvent event) {
+        loadPage(event, "/ProfDashboard.fxml");
+    }
+
+    @FXML
+    private void goForum(ActionEvent event) {
+        loadPage(event, "/forum.fxml");
+    }
+
+    @FXML
+    private void goCours(ActionEvent event) {
+        loadPage(event, "/CoursList.fxml");
+    }
+
+    @FXML
+    private void goCategories(ActionEvent event) {
+        loadPage(event, "/CategorieList.fxml");
+    }
+
+    @FXML
+    private void goExamens(ActionEvent event) {
+        loadPage(event, "/ExamenView.fxml");
+    }
+
+    @FXML
+    private void goEvaluations(ActionEvent event) {
+        loadPage(event, "/EvaluationView.fxml");
+    }
+
+    @FXML
+    private void goResultats(ActionEvent event) {
+        Alert alert = new Alert(AlertType.INFORMATION);
+        alert.setTitle("Resultats");
+        alert.setHeaderText(null);
+        alert.setContentText("La page resultats sera bientot disponible.");
+        alert.showAndWait();
+    }
+
+    @FXML
+    private void goLogout(ActionEvent event) {
+        loadPage(event, "/Login.fxml");
+    }
+
+    private void loadPage(ActionEvent event, String fxmlPath) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void navigateToList() {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/listeRessources.fxml"));
+            Stage stage = (Stage) enregistrerButton.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Ressources");
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Erreur de navigation");
+            alert.setHeaderText("Impossible d'ouvrir la liste des ressources");
+            alert.setContentText(e.getMessage());
+            alert.showAndWait();
+        }
     }
 }
