@@ -7,11 +7,21 @@ public class PdfExtractor {
 
     public static String extractText(String filePath) {
         try {
-            PDDocument doc = PDDocument.load(new File(filePath));
-            PDFTextStripper stripper = new PDFTextStripper();
+            File file = new File(filePath);
 
+            if (!file.exists()) {
+                System.out.println("❌ File not found: " + filePath);
+                return "";
+            }
+
+            PDDocument doc = PDDocument.load(file);
+
+            PDFTextStripper stripper = new PDFTextStripper();
             String text = stripper.getText(doc);
+
             doc.close();
+
+            System.out.println("TEXT LENGTH = " + text.length());
 
             return text;
 

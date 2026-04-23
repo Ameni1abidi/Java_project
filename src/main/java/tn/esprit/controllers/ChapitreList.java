@@ -108,7 +108,7 @@ public class ChapitreList {
 
             fileLink.setOnAction(e -> {
                 try {
-                    File file = new File(chapitre.getContenuFichier());
+                    File file = new File("uploads/" + chapitre.getContenuFichier());
 
                     if (file.exists()) {
                         Desktop.getDesktop().open(file);

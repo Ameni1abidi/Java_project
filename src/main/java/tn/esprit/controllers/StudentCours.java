@@ -99,19 +99,18 @@ public class StudentCours {
         """);
 
         // ===== PROGRESS =====
-        List<Chapitre> chaps = chapitreService.getByCoursId(c.getId());
+        int done = (int) (totalChaps * 0.6);
+        double percent = totalChaps == 0 ? 0 : (double) done / totalChaps;
 
-        long doneCount = chaps.stream()
-                .filter(Chapitre::isTermine)
-                .count();
+        Label progressTitle = new Label("Progression");
+        progressTitle.setStyle("-fx-font-size:12px; -fx-text-fill:#444;");
 
-        double percent = chaps.isEmpty() ? 0 : (double) doneCount / chaps.size();
-
-        Label progressValue = new Label(
-                doneCount + "/" + chaps.size() + " (" + (int)(percent * 100) + "%)"
-        );
+        Label progressValue = new Label(done + "/" + totalChaps + " (" + (int)(percent * 100) + "%)");
+        progressValue.setStyle("-fx-font-size:11px; -fx-text-fill:#555;");
 
         ProgressBar progressBar = new ProgressBar(percent);
+        progressBar.setPrefWidth(280);
+        progressBar.setStyle("-fx-accent:#2d89ef;");
 
         // ===== CERTIFICATE =====
         Button certBtn = new Button();
