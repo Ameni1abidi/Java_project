@@ -101,48 +101,18 @@ public class CreateExamenController {
 
     @FXML
 
+
     void handleSave() {
-        if (txtTitre.getText().isEmpty() ||
-                cbType.getValue() == null ||
-                dateExamen.getValue() == null ||
-                txtDuree.getText().isEmpty() ||
-                cbCours.getValue() == null ||
-                cbEnseignant.getValue() == null) {
 
-            new Alert(Alert.AlertType.WARNING, "Remplir tous les champs").show();
-            return;
-        }
-        try {
-            Examen e = new Examen();
-
-            e.setTitre(txtTitre.getText());
-            e.setContenu(filePath);
-            e.setType(cbType.getValue());
-            e.setDateExamen(dateExamen.getValue());
-            e.setDuree(Integer.parseInt(txtDuree.getText()));
-
-            // 🔥 IMPORTANT
-            e.setCoursId(cbCours.getValue().getId());
-            e.setEnseignantId(cbEnseignant.getValue().getId());
-
-            service.create(e);
-
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setContentText("Examen ajouté !");
-            alert.show();
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
+        // ================= LECTURE DONNÉES =================
         String titre = txtTitre.getText();
-        String dureeText = txtDuree.getText();
         String type = cbType.getValue();
         LocalDate date = dateExamen.getValue();
+        String dureeText = txtDuree.getText();
         Cours cours = cbCours.getValue();
         User enseignant = cbEnseignant.getValue();
 
-        // 1️⃣ Vérification champs vides
+        // ================= VALIDATION =================
         if (titre == null || titre.isBlank()) {
             showAlert("Le titre est obligatoire !");
             return;
@@ -178,20 +148,19 @@ public class CreateExamenController {
             return;
         }
 
-        // 2️⃣ Vérification durée (doit être un nombre)
         int duree;
         try {
             duree = Integer.parseInt(dureeText);
             if (duree <= 0) {
-                showAlert("La durée doit être supérieure à 0 !");
+                showAlert("La durée doit être > 0 !");
                 return;
             }
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException ex) {
             showAlert("La durée doit être un nombre !");
             return;
         }
 
-        // 3️⃣ Création objet
+        // ================= CREATION OBJET =================
         try {
             Examen e = new Examen();
             e.setTitre(titre);
@@ -202,15 +171,17 @@ public class CreateExamenController {
             e.setCoursId(cours.getId());
             e.setEnseignantId(enseignant.getId());
 
+            // ================= SAVE DB =================
             service.create(e);
 
-            new Alert(Alert.AlertType.INFORMATION, "Examen ajouté avec succès !").show();
+            new Alert(Alert.AlertType.INFORMATION,
+                    "Examen ajouté avec succès !").show();
 
             clearForm();
 
         } catch (Exception ex) {
             ex.printStackTrace();
-            showAlert("Erreur lors de l'ajout !");
+            showAlert("Erreur lors de l'enregistrement en base !");
         }
     }
 
