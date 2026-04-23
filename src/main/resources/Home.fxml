@@ -9,6 +9,7 @@
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="tn.esprit.controllers.HomeController"
             prefHeight="700" prefWidth="1200"
+            stylesheets="@style.css"
             style="-fx-background-color: linear-gradient(to right, #6a5acd, #7b68ee);">
 
     <VBox>
@@ -25,13 +26,13 @@
                        style="-fx-background-radius: 20;" />
 
             <HBox spacing="15">
-                <Button text="Home" onAction="#goHome"/>
-                <Button text="Services" onAction="#goServices"/>
-                <Button text="Nos Cours" onAction="#goCourses"/>
-                <Button text="Team" onAction="#goTeam"/>
-                <Button text="Events" onAction="#goEvents"/>
-                <Button text="Inscription" onAction="#goInscription"/>
-                <Button text="Connexion" onAction="#goConnexion"/>
+                <Button text="Home" onAction="#goHome" styleClass="nav-button"/>
+                <Button text="Services" onAction="#goServices" styleClass="nav-button"/>
+                <Button text="Nos Cours" onAction="#goCourses" styleClass="nav-button"/>
+                <Button text="Team" onAction="#goTeam" styleClass="nav-button"/>
+                <Button text="Events" onAction="#goEvents" styleClass="nav-button"/>
+                <Button text="Inscription" onAction="#goInscription" styleClass="nav-button nav-button--cta"/>
+                <Button text="Connexion" onAction="#goConnexion" styleClass="nav-button nav-button--ghost"/>
             </HBox>
 
         </HBox>
@@ -74,10 +75,10 @@
                     <HBox spacing="15">
                         <Button text="Nos Cours"
                                 onAction="#goCourses"
-                                style="-fx-background-color: white; -fx-text-fill: #6a5acd; -fx-background-radius: 20;" />
+                                styleClass="cta-button" />
 
                         <Button text="▶ Why EduFlex?"
-                                style="-fx-background-color: transparent; -fx-text-fill: white; -fx-border-color: white;" />
+                                styleClass="ghost-button" />
                     </HBox>
 
                 </VBox>
