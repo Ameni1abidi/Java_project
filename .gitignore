@@ -37,3 +37,6 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+# Local secrets (never commit)
+local.secrets.properties

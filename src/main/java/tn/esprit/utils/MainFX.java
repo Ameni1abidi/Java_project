@@ -13,7 +13,7 @@ public class MainFX extends Application {
         //FXMLLoader loader = new FXMLLoader(getClass().getResource("/listeRessources.fxml"));
         //FXMLLoader loader = new FXMLLoader(getClass().getResource("/CategorieList.fxml"));
         //FXMLLoader loader = new FXMLLoader(getClass().getResource("/CoursList.fxml"));
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ProfDashboard.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/Home.fxml"));
         //FXMLLoader loader = new FXMLLoader(getClass().getResource("/ajouterCours.fxml"));
 
         Scene scene = new Scene(loader.load());

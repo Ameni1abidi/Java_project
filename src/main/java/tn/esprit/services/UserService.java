@@ -9,6 +9,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public class UserService {
 
@@ -138,6 +139,29 @@ public class UserService {
                 rs.getString("email"),
                 Role.fromString(rs.getString("role"))
         );
+    }
+
+    public Optional<User> findByEmail(String email) throws SQLException {
+        String sql = "SELECT * FROM utilisateur WHERE LOWER(TRIM(email)) = LOWER(TRIM(?))";
+        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+            ps.setString(1, email);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return Optional.of(mapRow(rs));
+            return Optional.empty();
+        }
+    }
+
+    public User findOrCreateGoogleUser(String email, String displayName) throws SQLException {
+        Optional<User> existing = findByEmail(email);
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+
+        String name = (displayName == null || displayName.isBlank()) ? "Google User" : displayName.trim();
+        String generatedPassword = "google-" + UUID.randomUUID();
+        register(new User(name, generatedPassword, email, Role.ROLE_ETUDIANT));
+        return findByEmail(email).orElseThrow(() ->
+                new SQLException("Creation du compte Google echouee pour " + email));
     }
 
     private boolean isBcryptHash(String value) {
