@@ -21,6 +21,7 @@ import javafx.stage.Stage;
 import tn.esprit.entities.categorie;
 import tn.esprit.entities.resources;
 import tn.esprit.services.CategoryService;
+import tn.esprit.services.CloudinaryStorageService;
 import tn.esprit.services.ResourceService;
 
 import java.io.File;
@@ -69,6 +70,7 @@ public class ajouterRessource {
 
     private final ResourceService resourceService = new ResourceService();
     private final CategoryService categoryService = new CategoryService();
+    private final CloudinaryStorageService cloudinaryStorageService = new CloudinaryStorageService();
     private resources currentResource;
     private String selectedFilePath = "";
 
@@ -231,7 +233,7 @@ public class ajouterRessource {
                 return;
             }
             try {
-                contenu = prepareStoredFilePath(selectedFilePath);
+                contenu = prepareStoredFilePath(selectedFilePath, type);
             } catch (IOException e) {
                 errorLabel.setText("Impossible de sauvegarder le fichier: " + e.getMessage());
                 return;
@@ -309,10 +311,18 @@ public class ajouterRessource {
         }
     }
 
-    private String prepareStoredFilePath(String sourcePath) throws IOException {
+    private String prepareStoredFilePath(String sourcePath, String type) throws IOException {
+        if (isRemoteUrl(sourcePath)) {
+            return sourcePath;
+        }
+
         Path source = Path.of(sourcePath);
         if (!Files.exists(source)) {
             throw new IOException("fichier introuvable");
+        }
+
+        if (cloudinaryStorageService.isEnabled()) {
+            return cloudinaryStorageService.upload(source, type);
         }
 
         Path storageDir = Path.of("storage", "resources").toAbsolutePath().normalize();
@@ -336,11 +346,19 @@ public class ajouterRessource {
         return target.toString();
     }
 
+    private boolean isRemoteUrl(String value) {
+        return value != null && (value.startsWith("http://") || value.startsWith("https://"));
+    }
+
     private String extractFileName(String content) {
         if (content == null || content.isBlank()) {
             return "Aucun fichier selectionne";
         }
         if (content.startsWith("http://") || content.startsWith("https://")) {
+            int slash = content.lastIndexOf('/');
+            if (slash >= 0 && slash < content.length() - 1) {
+                return content.substring(slash + 1);
+            }
             return content;
         }
         try {
