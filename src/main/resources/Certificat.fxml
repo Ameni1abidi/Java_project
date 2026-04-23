@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<VBox spacing="20"
+      alignment="CENTER"
+      xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="tn.esprit.controllers.CertificatController"
+      style="-fx-padding:30; -fx-background-color:#f5f7fb;">
+
+    <!-- TITLE -->
+    <Label text="Modele de Certificat"
+           style="-fx-font-size:22px; -fx-font-weight:bold; -fx-text-fill:#223;" />
+
+    <!-- ALERT -->
+    <VBox fx:id="alertBox"
+          spacing="5"
+          style="-fx-background-color:#fff4f4;
+                 -fx-border-color:#ffb8b8;
+                 -fx-padding:15;
+                 -fx-background-radius:12;">
+
+        <Label text="Certificat non disponible"
+               style="-fx-text-fill:#a32121; -fx-font-weight:bold;" />
+
+        <Label fx:id="conditionText"
+               text="Condition non respectée"
+               style="-fx-text-fill:#6b2b2b;" />
+
+    </VBox>
+
+    <!-- CERTIFICATE -->
+    <VBox fx:id="certifBox"
+          spacing="10"
+          alignment="CENTER"
+          style="-fx-background-color:white;
+                 -fx-border-color:#d8c79a;
+                 -fx-border-width:2;
+                 -fx-padding:30;
+                 -fx-background-radius:20;
+                 -fx-effect:dropshadow(gaussian,rgba(0,0,0,0.1),20,0,0,5);">
+
+        <Label text="EduFlex Academy"
+               style="-fx-text-fill:#876;" />
+
+        <Label text="Certificat d'Achèvement"
+               style="-fx-font-size:22px; -fx-font-weight:bold;" />
+
+        <Label text="Ce certificat est décerné à"
+               style="-fx-text-fill:#555;" />
+
+        <Label fx:id="studentName"
+               text="Nom étudiant"
+               style="-fx-font-size:20px; -fx-font-weight:bold;" />
+
+        <Label text="Pour avoir terminé le cours"
+               style="-fx-text-fill:#555;" />
+
+        <Label fx:id="courseTitle"
+               text="Nom du cours"
+               style="-fx-font-size:16px; -fx-font-weight:bold; -fx-text-fill:#3a5a9b;" />
+
+        <HBox spacing="50" alignment="CENTER">
+            <VBox>
+                <Label text="Date d'emission" />
+                <Label fx:id="dateLabel" />
+            </VBox>
+
+            <VBox>
+                <Label text="Signature numerique" />
+                <Label fx:id="signatureLabel" />
+            </VBox>
+        </HBox>
+        <HBox spacing="15" alignment="CENTER">
+            <Button text="📄 Télécharger PDF"
+                    onAction="#exportPDF"
+                    style="-fx-background-color:#2d89ef; -fx-text-fill:white; -fx-padding:8 15; -fx-background-radius:20;"/>
+
+            <Button text="🖼 Télécharger Image"
+                    onAction="#exportImage"
+                    style="-fx-background-color:#ff416c; -fx-text-fill:white; -fx-padding:8 15; -fx-background-radius:20;"/>
+        </HBox>
+
+    </VBox>
+
+</VBox>

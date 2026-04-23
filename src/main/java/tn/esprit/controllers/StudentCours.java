@@ -3,15 +3,23 @@ package tn.esprit.controllers;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import javafx.util.Duration;
 import tn.esprit.entities.Cours;
 import tn.esprit.entities.Chapitre;
 import tn.esprit.services.ChapitreService;
 import tn.esprit.services.CoursService;
 
+import java.awt.*;
+import java.io.File;
 import java.util.List;
 
 public class StudentCours {
@@ -91,18 +99,19 @@ public class StudentCours {
         """);
 
         // ===== PROGRESS =====
-        int done = (int) (totalChaps * 0.6);
-        double percent = totalChaps == 0 ? 0 : (double) done / totalChaps;
+        List<Chapitre> chaps = chapitreService.getByCoursId(c.getId());
 
-        Label progressTitle = new Label("Progression");
-        progressTitle.setStyle("-fx-font-size:12px; -fx-text-fill:#444;");
+        long doneCount = chaps.stream()
+                .filter(Chapitre::isTermine)
+                .count();
 
-        Label progressValue = new Label(done + "/" + totalChaps + " (" + (int)(percent * 100) + "%)");
-        progressValue.setStyle("-fx-font-size:11px; -fx-text-fill:#555;");
+        double percent = chaps.isEmpty() ? 0 : (double) doneCount / chaps.size();
+
+        Label progressValue = new Label(
+                doneCount + "/" + chaps.size() + " (" + (int)(percent * 100) + "%)"
+        );
 
         ProgressBar progressBar = new ProgressBar(percent);
-        progressBar.setPrefWidth(280);
-        progressBar.setStyle("-fx-accent:#2d89ef;");
 
         // ===== CERTIFICATE =====
         Button certBtn = new Button();
@@ -141,34 +150,91 @@ public class StudentCours {
 
             for (Chapitre chap : chapitres) {
 
-                VBox chapCard = new VBox(4);
+                VBox chapCard = new VBox(6);
                 chapCard.setStyle("""
-                    -fx-background-color:#f6f8ff;
-                    -fx-padding:10;
-                    -fx-background-radius:12;
-                """);
+    -fx-background-color:#f6f8ff;
+    -fx-padding:12;
+    -fx-background-radius:12;
+""");
 
-                Label t = new Label(chap.getOrdre() + ". " + chap.getTitre());
-                t.setStyle("-fx-font-weight:bold; -fx-text-fill:#333;");
+// ===== TITLE =====
+                Label titre = new Label(chap.getOrdre() + ". " + chap.getTitre());
+                title.setStyle("-fx-font-weight:bold; -fx-text-fill:#333;");
 
-                Label info = new Label(
-                        "Durée: " + chap.getDureeEstimee() +
-                                " min | Type: " + chap.getTypeContenu()
+// ===== DUREE =====
+                Label duree = new Label("📘 Durée : " + chap.getDureeEstimee() + " min");
+                duree.setStyle("-fx-text-fill:#555; -fx-font-size:11px;");
+
+// ===== TEMPS PASSE =====
+                int tempsPasse = 0;
+                Label temps = new Label("⏱ Temps passé : " + tempsPasse + " min");
+                temps.setStyle("-fx-text-fill:#555; -fx-font-size:11px;");
+
+// ===== BADGE =====
+                Label badge = new Label("🏷 Badge temps : En cours");
+                badge.setStyle("""
+    -fx-text-fill:white;
+    -fx-background-color:#f39c12;
+    -fx-padding:4 10;
+    -fx-background-radius:12;
+""");
+
+
+                Label type = new Label("📄 Type : " + chap.getTypeContenu().toUpperCase());
+                type.setStyle("-fx-text-fill:#555; -fx-font-size:11px;");
+
+                Button resumeBtn = new Button("👁 Voir Résumé");
+                resumeBtn.setStyle("""
+    -fx-background-color:#ff416c;
+    -fx-text-fill:white;
+    -fx-background-radius:20;
+    -fx-padding:5 12;
+    -fx-font-weight:bold;
+""");
+
+
+                resumeBtn.setOnAction(e -> {
+
+                    try {
+                        // ===== 1. فتح صفحة résumé =====
+                        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ChapitreDetail.fxml"));
+                        Parent root = loader.load();
+
+                        StudentChapitreDetail controller = loader.getController();
+                        controller.setChapitre(chap);
+
+                        Stage stage = (Stage) courseContainer.getScene().getWindow();
+                        stage.setScene(new Scene(root));
+
+
+                        String path = chap.getContenuFichier();
+
+                        System.out.println("PATH = " + path);
+
+                        File file = new File(path);
+
+                        if (file.exists()) {
+                            System.out.println("✅ FILE FOUND");
+                            Desktop.getDesktop().browse(file.toURI());
+                        } else {
+                            System.out.println("❌ FILE NOT FOUND");
+                        }
+
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                });
+
+// ===== ADD ALL =====
+                chapCard.getChildren().addAll(
+                        title,
+                        duree,
+                        temps,
+                        badge,
+                        type,
+                        resumeBtn
                 );
-                info.setStyle("-fx-text-fill:#666; -fx-font-size:11px;");
 
-                Label status = new Label("Temps: 0 min | En cours");
-                status.setStyle("-fx-text-fill:#f39c12; -fx-font-size:11px;");
-
-                Button openChap = new Button("Voir Résumé");
-                openChap.setStyle("""
-                    -fx-background-color:#ff416c;
-                    -fx-text-fill:white;
-                    -fx-background-radius:20;
-                    -fx-padding:5 10;
-                """);
-
-                chapCard.getChildren().addAll(t, info, status, openChap);
                 chaptersBox.getChildren().add(chapCard);
             }
         }

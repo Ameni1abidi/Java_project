@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import javafx.scene.web.WebView?>
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.controllers.StudentChapitreDetail"
+            prefHeight="400.0" prefWidth="600.0">
+
+    <VBox spacing="10" style="-fx-padding:20;">
+
+        <Label text="📘 Résumé du chapitre"
+               style="-fx-font-size:18px; -fx-font-weight:bold;"/>
+
+        <TextArea fx:id="resumeText"
+                  wrapText="true"
+                  editable="false"
+                  prefHeight="200"/>
+
+        <Label text="📄 PDF du cours"
+               style="-fx-font-weight:bold;"/>
+
+        <WebView fx:id="pdfViewer" prefHeight="400"/>
+
+    </VBox>
+
+</AnchorPane>

@@ -23,6 +23,8 @@ import tn.esprit.services.ChapitreService;
 import tn.esprit.services.CoursService;
 import tn.esprit.entities.Cours;
 
+import java.awt.*;
+import java.io.File;
 import java.util.List;
 
 public class ChapitreList {
@@ -98,15 +100,38 @@ public class ChapitreList {
             contenu.setWrapText(true);
         }
 
-        Label file = new Label();
+        Hyperlink fileLink = new Hyperlink();
+
         if (chapitre.getContenuFichier() != null && !chapitre.getContenuFichier().isEmpty()) {
-            file.setText("Fichier : " + chapitre.getContenuFichier());
-            file.setStyle("-fx-text-fill:blue;");
+
+            fileLink.setText("Ouvrir fichier");
+
+            fileLink.setOnAction(e -> {
+                try {
+                    File file = new File(chapitre.getContenuFichier());
+
+                    if (file.exists()) {
+                        Desktop.getDesktop().open(file);
+                    } else {
+                        System.out.println("Fichier introuvable !");
+                    }
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            });
+
+        } else {
+            fileLink.setText("Aucun fichier");
+            fileLink.setDisable(true);
         }
 
         Label info = new Label(
                 "Ordre: " + chapitre.getOrdre() +
                         " | Durée: " + chapitre.getDureeEstimee() + " min"
+        );
+        Label durée = new Label(
+                " Durée: " + chapitre.getDureeEstimee() + " min"
         );
         info.setStyle("-fx-text-fill:#888; -fx-font-size:11px;");
 
@@ -123,7 +148,7 @@ public class ChapitreList {
 
         HBox actions = new HBox(10, edit, delete);
 
-        card.getChildren().addAll(titre, type, contenu, file, info, actions);
+        card.getChildren().addAll(titre, type, contenu, fileLink, info, actions);
 
         return card;
     }
