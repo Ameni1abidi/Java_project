@@ -17,6 +17,7 @@ import tn.esprit.entities.Cours;
 import tn.esprit.entities.Chapitre;
 import tn.esprit.services.ChapitreService;
 import tn.esprit.services.CoursService;
+import tn.esprit.services.StudentChapitreProgressService;
 
 import java.awt.*;
 import java.io.File;
@@ -91,47 +92,86 @@ public class StudentCours {
 
         Label chapLabel = new Label("📚 Nombre de chapitres: " + totalChaps);
         chapLabel.setStyle("""
-            -fx-background-color:#eaf7ee;
-            -fx-text-fill:#1e7e34;
+            -fx-background-color:#ede9fe;
+            -fx-text-fill:#5b21b6;
             -fx-padding:5 10;
             -fx-background-radius:20;
             -fx-font-weight:bold;
         """);
 
+
+
         // ===== PROGRESS =====
-        int done = (int) (totalChaps * 0.6);
-        double percent = totalChaps == 0 ? 0 : (double) done / totalChaps;
+        int progress = chapitreService.getCourseProgress(3, c.getId()); // userId = 3
+
+        double percent = progress / 100.0;
 
         Label progressTitle = new Label("Progression");
         progressTitle.setStyle("-fx-font-size:12px; -fx-text-fill:#444;");
 
-        Label progressValue = new Label(done + "/" + totalChaps + " (" + (int)(percent * 100) + "%)");
-        progressValue.setStyle("-fx-font-size:11px; -fx-text-fill:#555;");
+        int done = (int) Math.round((progress / 100.0) * totalChaps);
+
+        Label progressValue = new Label(done + "/" + totalChaps + " (" + progress + "%)");
 
         ProgressBar progressBar = new ProgressBar(percent);
         progressBar.setPrefWidth(280);
         progressBar.setStyle("-fx-accent:#2d89ef;");
 
         // ===== CERTIFICATE =====
-        Button certBtn = new Button();
+        Button certBtn = new Button("🏆 Certificat");
 
-        if (percent >= 0.8) {
+        StudentChapitreProgressService progressService = new StudentChapitreProgressService();
+
+        boolean eligible = progressService.getCourseProgress(3, c.getId()) >= 100;
+
+        if (!eligible) {
+            certBtn.setDisable(true);
+            certBtn.setText("Certificat bloqué");
+            certBtn.setStyle("""
+        -fx-background-color:#d1d5db;
+        -fx-text-fill:#666;
+        -fx-background-radius:25;
+        -fx-padding:8 14;
+    """);
+        } else {
             certBtn.setText("Voir Certificat");
             certBtn.setStyle("""
-                -fx-background-color:#2d89ef;
+                -fx-background-color:#7c3aed;
                 -fx-text-fill:white;
                 -fx-background-radius:25;
                 -fx-padding:8 14;
+                -fx-font-weight:bold;
             """);
-        } else {
-            certBtn.setText("Certificat bloqué");
-            certBtn.setDisable(true);
-            certBtn.setStyle("""
-                -fx-background-color:#d1d5db;
-                -fx-text-fill:#666;
-                -fx-background-radius:25;
-                -fx-padding:8 14;
-            """);
+
+            certBtn.setOnAction(e -> {
+                try {
+                    FXMLLoader loader = new FXMLLoader(
+                            getClass().getResource("/Certificat.fxml")
+                    );
+
+                    Parent root = loader.load();
+
+                    CertificatController controller = loader.getController();
+
+                    Cours cours = coursService.getById(c.getId());
+
+                    controller.setData(
+                            "Student",
+                            cours,
+                            true,
+                            0,
+                            0
+                    );
+
+                    Stage stage = new Stage();
+                    stage.setScene(new Scene(root));
+                    stage.setTitle("Certificat");
+                    stage.show();
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            });
         }
 
         // ===== CHAPTERS =====
@@ -172,11 +212,11 @@ public class StudentCours {
 // ===== BADGE =====
                 Label badge = new Label("🏷 Badge temps : En cours");
                 badge.setStyle("""
-    -fx-text-fill:white;
-    -fx-background-color:#f39c12;
-    -fx-padding:4 10;
-    -fx-background-radius:12;
-""");
+                    -fx-text-fill:white;
+                    -fx-background-color:#8b5cf6;
+                    -fx-padding:4 10;
+                    -fx-background-radius:12;
+                """);
 
 
                 Label type = new Label("📄 Type : " + chap.getTypeContenu().toUpperCase());
@@ -281,4 +321,6 @@ public class StudentCours {
         weatherTemp.setText((int) temp + "°C");
         weatherDesc.setText(desc);
     }
+
+
 }

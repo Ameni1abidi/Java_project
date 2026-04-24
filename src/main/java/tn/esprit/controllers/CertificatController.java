@@ -1,13 +1,29 @@
 package tn.esprit.controllers;
 
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Paragraph;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.FXML;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Label;
+import javafx.scene.image.WritableImage;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import tn.esprit.entities.Cours;
 
+import javax.imageio.ImageIO;
 import java.io.File;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.io.ByteArrayOutputStream;
+import javax.imageio.ImageIO;
+import javafx.embed.swing.SwingFXUtils;
+import com.itextpdf.io.image.ImageData;
+import com.itextpdf.io.image.ImageDataFactory;
+import com.itextpdf.layout.element.Image;
 
 public class CertificatController {
 
@@ -66,31 +82,68 @@ public class CertificatController {
     @FXML
     private void exportPDF() {
         try {
-            String dest = "certificat.pdf";
 
-            com.itextpdf.kernel.pdf.PdfWriter writer =
-                    new com.itextpdf.kernel.pdf.PdfWriter(dest);
+            // 🔥 نخبي buttons قبل screenshot
+            certifBox.lookupAll(".button").forEach(node -> node.setVisible(false));
 
-            com.itextpdf.kernel.pdf.PdfDocument pdf =
-                    new com.itextpdf.kernel.pdf.PdfDocument(writer);
+            // 📸 screenshot
+            WritableImage image = certifBox.snapshot(new SnapshotParameters(), null);
 
-            com.itextpdf.layout.Document document =
-                    new com.itextpdf.layout.Document(pdf);
+            // 📁 choisir win yethabet
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Enregistrer PDF");
+            fileChooser.setInitialFileName("certificat.pdf");
 
-            // contenu
-            document.add(new com.itextpdf.layout.element.Paragraph("Certificat EduFlex")
-                    .setBold().setFontSize(20));
+            File file = fileChooser.showSaveDialog(certifBox.getScene().getWindow());
+            if (file == null) return;
 
-            document.add(new com.itextpdf.layout.element.Paragraph("\n"));
+            // 🔥 create PDF
+            PdfWriter writer = new PdfWriter(file.getAbsolutePath());
+            PdfDocument pdf = new PdfDocument(writer);
+            Document document = new Document(pdf);
 
-            document.add(new com.itextpdf.layout.element.Paragraph("Etudiant: " + studentName.getText()));
-            document.add(new com.itextpdf.layout.element.Paragraph("Cours: " + courseTitle.getText()));
-            document.add(new com.itextpdf.layout.element.Paragraph("Date: " + dateLabel.getText()));
-            document.add(new com.itextpdf.layout.element.Paragraph("Signature: " + signatureLabel.getText()));
+            // 🖼 convert image
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", bos);
 
+            ImageData imageData = ImageDataFactory.create(bos.toByteArray());
+            Image img = new Image(imageData);
+
+            img.setAutoScale(true);
+
+            document.add(img);
             document.close();
 
-            System.out.println("✅ PDF created");
+            // 🔥 رجّع buttons
+            certifBox.lookupAll(".button").forEach(node -> node.setVisible(true));
+
+            System.out.println("✅ PDF design saved");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    @FXML
+    private void handleDownloadImage() {
+        try {
+
+            // 🔥 hide buttons
+            certifBox.lookupAll(".button").forEach(n -> n.setVisible(false));
+
+            // 📸 snapshot clean
+            WritableImage image = certifBox.snapshot(new SnapshotParameters(), null);
+
+            // 🔁 رجّع buttons
+            certifBox.lookupAll(".button").forEach(n -> n.setVisible(true));
+
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setInitialFileName("certificat.png");
+
+            File file = fileChooser.showSaveDialog(certifBox.getScene().getWindow());
+
+            if (file != null) {
+                ImageIO.write(SwingFXUtils.fromFXImage(image, null), "png", file);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();

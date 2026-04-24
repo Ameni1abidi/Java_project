@@ -11,7 +11,7 @@ public class StudentChapitreProgressService {
     private Connection cnx;
 
     public StudentChapitreProgressService() {
-        Connection cnx = MyDatabase.getInstance().getConnection(); // حسب مشروعك
+        this.cnx = MyDatabase.getInstance().getConnection();
     }
 
     // ================= FIND =================
@@ -33,6 +33,11 @@ public class StudentChapitreProgressService {
                 p.setUtilisateurId(userId);
                 p.setChapitreId(chapitreId);
 
+                p.setOpened(rs.getBoolean("opened"));
+                p.setViewedResume(rs.getBoolean("viewed_resume"));
+                p.setCompleted(rs.getBoolean("completed"));
+                p.setProgress(rs.getInt("progress")); // 🔥 FIX IMPORTANT
+
                 Timestamp c = rs.getTimestamp("completed_at");
                 if (c != null)
                     p.setCompletedAt(c.toLocalDateTime());
@@ -53,46 +58,54 @@ public class StudentChapitreProgressService {
         try {
 
             if (p.getId() == 0) {
-                // INSERT
+
                 String sql = """
-                    INSERT INTO student_chapitre_progress
-                    (utilisateur_id, chapitre_id, started_at, last_viewed_at, completed_at, time_spent_seconds)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                """;
+                INSERT INTO student_chapitre_progress
+                (utilisateur_id, chapitre_id, started_at, last_viewed_at, completed_at, progress, opened, viewed_resume, completed)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """;
 
                 PreparedStatement ps = cnx.prepareStatement(sql);
 
                 ps.setInt(1, p.getUtilisateurId());
                 ps.setInt(2, p.getChapitreId());
+
                 ps.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
                 ps.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
 
-                if (p.getCompletedAt() != null)
-                    ps.setTimestamp(5, Timestamp.valueOf(p.getCompletedAt()));
-                else
-                    ps.setNull(5, Types.TIMESTAMP);
+                ps.setTimestamp(5, p.getCompletedAt() != null
+                        ? Timestamp.valueOf(p.getCompletedAt())
+                        : null);
 
-                ps.setInt(6, 0);
+                ps.setInt(6, p.getProgress());
+                ps.setBoolean(7, p.isOpened());
+                ps.setBoolean(8, p.isViewedResume());
+                ps.setBoolean(9, p.isCompleted());
 
                 ps.executeUpdate();
 
             } else {
-                // UPDATE
+
                 String sql = """
-                    UPDATE student_chapitre_progress
-                    SET completed_at = ?, last_viewed_at = ?
-                    WHERE id = ?
-                """;
+                UPDATE student_chapitre_progress
+                SET progress=?, opened=?, viewed_resume=?, completed=?, completed_at=?, last_viewed_at=?
+                WHERE id=?
+            """;
 
                 PreparedStatement ps = cnx.prepareStatement(sql);
 
-                if (p.getCompletedAt() != null)
-                    ps.setTimestamp(1, Timestamp.valueOf(p.getCompletedAt()));
-                else
-                    ps.setNull(1, Types.TIMESTAMP);
+                ps.setInt(1, p.getProgress());
+                ps.setBoolean(2, p.isOpened());
+                ps.setBoolean(3, p.isViewedResume());
+                ps.setBoolean(4, p.isCompleted());
 
-                ps.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
-                ps.setInt(3, p.getId());
+                ps.setTimestamp(5, p.getCompletedAt() != null
+                        ? Timestamp.valueOf(p.getCompletedAt())
+                        : null);
+
+                ps.setTimestamp(6, Timestamp.valueOf(LocalDateTime.now()));
+
+                ps.setInt(7, p.getId());
 
                 ps.executeUpdate();
             }
@@ -100,5 +113,46 @@ public class StudentChapitreProgressService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    public int calculateProgress(StudentChapitreProgress p) {
+
+        int progress = 0;
+
+        if (p.isOpened()) progress += 20;
+        if (p.isViewedResume()) progress += 40;
+        if (p.isCompleted()) progress = 100;
+
+        return Math.min(progress, 100);
+    }
+    public int getCourseProgress(int userId, int coursId) {
+
+        String sql = """
+        SELECT COUNT(*) as completed_count
+        FROM student_chapitre_progress p
+        JOIN chapitre c ON p.chapitre_id = c.id
+        WHERE p.utilisateur_id = ? 
+        AND c.cours_id = ?
+        AND p.completed = true
+    """;
+
+        try {
+            PreparedStatement ps = cnx.prepareStatement(sql);
+            ps.setInt(1, userId);
+            ps.setInt(2, coursId);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                int completed = rs.getInt("completed_count");
+
+                // 🔥 إذا فمّا chapitre terminé → 100%
+                if (completed > 0) return 100;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0;
     }
 }

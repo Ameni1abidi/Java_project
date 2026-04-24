@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 public class StudentChapitreProgress {
 
     private int id;
-
     private int utilisateurId;
     private int chapitreId;
 
@@ -13,9 +12,13 @@ public class StudentChapitreProgress {
     private LocalDateTime lastViewedAt;
     private LocalDateTime completedAt;
 
-    private int timeSpentSeconds;
+    private boolean opened;
+    private boolean viewedResume;
+    private boolean completed;
 
-    // ===== GETTERS & SETTERS =====
+    private int progress;
+
+    // GETTERS / SETTERS
 
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
@@ -35,13 +38,18 @@ public class StudentChapitreProgress {
     public LocalDateTime getCompletedAt() { return completedAt; }
     public void setCompletedAt(LocalDateTime completedAt) { this.completedAt = completedAt; }
 
-    public int getTimeSpentSeconds() { return timeSpentSeconds; }
-    public void setTimeSpentSeconds(int timeSpentSeconds) {
-        this.timeSpentSeconds = Math.max(0, timeSpentSeconds);
-    }
+    public boolean isOpened() { return opened; }
+    public void setOpened(boolean opened) { this.opened = opened; }
 
-    // ===== HELPERS =====
-    public boolean isCompleted() {
-        return completedAt != null;
+    public boolean isViewedResume() { return viewedResume; }
+    public void setViewedResume(boolean viewedResume) { this.viewedResume = viewedResume; }
+
+    public boolean isCompleted() { return completed; }
+    public void setCompleted(boolean completed) { this.completed = completed; }
+
+    public int getProgress() { return progress; }
+
+    public void setProgress(int progress) {
+        this.progress = Math.max(0, Math.min(100, progress));
     }
 }

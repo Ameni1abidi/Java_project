@@ -113,22 +113,58 @@
 
     <!-- CENTER CONTENT -->
     <center>
-        <VBox spacing="15" style="-fx-padding:20;">
+        <VBox spacing="15" style="-fx-padding:20; -fx-background-color:#f5f6fa;">
 
-            <Label text="📌 Résumé"
-                   style="-fx-font-size:16px; -fx-font-weight:bold;"/>
+            <!-- HEADER -->
+            <Label text="génie"
+                   style="-fx-font-size:26px; -fx-font-weight:bold;" />
 
-            <TextArea fx:id="resumeText"
-                      wrapText="true"
-                      editable="false"
-                      prefHeight="180"/>
+            <!-- INFO BAR -->
+            <HBox spacing="10">
+                <Label text="Durée estimée: 30 min" style="-fx-background-color:#dfe6e9; -fx-padding:8; -fx-background-radius:10;"/>
+                <Label text="Temps passé: 20 min" style="-fx-background-color:#dfe6e9; -fx-padding:8; -fx-background-radius:10;"/>
+                <Label text="Badge: En cours" style="-fx-background-color:#dfe6e9; -fx-padding:8; -fx-background-radius:10;"/>
+            </HBox>
 
-            <Label text="📄 PDF"
-                   style="-fx-font-size:14px; -fx-font-weight:bold;"/>
+            <!-- RESUME -->
+            <VBox style="-fx-background-color:white; -fx-padding:15; -fx-background-radius:15;">
+                <Label text="Résumé :" style="-fx-font-size:16px; -fx-font-weight:bold;" />
+                <TextArea fx:id="resumeText" wrapText="true" prefHeight="120"/>
+            </VBox>
 
-            <WebView fx:id="pdfViewer"
-                     prefHeight="500"
-                     style="-fx-background-color:white;"/>
+            <VBox style="-fx-background-color:white; -fx-padding:15; -fx-background-radius:15;" spacing="10">
+
+                <!-- HEADER + BUTTONS -->
+                <HBox alignment="CENTER_LEFT" spacing="10">
+
+                    <Label text="Document :" style="-fx-font-weight:bold; -fx-font-size:14px;" />
+
+                    <Region HBox.hgrow="ALWAYS"/>
+
+                    <Button text="📥 Télécharger"
+                            onAction="#handleDownload"
+                            style="-fx-background-color:#2ecc71; -fx-text-fill:white; -fx-background-radius:15;"/>
+
+                    <Button text="🖨️ Imprimer"
+                            onAction="#handlePrint"
+                            style="-fx-background-color:#f39c12; -fx-text-fill:white; -fx-background-radius:15;"/>
+                </HBox>
+
+                <!-- PDF -->
+                <WebView fx:id="pdfViewer" prefHeight="500"/>
+
+            </VBox>
+
+            <!-- BUTTONS -->
+            <HBox spacing="15">
+                <Button fx:id="doneBtn"
+                        text="Marquer comme terminé"
+                        onAction="#handleTerminer"/>
+
+                <Button text="Retour aux cours"
+                        style="-fx-background-color:#ff4757; -fx-text-fill:white;"
+                        onAction="#goBack"/>
+            </HBox>
 
         </VBox>
     </center>

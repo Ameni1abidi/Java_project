@@ -74,13 +74,23 @@
             </VBox>
         </HBox>
         <HBox spacing="15" alignment="CENTER">
+            <!-- 💜 DARK VIOLET -->
             <Button text="📄 Télécharger PDF"
                     onAction="#exportPDF"
-                    style="-fx-background-color:#2d89ef; -fx-text-fill:white; -fx-padding:8 15; -fx-background-radius:20;"/>
+                    style="-fx-background-color:#6d28d9;
+                           -fx-text-fill:white;
+                           -fx-padding:8 15;
+                           -fx-background-radius:25;
+                           -fx-font-weight:bold;" />
 
+            <!-- 🟣 LIGHT VIOLET -->
             <Button text="🖼 Télécharger Image"
-                    onAction="#exportImage"
-                    style="-fx-background-color:#ff416c; -fx-text-fill:white; -fx-padding:8 15; -fx-background-radius:20;"/>
+                    onAction="#handleDownloadImage"
+                    style="-fx-background-color:#c4b5fd;
+                           -fx-text-fill:#2e1065;
+                           -fx-padding:8 15;
+                           -fx-background-radius:25;
+                           -fx-font-weight:bold;" />
         </HBox>
 
     </VBox>
