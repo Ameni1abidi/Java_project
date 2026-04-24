@@ -5,6 +5,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
 import javafx.scene.web.WebView;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -16,6 +17,7 @@ import tn.esprit.entities.StudentChapitreProgress;
 import tn.esprit.services.*;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
@@ -25,6 +27,9 @@ public class StudentChapitreDetail {
     @FXML private TextArea resumeText;
     @FXML private WebView pdfViewer;
     @FXML private Button doneBtn;
+    @FXML private VBox chatBox;
+    @FXML private TextField questionField;
+    @FXML private Label typingLabel;
 
     private Chapitre chapitre;
 
@@ -183,7 +188,91 @@ public class StudentChapitreDetail {
         a.setContentText(msg);
         a.show();
     }
+    @FXML
+    private void handleAsk() {
 
+        String question = questionField.getText();
+        if (question == null || question.isBlank()) return;
+
+        // USER MESSAGE
+        Label userMsg = new Label("🧑‍🎓 " + question);
+        userMsg.setStyle("""
+        -fx-background-color:#eae6ff;
+        -fx-padding:8;
+        -fx-background-radius:12;
+        -fx-text-fill:#333;
+    """);
+
+        chatBox.getChildren().add(userMsg);
+        questionField.clear();
+
+        // TYPING...
+        Label botTyping = new Label("🤖 bot is typing...");
+        botTyping.setWrapText(true);
+        botTyping.setMaxWidth(2000);
+        botTyping.setStyle("""
+    -fx-background-color:#7c4dff;
+    -fx-text-fill:white;
+    -fx-padding:12;
+    -fx-background-radius:18;
+    -fx-font-size:14px;
+""");
+
+        chatBox.getChildren().add(botTyping);
+
+        // RUN AI IN BACKGROUND
+        new Thread(() -> {
+
+            String answer = generateAnswer(question);
+
+            javafx.application.Platform.runLater(() -> {
+
+                chatBox.getChildren().remove(botTyping);
+
+                Label botMsg = new Label("🤖 " + answer);
+                botMsg.setWrapText(true);
+
+                botMsg.setStyle("""
+                -fx-background-color:#7c4dff;
+                -fx-text-fill:white;
+                -fx-padding:10;
+                -fx-background-radius:12;
+                -fx-max-width:300;
+            """);
+
+                chatBox.getChildren().add(botMsg);
+            });
+
+        }).start();
+    }
+    private String generateAnswer(String question) {
+        try {
+            File file = getPdfFile();
+            if (file == null || !file.exists()) {
+                return "Chapitre introuvable.";
+            }
+
+            String text = PdfExtractor.extractText(file.getAbsolutePath());
+            text = text.replaceAll("\\s+", " ");
+
+            String prompt =
+                    "Tu es un professeur universitaire expert en génie logiciel.\n" +
+                            "Tu réponds UNIQUEMENT en français.\n" +
+                            "Tu expliques comme un enseignant simple et clair.\n" +
+                            "Réponse max 3 lignes.\n\n" +
+
+                            "CHAMP DU COURS:\n" + text + "\n\n" +
+
+                            "QUESTION:\n" + question + "\n\n" +
+
+                            "RÉPONSE (en français uniquement):";
+
+            return AIService.ask(prompt);
+
+        } catch (Exception e) {
+            return "AI error";
+        }
+    }
     // ================= USER =================
     private int getCurrentUserId() {
         return 3;

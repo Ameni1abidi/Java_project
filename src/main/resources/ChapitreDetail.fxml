@@ -155,6 +155,29 @@
 
             </VBox>
 
+            <!-- CHATBOT AREA -->
+            <VBox spacing="10" style="-fx-background-color:#f7f5ff; -fx-padding:15; -fx-background-radius:15;">
+
+                <Label text="💬 Assistant du chapitre"
+                       style="-fx-font-weight:bold; -fx-text-fill:#5b3cc4;" />
+
+                <ScrollPane prefHeight="150" fitToWidth="true"
+                            style="-fx-background:transparent;">
+                    <VBox fx:id="chatBox" spacing="8"/>
+                </ScrollPane>
+
+                <HBox spacing="10">
+                    <TextField fx:id="questionField"
+                               promptText="Pose ta question..."
+                               style="-fx-background-radius:20; -fx-border-radius:20;" />
+
+                    <Button text="Envoyer"
+                            onAction="#handleAsk"
+                            style="-fx-background-color:#7c4dff; -fx-text-fill:white; -fx-background-radius:20;" />
+                </HBox>
+
+            </VBox>
+
             <!-- BUTTONS -->
             <HBox spacing="15">
                 <Button fx:id="doneBtn"

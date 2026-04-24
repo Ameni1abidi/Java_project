@@ -1,9 +1,17 @@
 package tn.esprit.services;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.json.JSONObject;
 
 import java.net.URI;
@@ -55,6 +63,36 @@ public class AIService {
         } catch (Exception e) {
             e.printStackTrace();
             return "❌ JSON error / AI failed";
+        }
+    }
+    public static String ask(String prompt) {
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+
+            JsonObject json = new JsonObject();
+            json.addProperty("model", "phi3"); // أو mistral / llama3
+            json.addProperty("prompt",
+                    prompt +
+                            "\n\nIMPORTANT: answer in max 3 lines only, clear and simple."
+            );
+            json.addProperty("stream", false);
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("http://localhost:11434/api/generate"))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(json.toString()))
+                    .build();
+
+            HttpResponse<String> response =
+                    client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            JsonObject res = JsonParser.parseString(response.body()).getAsJsonObject();
+
+            return res.has("response") ? res.get("response").getAsString() : "No response";
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "AI error";
         }
     }
 }
