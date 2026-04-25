@@ -11,6 +11,8 @@ import tn.esprit.entities.Cours;
 import tn.esprit.services.CoursService;
 
 import javafx.event.ActionEvent;
+import tn.esprit.utils.FlashSession;
+
 import java.util.List;
 
 public class CoursList {
@@ -20,11 +22,20 @@ public class CoursList {
 
     @FXML
     private TextField searchField;
+    public static String flashMessage = null;
+    public static String flashType = null;
 
     private CoursService service = new CoursService();
 
     public void initialize() {
         loadData();
+        String msg = FlashSession.getMessage();
+        String type = FlashSession.getType();
+
+        if (msg != null) {
+            showNotification(msg, type);
+            FlashSession.clear();
+        }
     }
 
     public void loadData() {
@@ -37,49 +48,152 @@ public class CoursList {
         }
     }
     private VBox createCard(Cours c) {
-        VBox card = new VBox(10);
+
+        VBox card = new VBox(12);
+        card.setPrefWidth(280); // 🔥 تكبير الكارد
         card.setStyle("""
-            -fx-background-color:white;
-            -fx-padding:15;
-            -fx-background-radius:15;
-            -fx-effect:dropshadow(gaussian, rgba(0,0,0,0.1),10,0,0,5);
-        """);
+        -fx-background-color:white;
+        -fx-padding:18;
+        -fx-background-radius:18;
+        -fx-border-radius:18;
+        -fx-effect:dropshadow(gaussian, rgba(0,0,0,0.15),15,0,0,5);
+    """);
 
+        // 🔹 titre
         Label titre = new Label(c.getTitre());
-        titre.setStyle("-fx-font-weight:bold; -fx-font-size:16;");
+        titre.setStyle("-fx-font-weight:bold; -fx-font-size:18;");
 
+        // 🔹 badge dynamique
+        String badgeText = "⭐ A la une";
+        String color = "#ff6b6b";
+
+        if (c.getBadge() != null) {
+            switch (c.getBadge().toLowerCase()) {
+                case "populaire":
+                    badgeText = "🔥 Populaire";
+                    color = "#f39c12";
+                    break;
+                case "tendance":
+                    badgeText = "📈 Tendance";
+                    color = "#5f27cd";
+                    break;
+            }
+        }
+
+        Label badge = new Label(badgeText);
+        badge.setStyle(
+                "-fx-background-color:" + color + ";" +
+                        "-fx-text-fill:white;" +
+                        "-fx-padding:4 10;" +
+                        "-fx-background-radius:12;" +
+                        "-fx-font-size:11;" +
+                        "-fx-font-weight:bold;"
+        );
+
+        // 🔹 description
         Label desc = new Label(c.getDescription());
-        Label date = new Label("Créé le: " + c.getDateCreation());
+        desc.setWrapText(true); // 🔥 مهم
+        desc.setStyle("-fx-text-fill:#555; -fx-font-size:13;");
 
+        // 🔹 date
+        Label date = new Label("📅 Créé le: " + c.getDateCreation());
+        date.setStyle("-fx-text-fill:#888; -fx-font-size:11;");
 
-        Button btnChapitre = new Button("Liste Chapitres");
-        btnChapitre.setStyle("-fx-border-color:#007bff; -fx-text-fill:#007bff;");
+        // 🔹 buttons
+        Button btnChapitre = new Button("Chapitres");
+        btnChapitre.setStyle("""
+        -fx-border-color:#28a745;
+        -fx-text-fill:#28a745;
+        -fx-background-color:transparent;
+        -fx-border-radius:15;
+        -fx-padding:5 12;
+    """);
         btnChapitre.setOnAction(e -> goToChapitres(c));
 
         Button btnModifier = new Button("Modifier");
-        btnModifier.setStyle("-fx-border-color:#28a745; -fx-text-fill:#28a745;");
+        btnModifier.setStyle("""
+        -fx-border-color:#007bff;
+        -fx-text-fill:#007bff;
+        -fx-background-color:transparent;
+        -fx-border-radius:15;
+        -fx-padding:5 12;
+    """);
         btnModifier.setOnAction(e -> modifierCours(c));
 
         Button btnDelete = new Button("Supprimer");
-        btnDelete.setStyle("-fx-border-color:#dc3545; -fx-text-fill:#dc3545;");
+        btnDelete.setStyle("""
+        -fx-border-color:#dc3545;
+        -fx-text-fill:#dc3545;
+        -fx-background-color:transparent;
+        -fx-border-radius:15;
+        -fx-padding:5 12;
+    """);
         btnDelete.setOnAction(e -> deleteCours(c));
-        HBox actions = new HBox(10, btnChapitre, btnModifier, btnDelete);
 
-        card.getChildren().addAll(titre, desc, date, actions);
+        HBox actions = new HBox(8, btnChapitre, btnModifier, btnDelete);
+
+        // 🔥 hover effect (كيف Symfony)
+        card.setOnMouseEntered(e -> card.setStyle(card.getStyle() +
+                "-fx-scale-x:1.03; -fx-scale-y:1.03;"));
+
+        card.setOnMouseExited(e -> card.setStyle(card.getStyle()
+                .replace("-fx-scale-x:1.03; -fx-scale-y:1.03;", "")));
+
+        // add
+        card.getChildren().addAll(titre, badge, desc, date, actions);
 
         return card;
     }
     @FXML
     void searchCours() {
-        String keyword = searchField.getText().toLowerCase();
+        String keyword = searchField.getText().toLowerCase().trim();
         coursContainer.getChildren().clear();
 
         for (Cours c : service.getAll()) {
-            if (c.getTitre().toLowerCase().contains(keyword)) {
+            if (c.getTitre().toLowerCase().contains(keyword)
+                    || c.getDescription().toLowerCase().contains(keyword)) {
+
                 coursContainer.getChildren().add(createCard(c));
             }
         }
     }
+    @FXML
+    private Label notificationLabel;
+
+    private void showNotification(String msg, String type) {
+
+        notificationLabel.setText(msg);
+        notificationLabel.setVisible(true);
+        notificationLabel.setManaged(true);
+
+        String base = "-fx-padding:10 15; -fx-background-radius:10; -fx-font-weight:bold;";
+
+        switch (type) {
+            case "success":
+                notificationLabel.setStyle(base + "-fx-background-color:#e8fff0; -fx-text-fill:#1c6b3a;");
+                break;
+
+            case "error":
+                notificationLabel.setStyle(base + "-fx-background-color:#ffe9e9; -fx-text-fill:#8a1f1f;");
+                break;
+
+            case "warning":
+                notificationLabel.setStyle(base + "-fx-background-color:#fff7e0; -fx-text-fill:#7a5b00;");
+                break;
+        }
+
+        // 🔥 auto hide (Symfony-like)
+        new Thread(() -> {
+            try {
+                Thread.sleep(2500);
+                javafx.application.Platform.runLater(() -> {
+                    notificationLabel.setVisible(false);
+                    notificationLabel.setManaged(false);
+                });
+            } catch (Exception e) {}
+        }).start();
+    }
+
     @FXML
     void goToAdd() {
         try {
@@ -88,7 +202,6 @@ public class CoursList {
 
             Stage stage = (Stage) coursContainer.getScene().getWindow();
             stage.setScene(new Scene(root));
-
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -105,8 +218,10 @@ public class CoursList {
             Stage stage = (Stage) coursContainer.getScene().getWindow();
             stage.setScene(new Scene(root));
 
+            showNotification("✏️ Cours modifié avec succès", "success");
+
         } catch (Exception e) {
-            e.printStackTrace();
+            showNotification("Erreur modification", "error");
         }
     }
     void goToChapitres(Cours c) {
@@ -127,6 +242,7 @@ public class CoursList {
     void deleteCours(Cours c) {
         service.supprimer(c.getId());
         loadData();
+        showNotification("❌ Cours supprimé avec succès", "error");
     }
 
     @FXML
