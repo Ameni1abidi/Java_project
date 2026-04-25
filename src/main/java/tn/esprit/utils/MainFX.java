@@ -17,6 +17,7 @@ public class MainFX extends Application {
         //FXMLLoader loader = new FXMLLoader(getClass().getResource("/ajouterCours.fxml"));
 
         Scene scene = new Scene(loader.load());
+        PopupStyleInstaller.install();
 
         stage.setTitle("EDUFLEX");
         stage.setScene(scene);
