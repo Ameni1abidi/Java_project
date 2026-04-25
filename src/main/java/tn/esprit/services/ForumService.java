@@ -27,7 +27,7 @@ public class ForumService {
             ps.setString(3, f.getType());
             ps.setTimestamp(4, f.getDateCreation());
 
-            ps.executeUpdate();
+            ps.executeUpdate(); 
             System.out.println("Forum ajouté !");
         } catch (SQLException e) {
             e.printStackTrace();
