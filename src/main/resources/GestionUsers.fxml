@@ -1,224 +1,224 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.chart.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.geometry.Insets?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="tn.esprit.controllers.UserController"
             stylesheets="@style.css"
             styleClass="admin-root"
-            prefWidth="1280" prefHeight="760">
+            prefWidth="1360" prefHeight="820">
 
-    <!-- ══ SIDEBAR ═════════════════════════════════════════════════════════ -->
     <left>
-        <VBox spacing="14" prefWidth="240" minWidth="220"
-              styleClass="admin-sidebar">
-
+        <VBox spacing="14" prefWidth="250" minWidth="220" styleClass="admin-sidebar">
             <HBox spacing="10" alignment="CENTER_LEFT" styleClass="sidebar-brand">
-                <Label text="EduFlex" styleClass="sidebar-title"/>
+                <Label text="◆" styleClass="sidebar-logo"/>
+                <Label text="EduFlex Admin" styleClass="sidebar-title"/>
             </HBox>
 
             <VBox spacing="8" styleClass="sidebar-menu">
-                <Button text="Dashboard Admin" onAction="#goDashboardAdmin" styleClass="sidebar-item"/>
-                <Button text="Copilote IA" onAction="#goCopiloteIA" styleClass="sidebar-item"/>
-                <Button text="Forum" onAction="#goForum" styleClass="sidebar-item"/>
-                <Button text="Utilisateurs" onAction="#goUsers" styleClass="sidebar-item sidebar-item--active"/>
-                <Button text="Classes" onAction="#goClasses" styleClass="sidebar-item"/>
-                <Button text="Matieres" onAction="#goMatieres" styleClass="sidebar-item"/>
-                <Button text="Droits d'acces" onAction="#goAccess" styleClass="sidebar-item"/>
-                <Button text="Statistiques" onAction="#goStats" styleClass="sidebar-item"/>
-                <Button text="Parametres" onAction="#goSettings" styleClass="sidebar-item"/>
+                <Button text="⌂ Dashboard" onAction="#goDashboardAdmin" styleClass="sidebar-item"/>
+                <Button text="◉" onAction="#goUsers" styleClass="sidebar-item sidebar-item--active"/>
+                <Button text="▦ Classes" onAction="#goClasses" styleClass="sidebar-item"/>
+                <Button text="▤ Subjects" onAction="#goMatieres" styleClass="sidebar-item"/>
+                <Button text="◈ Permissions" onAction="#goAccess" styleClass="sidebar-item"/>
+                <Button text="◔ Statistics" onAction="#goStats" styleClass="sidebar-item"/>
+                <Button text="✦ AI Copilot" onAction="#goCopiloteIA" styleClass="sidebar-item"/>
+                <Button text="⚙ Settings" onAction="#goSettings" styleClass="sidebar-item"/>
             </VBox>
 
             <Region VBox.vgrow="ALWAYS"/>
-
-            <Button text="Logout" onAction="#logoutAdmin" styleClass="sidebar-logout"/>
+            <Button text="↩ Logout" onAction="#logoutAdmin" styleClass="sidebar-logout"/>
         </VBox>
     </left>
 
-    <!-- ══ TOPBAR ═══════════════════════════════════════════════════════════ -->
     <top>
-        <HBox alignment="CENTER_LEFT" spacing="16" styleClass="admin-topbar">
+        <HBox alignment="CENTER_LEFT" spacing="12" styleClass="admin-topbar">
             <VBox spacing="2">
-                <Label text="Dashboard Admin" styleClass="topbar-title"/>
-                <Label text="Vue globale de la plateforme EduFlex" styleClass="topbar-subtitle"/>
+                <Label text="EduFlex Admin Dashboard" styleClass="topbar-title"/>
+                <Label text="" styleClass="topbar-subtitle" managed="false" visible="false"/>
             </VBox>
             <HBox HBox.hgrow="ALWAYS"/>
-
+            <ToggleButton fx:id="darkModeToggle" text="Dark mode" onAction="#toggleDarkMode" styleClass="topbar-pill topbar-pill--ghost"/>
             <Button text="Nouveau rapport" styleClass="topbar-pill"/>
-            <Button text="Logout" onAction="#logoutAdmin" styleClass="topbar-pill topbar-pill--ghost"/>
-
             <Label fx:id="avatarLabel" text="A" styleClass="topbar-avatar"/>
         </HBox>
     </top>
 
-    <!-- ══ CONTENU ══════════════════════════════════════════════════════════ -->
     <center>
-        <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;" styleClass="admin-scroll">
+        <ScrollPane fitToWidth="true" styleClass="admin-scroll">
             <content>
-                <VBox spacing="16" styleClass="admin-content">
-
-                    <HBox spacing="14" alignment="CENTER_LEFT">
-                        <VBox spacing="4" HBox.hgrow="ALWAYS">
-                            <Label text="Utilisateurs" styleClass="section-title"/>
-                            <Label text="Gestion des utilisateurs" styleClass="section-subtitle"/>
-                        </VBox>
-                        <Label fx:id="countLabel" text="0 utilisateur(s)" styleClass="count-pill"/>
-                        <Button text="Nouveau" styleClass="primary-pill"/>
+                <VBox spacing="14" styleClass="admin-content">
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <Label text="Users management" styleClass="section-title"/>
+                        <Label fx:id="countLabel" text="0 user(s)" styleClass="count-pill"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button text="Export CSV" onAction="#exportVisibleUsers" styleClass="btn-primary"/>
+                        <Button text="Export Excel" onAction="#exportExcelUsers" styleClass="btn-muted"/>
+                        <Button text="Export PDF" onAction="#exportPdfUsers" styleClass="btn-muted"/>
                     </HBox>
 
-                    <HBox spacing="18">
-
-                        <!-- ── FORMULAIRE GAUCHE ─────────────────────────────── -->
-                        <VBox spacing="14" minWidth="320" prefWidth="320" maxWidth="340"
-                              styleClass="card">
-
-                            <HBox spacing="8" alignment="CENTER_LEFT">
-                                <Label text="Ajouter un utilisateur" styleClass="card-title"/>
-                            </HBox>
-
-                            <Separator styleClass="separator-soft"/>
-
-                            <!-- Nom -->
-                            <VBox spacing="4">
-                                <Label text="Nom complet *" styleClass="field-label"/>
-                                <TextField fx:id="nameField" promptText="Ex : Ahmed Ben Ali" styleClass="field-input"/>
-                            </VBox>
-
-                            <!-- Email -->
-                            <VBox spacing="4">
-                                <Label text="Email *" styleClass="field-label"/>
-                                <TextField fx:id="emailField" promptText="email@exemple.com" styleClass="field-input"/>
-                            </VBox>
-
-                            <!-- Mot de passe -->
-                            <VBox spacing="4">
-                                <Label text="Mot de passe *" styleClass="field-label"/>
-                                <PasswordField fx:id="passwordField" promptText="Min. 6 caractères" styleClass="field-input"/>
-                            </VBox>
-
-                            <!-- Rôle -->
-                            <VBox spacing="4">
-                                <Label text="Rôle *" styleClass="field-label"/>
-                                <ComboBox fx:id="roleAddCombo" maxWidth="Infinity" styleClass="field-select"/>
-                            </VBox>
-
-                            <Separator styleClass="separator-soft"/>
-
-                            <!-- Bouton Ajouter -->
-                            <Button text="Ajouter" onAction="#addUser" maxWidth="Infinity" styleClass="btn-primary"/>
-
-                            <!-- Bouton Supprimer -->
-                            <Button text="Supprimer" onAction="#deleteUser" maxWidth="Infinity" styleClass="btn-danger"/>
-
-                            <!-- Bouton Modifier -->
-                            <Button text="Modifier" onAction="#updateSelectedUser" maxWidth="Infinity" styleClass="btn-info"/>
-
-                            <!-- Bouton Vider -->
-                            <Button text="Vider" onAction="#clearFields" maxWidth="Infinity" styleClass="btn-muted"/>
+                    <HBox spacing="10">
+                        <VBox spacing="4" HBox.hgrow="ALWAYS" styleClass="kpi-card">
+                            <Label text="Total Users" styleClass="kpi-title"/>
+                            <Label fx:id="totalUsersLabel" text="0" styleClass="kpi-value"/>
                         </VBox>
-
-                        <!-- ── TABLE + FILTRES DROITE ───────────────────────── -->
-                        <VBox spacing="12" HBox.hgrow="ALWAYS">
-
-                            <!-- Barre recherche + filtre -->
-                            <VBox spacing="10" styleClass="card">
-
-                                <HBox spacing="12" alignment="CENTER_LEFT">
-                                    <TextField fx:id="searchField"
-                                               promptText="Rechercher par nom..."
-                                               prefWidth="260"
-                                               onKeyReleased="#handleSearch"
-                                               styleClass="field-input"/>
-
-                                    <Separator orientation="VERTICAL" styleClass="separator-soft"/>
-
-                                    <Label text="Rôle :" styleClass="field-label"/>
-                                    <ComboBox fx:id="filterRoleCombo" prefWidth="180" onAction="#applyFilter" styleClass="field-select"/>
-
-                                    <Label text="Tri :" styleClass="field-label"/>
-                                    <ComboBox fx:id="sortCombo" prefWidth="180" onAction="#applySorting" styleClass="field-select"/>
-
-                                    <Label text="Bulk role :" styleClass="field-label"/>
-                                    <ComboBox fx:id="bulkRoleCombo" prefWidth="150" styleClass="field-select"/>
-                                </HBox>
-
-                                <HBox spacing="10" alignment="CENTER_LEFT">
-                                    <Button text="Appliquer role" onAction="#applyBulkRole" minWidth="130" styleClass="btn-warning"/>
-                                    <Button text="Supprimer selection" onAction="#deleteSelectedUsers" minWidth="150" styleClass="btn-danger"/>
-                                    <Button text="Réinitialiser" onAction="#loadUsers" minWidth="130" styleClass="btn-success"/>
-                                    <Button text="Exporter CSV" onAction="#exportVisibleUsers" minWidth="120" styleClass="btn-primary"/>
-                                </HBox>
-                            </VBox>
-
-                            <!-- Statistiques dynamiques -->
-                            <HBox spacing="10" alignment="CENTER_LEFT" styleClass="card card--compact">
-                                <Label text="Statistiques (vue actuelle):" styleClass="stat-title"/>
-                                <Label text="Total:" styleClass="stat-label"/>
-                                <Label fx:id="totalUsersLabel" text="0" styleClass="stat-value"/>
-                                <Label text="Admin:" styleClass="stat-label"/>
-                                <Label fx:id="totalAdminsLabel" text="0" styleClass="stat-value"/>
-                                <Label text="Prof:" styleClass="stat-label"/>
-                                <Label fx:id="totalProfsLabel" text="0" styleClass="stat-value"/>
-                                <Label text="Etudiant:" styleClass="stat-label"/>
-                                <Label fx:id="totalEtudiantsLabel" text="0" styleClass="stat-value"/>
-                                <Label text="Parent:" styleClass="stat-label"/>
-                                <Label fx:id="totalParentsLabel" text="0" styleClass="stat-value"/>
-                            </HBox>
-
-                            <!-- TableView -->
-                            <TableView fx:id="table" VBox.vgrow="ALWAYS" styleClass="admin-table">
-                                <columns>
-                                    <TableColumn fx:id="colName"  text="NOM" prefWidth="220"/>
-                                    <TableColumn fx:id="colEmail" text="EMAIL" prefWidth="260"/>
-                                    <TableColumn fx:id="colRole"  text="ROLE" prefWidth="170" style="-fx-alignment: CENTER;"/>
-                                </columns>
-                                <placeholder>
-                                    <Label text="Aucun utilisateur trouvé" styleClass="placeholder-soft"/>
-                                </placeholder>
-                            </TableView>
-
-                            <HBox alignment="CENTER_RIGHT" style="-fx-padding: 6 0 0 0;">
-                                <Pagination fx:id="pagination" maxPageIndicatorCount="7"/>
-                            </HBox>
-
-                            <!-- Copilote Admin IA -->
-                            <VBox fx:id="copilotSection" spacing="10" styleClass="card">
-                                <HBox alignment="CENTER_LEFT" spacing="10">
-                                    <Label text="Copilote Admin IA" styleClass="card-title"/>
-                                    <Region HBox.hgrow="ALWAYS"/>
-                                    <Label fx:id="copilotSourceLabel" text="Source: Fallback local" styleClass="badge-soft"/>
-                                </HBox>
-
-                                <HBox spacing="10" alignment="CENTER_LEFT">
-                                    <Button text="Analyser avec IA" onAction="#analyzeWithCopilot" styleClass="btn-success"/>
-                                    <Button text="Exporter PDF" onAction="#exportCopilotReport" styleClass="btn-muted"/>
-                                </HBox>
-
-                                <Label text="Votre question" styleClass="field-label"/>
-                                <HBox spacing="10">
-                                    <TextField fx:id="copilotQuestionField" promptText="Ex: combien de nouveaux comptes cette semaine ?" HBox.hgrow="ALWAYS" styleClass="field-input"/>
-                                    <Button text="Demander" onAction="#askCopilot" styleClass="btn-primary"/>
-                                </HBox>
-
-                                <TextArea fx:id="copilotAnswerArea" editable="false" wrapText="true"
-                                          prefRowCount="7" styleClass="copilot-area"/>
-                            </VBox>
-
+                        <VBox spacing="4" HBox.hgrow="ALWAYS" styleClass="kpi-card">
+                            <Label text="Admins" styleClass="kpi-title"/>
+                            <Label fx:id="totalAdminsLabel" text="0" styleClass="kpi-value"/>
+                        </VBox>
+                        <VBox spacing="4" HBox.hgrow="ALWAYS" styleClass="kpi-card">
+                            <Label text="Teachers" styleClass="kpi-title"/>
+                            <Label fx:id="totalProfsLabel" text="0" styleClass="kpi-value"/>
+                        </VBox>
+                        <VBox spacing="4" HBox.hgrow="ALWAYS" styleClass="kpi-card">
+                            <Label text="Students" styleClass="kpi-title"/>
+                            <Label fx:id="totalEtudiantsLabel" text="0" styleClass="kpi-value"/>
+                        </VBox>
+                        <VBox spacing="4" HBox.hgrow="ALWAYS" styleClass="kpi-card">
+                            <Label text="Parents" styleClass="kpi-title"/>
+                            <Label fx:id="totalParentsLabel" text="0" styleClass="kpi-value"/>
+                        </VBox>
+                        <VBox spacing="4" HBox.hgrow="ALWAYS" styleClass="kpi-card">
+                            <Label text="New this month" styleClass="kpi-title"/>
+                            <Label fx:id="newUsersMonthLabel" text="0" styleClass="kpi-value"/>
+                        </VBox>
+                        <VBox spacing="4" HBox.hgrow="ALWAYS" styleClass="kpi-card">
+                            <Label text="Active Users" styleClass="kpi-title"/>
+                            <Label fx:id="activeUsersLabel" text="0" styleClass="kpi-value"/>
                         </VBox>
                     </HBox>
+
+                    <HBox spacing="12">
+                        <VBox spacing="8" HBox.hgrow="ALWAYS" styleClass="card card--compact">
+                            <Label text="Users by Role" styleClass="stat-title"/>
+                            <BarChart fx:id="roleBarChart" prefHeight="220">
+                                <xAxis><CategoryAxis/></xAxis>
+                                <yAxis><NumberAxis/></yAxis>
+                            </BarChart>
+                        </VBox>
+                        <VBox spacing="8" HBox.hgrow="ALWAYS" styleClass="card card--compact">
+                            <Label text="Global Distribution" styleClass="stat-title"/>
+                            <PieChart fx:id="rolePieChart" prefHeight="220"/>
+                        </VBox>
+                    </HBox>
+
+                    <TitledPane text="Advanced analytics charts" expanded="false" styleClass="card">
+                        <content>
+                            <HBox spacing="12">
+                                <VBox spacing="8" HBox.hgrow="ALWAYS" styleClass="card card--compact">
+                                    <Label text="Registrations per Month" styleClass="stat-title"/>
+                                    <LineChart fx:id="monthlyLineChart" prefHeight="220">
+                                        <xAxis><CategoryAxis/></xAxis>
+                                        <yAxis><NumberAxis/></yAxis>
+                                    </LineChart>
+                                </VBox>
+                                <VBox spacing="8" HBox.hgrow="ALWAYS" styleClass="card card--compact">
+                                    <Label text="Weekly Activity / Logins" styleClass="stat-title"/>
+                                    <AreaChart fx:id="weeklyAreaChart" prefHeight="220">
+                                        <xAxis><CategoryAxis/></xAxis>
+                                        <yAxis><NumberAxis/></yAxis>
+                                    </AreaChart>
+                                </VBox>
+                                <VBox spacing="8" HBox.hgrow="ALWAYS" styleClass="card card--compact">
+                                    <Label text="Top Filled Classes" styleClass="stat-title"/>
+                                    <BarChart fx:id="topClassesChart" prefHeight="220">
+                                        <xAxis><CategoryAxis/></xAxis>
+                                        <yAxis><NumberAxis/></yAxis>
+                                    </BarChart>
+                                </VBox>
+                            </HBox>
+                        </content>
+                    </TitledPane>
+
+                    <HBox spacing="14">
+                        <VBox spacing="10" minWidth="340" prefWidth="360" styleClass="card">
+                            <Label text="Add user" styleClass="card-title"/>
+                            <GridPane hgap="10" vgap="8">
+                                <columnConstraints>
+                                    <ColumnConstraints percentWidth="50"/>
+                                    <ColumnConstraints percentWidth="50"/>
+                                </columnConstraints>
+                                <Label text="Full name" styleClass="field-label" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                <Label text="Email" styleClass="field-label" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                                <TextField fx:id="nameField" promptText="John Doe" styleClass="field-input" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                <TextField fx:id="emailField" promptText="john@eduflex.com" styleClass="field-input" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                                <Label text="Password" styleClass="field-label" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                                <Label text="Role" styleClass="field-label" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                                <PasswordField fx:id="passwordField" promptText="Min 6 chars" styleClass="field-input" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                                <ComboBox fx:id="roleAddCombo" styleClass="field-select" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                            </GridPane>
+                            <HBox spacing="8">
+                                <Button text="Add User" onAction="#addUser" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="btn-primary"/>
+                                <Button text="Reset" onAction="#clearFields" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="btn-muted"/>
+                            </HBox>
+                            <HBox spacing="8">
+                                <Button text="Edit" onAction="#updateSelectedUser" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="btn-info"/>
+                                <Button text="Delete" onAction="#deleteUser" maxWidth="Infinity" HBox.hgrow="ALWAYS" styleClass="btn-danger"/>
+                            </HBox>
+                        </VBox>
+
+                        <VBox spacing="10" HBox.hgrow="ALWAYS" styleClass="card">
+                            <HBox spacing="10" alignment="CENTER_LEFT">
+                                <TextField fx:id="searchField" promptText="Search users..." onKeyReleased="#handleSearch" styleClass="field-input"/>
+                                <ComboBox fx:id="filterRoleCombo" prefWidth="160" onAction="#applyFilter" styleClass="field-select"/>
+                                <ComboBox fx:id="filterStatusCombo" prefWidth="160" onAction="#applyFilter" styleClass="field-select"/>
+                                <ComboBox fx:id="sortCombo" prefWidth="160" onAction="#applySorting" styleClass="field-select"/>
+                                <ComboBox fx:id="bulkRoleCombo" prefWidth="150" styleClass="field-select"/>
+                            </HBox>
+                            <HBox spacing="8">
+                                <Button text="Apply role" onAction="#applyBulkRole" styleClass="btn-warning"/>
+                                <Button text="Delete selected" onAction="#deleteSelectedUsers" styleClass="btn-danger"/>
+                                <Button text="Refresh" onAction="#loadUsers" styleClass="btn-success"/>
+                            </HBox>
+                        </VBox>
+                    </HBox>
+
+                    <VBox spacing="8" styleClass="card">
+                        <Label text="Liste des utilisateurs" styleClass="card-title"/>
+                        <TableView fx:id="table"
+                                   VBox.vgrow="ALWAYS"
+                                   prefHeight="600"
+                                   minHeight="400"
+                                   columnResizePolicy="CONSTRAINED_RESIZE_POLICY">
+                            <columns>
+                                <TableColumn fx:id="colAvatar" text="Avatar" prefWidth="70"/>
+                                <TableColumn fx:id="colName" text="Full Name" prefWidth="170"/>
+                                <TableColumn fx:id="colEmail" text="Email" prefWidth="220"/>
+                                <TableColumn fx:id="colRole" text="Role" prefWidth="120"/>
+                                <TableColumn fx:id="colStatus" text="Status" prefWidth="120"/>
+                                <TableColumn fx:id="colCreated" text="Created Date" prefWidth="130"/>
+                                <TableColumn fx:id="colLastLogin" text="Last Login" prefWidth="130"/>
+                                <TableColumn fx:id="colActions" text="Actions" prefWidth="270"/>
+                            </columns>
+                            <placeholder>
+                                <Label text="No users found" styleClass="placeholder-soft"/>
+                            </placeholder>
+                        </TableView>
+
+                        <HBox alignment="CENTER_RIGHT">
+                            <Pagination fx:id="pagination" maxPageIndicatorCount="7"/>
+                        </HBox>
+                    </VBox>
+
+                    <VBox spacing="10" styleClass="card">
+                        <HBox alignment="CENTER_LEFT" spacing="10">
+                            <Label text="AI Copilot" styleClass="card-title"/>
+                            <Region HBox.hgrow="ALWAYS"/>
+                            <Label fx:id="copilotSourceLabel" text="Source: Fallback local" styleClass="badge-soft"/>
+                        </HBox>
+                        <HBox spacing="8">
+                            <Button text="Analyze" onAction="#analyzeWithCopilot" styleClass="btn-success"/>
+                            <Button text="Export Report" onAction="#exportCopilotReport" styleClass="btn-muted"/>
+                        </HBox>
+                        <HBox spacing="8">
+                            <TextField fx:id="copilotQuestionField" promptText="Ask something about your platform..." HBox.hgrow="ALWAYS" styleClass="field-input"/>
+                            <Button text="Ask" onAction="#askCopilot" styleClass="btn-primary"/>
+                        </HBox>
+                        <TextArea fx:id="copilotAnswerArea" editable="false" wrapText="true" prefRowCount="8" styleClass="copilot-area"/>
+                    </VBox>
                 </VBox>
             </content>
         </ScrollPane>
     </center>
-
-    <!-- ══ FOOTER ═══════════════════════════════════════════════════════════ -->
-    <bottom>
-        <HBox alignment="CENTER_RIGHT" spacing="10" styleClass="admin-footer">
-            <Label text="EduFlex Admin" styleClass="footer-text"/>
-            <Label text="·" styleClass="footer-dot"/>
-            <Label text="Gestion des utilisateurs" styleClass="footer-subtext"/>
-        </HBox>
-    </bottom>
-
 </BorderPane>
