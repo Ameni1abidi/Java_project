@@ -108,8 +108,8 @@ public class ResourceService {
     }
 
     public void add(resources r) {
-        String sql = "INSERT INTO ressource(titre, contenu, categorie_id, type, disponible_le) " +
-                "VALUES(?, ?, (SELECT id FROM categorie WHERE nom = ?), ?, ?)";
+        String sql = "INSERT INTO ressource(titre, contenu, categorie_nom, type, disponible_le) " +
+                "VALUES(?, ?, ?, ?, ?)";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, r.getTitre());
@@ -124,8 +124,7 @@ public class ResourceService {
     }
 
     public List<resources> getAll() {
-        String sql = "SELECT r.id, r.titre, r.contenu, c.nom AS categorie_nom, r.type, r.disponible_le " +
-                "FROM ressource r JOIN categorie c ON r.categorie_id = c.id";
+        String sql = "SELECT id, titre, contenu, categorie_nom, type, disponible_le FROM ressource";
 
         List<resources> list = new ArrayList<>();
 
@@ -150,8 +149,7 @@ public class ResourceService {
     }
 
     public resources getById(int id) {
-        String sql = "SELECT r.id, r.titre, r.contenu, c.nom AS categorie_nom, r.type, r.disponible_le " +
-                "FROM ressource r JOIN categorie c ON r.categorie_id = c.id WHERE r.id = ?";
+        String sql = "SELECT id, titre, contenu, categorie_nom, type, disponible_le FROM ressource WHERE id = ?";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, id);
@@ -175,7 +173,7 @@ public class ResourceService {
     }
 
     public boolean update(resources r) {
-        String sql = "UPDATE ressource SET titre=?, contenu=?, categorie_id=(SELECT id FROM categorie WHERE nom=?), type=?, disponible_le=? WHERE id=?";
+        String sql = "UPDATE ressource SET titre=?, contenu=?, categorie_nom=?, type=?, disponible_le=? WHERE id=?";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, r.getTitre());
@@ -229,9 +227,8 @@ public class ResourceService {
     }
 
     public List<resources> search(String keyword) {
-        String sql = "SELECT r.id, r.titre, r.contenu, c.nom AS categorie_nom, r.type, r.disponible_le " +
-                "FROM ressource r JOIN categorie c ON r.categorie_id = c.id " +
-                "WHERE r.titre LIKE ? OR r.contenu LIKE ?";
+        String sql = "SELECT id, titre, contenu, categorie_nom, type, disponible_le " +
+                "FROM ressource WHERE titre LIKE ? OR contenu LIKE ?";
 
         List<resources> list = new ArrayList<>();
 

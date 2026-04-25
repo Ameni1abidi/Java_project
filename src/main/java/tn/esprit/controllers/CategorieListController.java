@@ -25,9 +25,6 @@ public class CategorieListController {
     private TableView<categorie> tableCategorie;
 
     @FXML
-    private TableColumn<categorie, Integer> idCol;
-
-    @FXML
     private TableColumn<categorie, String> nomCol;
 
     @FXML
@@ -37,36 +34,11 @@ public class CategorieListController {
 
     @FXML
     public void initialize() {
-        idCol.setCellValueFactory(new PropertyValueFactory<>("id"));
         nomCol.setCellValueFactory(new PropertyValueFactory<>("nom"));
         tableCategorie.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         actionCol.setSortable(false);
 
-        actionCol.setCellFactory(column -> new TableCell<>() {
-            private final Button editButton = new Button("Modifier");
-            private final HBox container = new HBox(editButton);
-
-            {
-                editButton.setStyle("-fx-background-color: #1abc9c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6;");
-                container.setAlignment(Pos.CENTER);
-                editButton.setOnAction(event -> {
-                    categorie item = getTableRow().getItem();
-                    if (item != null) {
-                        showCategorieForm(item);
-                    }
-                });
-            }
-
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || getTableRow() == null || getTableRow().getItem() == null) {
-                    setGraphic(null);
-                } else {
-                    setGraphic(container);
-                }
-            }
-        });
+        actionCol.setCellFactory(column -> new EditButtonCell());
 
         try {
             tableCategorie.setItems(FXCollections.observableArrayList(service.getAll()));
@@ -155,6 +127,32 @@ public class CategorieListController {
             stage.show();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private class EditButtonCell extends TableCell<categorie, Void> {
+        private final Button editButton = new Button("Modifier");
+        private final HBox container = new HBox(editButton);
+
+        public EditButtonCell() {
+            editButton.setStyle("-fx-background-color: #1abc9c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6;");
+            container.setAlignment(Pos.CENTER);
+            editButton.setOnAction(event -> {
+                categorie item = getTableRow().getItem();
+                if (item != null) {
+                    showCategorieForm(item);
+                }
+            });
+        }
+
+        @Override
+        protected void updateItem(Void item, boolean empty) {
+            super.updateItem(item, empty);
+            if (empty || getTableRow() == null || getTableRow().getItem() == null) {
+                setGraphic(null);
+            } else {
+                setGraphic(container);
+            }
         }
     }
 }

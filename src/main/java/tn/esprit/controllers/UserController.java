@@ -1,8 +1,10 @@
 package tn.esprit.controllers;
 
 import javafx.animation.PauseTransition;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -10,14 +12,17 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.TextArea;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import tn.esprit.entities.User;
 import tn.esprit.entities.User.Role;
 import tn.esprit.services.AuditLogService;
 import tn.esprit.services.UserService;
+import tn.esprit.utils.OllamaClient;
 import tn.esprit.utils.UserSession;
 import javafx.util.Duration;
+import javafx.scene.layout.VBox;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -42,7 +47,6 @@ public class UserController {
 
     // ── TableView ────────────────────────────────────────────────────────────
     @FXML private TableView<User>            table;
-    @FXML private TableColumn<User, Integer> colId;
     @FXML private TableColumn<User, String>  colName;
     @FXML private TableColumn<User, String>  colEmail;
     @FXML private TableColumn<User, String>  colRole;
@@ -59,6 +63,13 @@ public class UserController {
     @FXML private Label            totalParentsLabel;
     @FXML private Pagination       pagination;
 
+    // ── Admin UI extras ──────────────────────────────────────────────────────
+    @FXML private Label avatarLabel;
+    @FXML private VBox  copilotSection;
+    @FXML private TextField copilotQuestionField;
+    @FXML private TextArea  copilotAnswerArea;
+    @FXML private Label     copilotSourceLabel;
+
     // ── Service + données ────────────────────────────────────────────────────
     private final UserService userService = new UserService();
     private final AuditLogService auditLogService = new AuditLogService();
@@ -69,7 +80,6 @@ public class UserController {
     // ── Initialisation ───────────────────────────────────────────────────────
     @FXML
     public void initialize() {
-        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
         colName.setCellValueFactory(new PropertyValueFactory<>("nom"));
         colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
         colRole.setCellValueFactory(new PropertyValueFactory<>("role"));
@@ -92,8 +102,8 @@ public class UserController {
                 "Nom A-Z",
                 "Nom Z-A",
                 "Role A-Z",
-                "Plus recents (ID)",
-                "Plus anciens (ID)"
+                "Plus récents",
+                "Plus anciens"
         );
         sortCombo.setValue("Nom A-Z");
         sortCombo.setOnAction(e -> applySorting());
@@ -119,6 +129,19 @@ public class UserController {
 
         loadUsers();
         table.setOnMouseClicked(e -> selectUser());
+
+        // Avatar (top-right)
+        try {
+            String email = currentActorEmail();
+            if (avatarLabel != null && email != null && !email.isBlank()) {
+                avatarLabel.setText(String.valueOf(Character.toUpperCase(email.charAt(0))));
+            }
+        } catch (Exception ignored) {
+        }
+
+        if (copilotSourceLabel != null) {
+            copilotSourceLabel.setText("Source: Fallback local");
+        }
     }
 
     // ── Charger tous les users ───────────────────────────────────────────────
@@ -350,10 +373,9 @@ public class UserController {
         if (file == null) return;
 
         try (FileWriter writer = new FileWriter(file)) {
-            writer.write("id,nom,email,role\n");
+            writer.write("nom,email,role\n");
             for (User user : visibleUsers) {
                 writer.write(
-                        user.getId() + "," +
                         csv(user.getNom()) + "," +
                         csv(user.getEmail()) + "," +
                         csv(user.getRole().name()) + "\n"
@@ -396,8 +418,8 @@ public class UserController {
         Comparator<User> comparator = switch (sortMode) {
             case "Nom Z-A" -> Comparator.comparing(User::getNom, String.CASE_INSENSITIVE_ORDER).reversed();
             case "Role A-Z" -> Comparator.comparing(u -> u.getRole().name(), String.CASE_INSENSITIVE_ORDER);
-            case "Plus recents (ID)" -> Comparator.comparingInt(User::getId).reversed();
-            case "Plus anciens (ID)" -> Comparator.comparingInt(User::getId);
+            case "Plus récents" -> Comparator.comparingInt(User::getId).reversed();
+            case "Plus anciens" -> Comparator.comparingInt(User::getId);
             default -> Comparator.comparing(User::getNom, String.CASE_INSENSITIVE_ORDER);
         };
 
@@ -460,6 +482,165 @@ public class UserController {
     private String currentActorEmail() {
         User current = UserSession.getCurrentUser();
         return current != null ? current.getEmail() : "admin@system";
+    }
+
+    // ── Sidebar navigation (safe) ───────────────────────────────────────────
+    @FXML private void goDashboardAdmin(ActionEvent event) { navigateIfExists(event, "/Home.fxml"); }
+    @FXML private void goForum(ActionEvent event) { navigateIfExists(event, "/forum.fxml"); }
+    @FXML private void goUsers(ActionEvent event) { /* already here */ }
+    @FXML private void goClasses(ActionEvent event) { navigateIfExists(event, "/Classes.fxml"); }
+    @FXML private void goMatieres(ActionEvent event) { navigateIfExists(event, "/Matieres.fxml"); }
+    @FXML private void goAccess(ActionEvent event) { navigateIfExists(event, "/DroitsAccess.fxml"); }
+    @FXML private void goStats(ActionEvent event) { navigateIfExists(event, "/Stats.fxml"); }
+    @FXML private void goSettings(ActionEvent event) { navigateIfExists(event, "/Settings.fxml"); }
+
+    @FXML
+    private void goCopiloteIA(ActionEvent event) {
+        if (copilotQuestionField != null) {
+            copilotQuestionField.requestFocus();
+        }
+    }
+
+    @FXML
+    private void logoutAdmin(ActionEvent event) {
+        try {
+            String actor = currentActorEmail();
+            auditLogService.log(actor, "LOGOUT", "Admin session ended from admin sidebar");
+        } catch (Exception ignored) {}
+        UserSession.clear();
+        navigateIfExists(event, "/Home.fxml");
+    }
+
+    private void navigateIfExists(ActionEvent event, String fxmlPath) {
+        try {
+            var url = getClass().getResource(fxmlPath);
+            if (url == null) {
+                showAlert("Information", "Vue non disponible: " + fxmlPath);
+                return;
+            }
+            Parent root = FXMLLoader.load(url);
+            Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (Exception e) {
+            showAlert("Erreur", "Navigation impossible: " + e.getMessage());
+        }
+    }
+
+    // ── Copilote IA (fallback local) ─────────────────────────────────────────
+    @FXML
+    private void analyzeWithCopilot(ActionEvent event) {
+        runCopilot("");
+    }
+
+    @FXML
+    private void askCopilot(ActionEvent event) {
+        String q = copilotQuestionField != null ? copilotQuestionField.getText() : "";
+        runCopilot(q);
+    }
+
+    @FXML
+    private void exportCopilotReport(ActionEvent event) {
+        if (copilotAnswerArea == null) return;
+        String content = copilotAnswerArea.getText();
+        if (content == null || content.isBlank()) {
+            content = buildLocalInsights();
+        }
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Exporter rapport Copilote (TXT)");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Text files", "*.txt")
+        );
+        fileChooser.setInitialFileName("copilote_rapport.txt");
+        Stage stage = (Stage) table.getScene().getWindow();
+        File file = fileChooser.showSaveDialog(stage);
+        if (file == null) return;
+
+        try (FileWriter writer = new FileWriter(file)) {
+            writer.write(content);
+            showAlert("Succès", "Rapport exporté : " + file.getAbsolutePath());
+        } catch (IOException e) {
+            showAlert("Erreur", "Echec export: " + e.getMessage());
+        }
+    }
+
+    private String buildLocalInsights() {
+        List<User> base = processedUsers != null ? processedUsers : allUsers;
+        if (base == null) base = List.of();
+
+        long admins = base.stream().filter(u -> u.getRole() == Role.ROLE_ADMIN).count();
+        long profs = base.stream().filter(u -> u.getRole() == Role.ROLE_PROF).count();
+        long etudiants = base.stream().filter(u -> u.getRole() == Role.ROLE_ETUDIANT).count();
+        long parents = base.stream().filter(u -> u.getRole() == Role.ROLE_PARENT).count();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Brief IA Gestion Utilisateurs\n");
+        sb.append("Resume\n");
+        sb.append("- Parc utilisateurs: ").append(base.size()).append(" comptes (vue actuelle)\n");
+        sb.append("- Repartition roles: admin=").append(admins)
+                .append(", prof=").append(profs)
+                .append(", etudiant=").append(etudiants)
+                .append(", parent=").append(parents).append("\n\n");
+
+        sb.append("Anomalies\n");
+        sb.append("- Donnees de verification/blocage non disponibles dans ce module (champs manquants).\n\n");
+
+        sb.append("Actions prioritaires\n");
+        sb.append("- Completer le modele User (statut, blocage) si tu veux les badges APPROVED/REJECTED/BLOCKED.\n");
+        sb.append("- Ajouter des colonnes Actions (Voir/Modifier/Approuver/Rejeter/Bloquer) sur la table.\n");
+        return sb.toString();
+    }
+
+    private String ollamaModel() {
+        String fromEnv = System.getenv("OLLAMA_MODEL");
+        if (fromEnv != null && !fromEnv.isBlank()) return fromEnv.trim();
+        return "llama3";
+    }
+
+    private void runCopilot(String questionOrBlank) {
+        if (copilotAnswerArea == null) return;
+
+        final String preferredModel = ollamaModel();
+        final String context = buildLocalInsights();
+        final String question = questionOrBlank == null ? "" : questionOrBlank.trim();
+
+        copilotAnswerArea.setText("Connexion à Ollama... (ça peut prendre ~1 min au premier message)");
+        if (copilotSourceLabel != null) copilotSourceLabel.setText("Source: Ollama (local)");
+
+        final String[] usedModel = {preferredModel};
+        Task<String> t = new Task<>() {
+            @Override
+            protected String call() throws Exception {
+                OllamaClient client = OllamaClient.localDefault();
+                usedModel[0] = client.pickAvailableModel(preferredModel);
+                String system = "Tu es un copilote admin pour une application JavaFX (EduFlex). " +
+                        "Réponds en français, de façon concise et actionnable.";
+                String userPrompt = (question.isBlank()
+                        ? "Analyse ces infos et propose un bref résumé + actions.\n\n" + context
+                        : "Question: " + question + "\n\nContexte:\n" + context);
+
+                return client.chatOnce(usedModel[0], system, userPrompt);
+            }
+        };
+
+        t.setOnSucceeded(e -> Platform.runLater(() -> {
+            if (copilotSourceLabel != null) copilotSourceLabel.setText("Source: Ollama (local) · " + usedModel[0]);
+            copilotAnswerArea.setText(t.getValue());
+        }));
+        t.setOnFailed(e -> Platform.runLater(() -> {
+            if (copilotSourceLabel != null) copilotSourceLabel.setText("Source: Fallback local");
+            String err = t.getException() != null ? t.getException().getMessage() : "Erreur inconnue";
+            copilotAnswerArea.setText(
+                    "Ollama indisponible. (Astuce: vérifie `ollama serve` et exécute `ollama list`)\n" +
+                            "Détail: " + err + "\n\n" +
+                            buildLocalInsights()
+            );
+        }));
+
+        Thread th = new Thread(t, "ollama-copilot");
+        th.setDaemon(true);
+        th.start();
     }
 
     public void showAlert(String title, String message) {
