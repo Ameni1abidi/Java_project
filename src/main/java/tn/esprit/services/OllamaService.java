@@ -14,10 +14,13 @@ public class OllamaService {
 
     public String poserQuestion(String question) {
         try {
-            String prompt = "Tu es un assistant educatif sur une plateforme d apprentissage. "
-                    + "Un utilisateur a pose la question suivante sur le forum : \""
-                    + question + "\". "
-                    + "Reponds de facon claire, concise et pedagogique en francais.";
+            String prompt = "RÈGLE IMPORTANTE :\n"
+                    + "Tu es un assistant EduFlex.\n"
+                    + "Tu réponds uniquement aux questions sur : éducation, cours, plateforme EduFlex, bugs.\n"
+                    + "Si la question est hors sujet, tu réponds EXACTEMENT :\n"
+                    + "\"Veuillez poser une question liée à EduFlex.\"\n"
+                    + "Ne donne aucune autre information.\n\n"
+                    + "Question : " + question;
 
             String jsonBody = "{"
                     + "\"model\": \"" + MODEL + "\","
