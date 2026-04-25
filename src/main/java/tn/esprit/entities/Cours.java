@@ -88,4 +88,5 @@ public class Cours {
     public void setBadge(String badge) {
         this.badge = badge;
     }
+
 }

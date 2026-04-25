@@ -7,7 +7,7 @@ public class Chapitre {
     private String typeContenu;
     private String contenuTexte;
     private String contenuFichier;
-    private int dureeEstimee; // en minutes
+    private int dureeEstimee;
     private String resume;
     private int coursId;
 
@@ -25,7 +25,7 @@ public class Chapitre {
         this.coursId = coursId;
     }
 
-    // getters et setters
+
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
     public String getTitre() { return titre; }

@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.web.WebView?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.controllers.StudentChapitreDetail"
+            style="-fx-background-color:#f5f7fb;">
+
+    <!-- TOP BAR -->
+    <top>
+        <HBox spacing="10" style="-fx-padding:15; -fx-background-color:white;">
+            <Label text="📘 Détail Chapitre"
+                   style="-fx-font-size:18px; -fx-font-weight:bold;"/>
+        </HBox>
+    </top>
+
+    <!-- LEFT DASHBOARD (small student panel) -->
+    <left>
+        <VBox prefWidth="220"
+              style="-fx-background-color: #c4b5e8; -fx-padding: 20; -fx-spacing: 10;">
+
+            <!-- HEADER -->
+            <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 20 0;">
+
+                <Label text="EF"
+                       style="-fx-background-color: #7c5cbf; -fx-text-fill: white;
+                              -fx-font-weight: bold; -fx-font-size: 16;
+                              -fx-background-radius: 10; -fx-padding: 8 10;" />
+
+                <VBox>
+                    <Label text="EduFlex"
+                           style="-fx-font-weight: bold; -fx-font-size: 15;" />
+                    <Label text="Espace élève"
+                           style="-fx-font-size: 11; -fx-text-fill: #555;" />
+                </VBox>
+
+            </HBox>
+
+            <!-- USER -->
+            <VBox alignment="CENTER" spacing="5"
+                  style="-fx-background-color: #d6c9f0;
+                         -fx-background-radius: 12;
+                         -fx-padding: 15;">
+
+                <Label text="AM"
+                       style="-fx-background-color: #a08cc8;
+                              -fx-text-fill: white;
+                              -fx-font-weight: bold;
+                              -fx-font-size: 18;
+                              -fx-background-radius: 30;
+                              -fx-padding: 12 16;" />
+
+                <Label text="Alex Martin"
+                       style="-fx-font-weight: bold; -fx-font-size: 13;" />
+
+                <Label text="Élève"
+                       style="-fx-font-size: 11; -fx-text-fill: #666;" />
+
+            </VBox>
+
+            <!-- MENU -->
+            <VBox spacing="4" style="-fx-padding: 10 0 0 0;">
+
+                <Button text="🏠 Tableau de bord"
+                        maxWidth="Infinity"
+                        style="-fx-background-color: transparent;
+                               -fx-text-fill: #333;
+                               -fx-alignment: CENTER_LEFT;
+                               -fx-padding: 8 12;"/>
+
+                <Button text="💬 Forum"
+                        maxWidth="Infinity"
+                        style="-fx-background-color: transparent;
+                               -fx-text-fill: #333;
+                               -fx-alignment: CENTER_LEFT;
+                               -fx-padding: 8 12;"/>
+
+                <Button text="📘 Mes cours"
+                        maxWidth="Infinity"
+                        style="-fx-background-color: #b39ddb;
+                               -fx-text-fill: #333;
+                               -fx-alignment: CENTER_LEFT;
+                               -fx-padding: 8 12;"/>
+
+                <Button text="📝 Examens"
+                        maxWidth="Infinity"
+                        style="-fx-background-color: transparent;
+                               -fx-text-fill: #333;
+                               -fx-alignment: CENTER_LEFT;
+                               -fx-padding: 8 12;"/>
+
+                <Button text="💬 Messages"
+                        maxWidth="Infinity"
+                        style="-fx-background-color: transparent;
+                               -fx-text-fill: #333;
+                               -fx-alignment: CENTER_LEFT;
+                               -fx-padding: 8 12;"/>
+
+                <Button text="📅 Planning"
+                        maxWidth="Infinity"
+                        style="-fx-background-color: transparent;
+                               -fx-text-fill: #333;
+                               -fx-alignment: CENTER_LEFT;
+                               -fx-padding: 8 12;"/>
+
+            </VBox>
+
+        </VBox>
+    </left>
+
+    <!-- CENTER CONTENT -->
+    <center>
+        <VBox spacing="15" style="-fx-padding:20; -fx-background-color:#f5f6fa;">
+
+            <!-- HEADER -->
+            <Label text="génie"
+                   style="-fx-font-size:26px; -fx-font-weight:bold;" />
+
+            <!-- INFO BAR -->
+            <HBox spacing="10">
+                <Label text="Durée estimée: 30 min" style="-fx-background-color:#dfe6e9; -fx-padding:8; -fx-background-radius:10;"/>
+                <Label text="Temps passé: 20 min" style="-fx-background-color:#dfe6e9; -fx-padding:8; -fx-background-radius:10;"/>
+                <Label text="Badge: En cours" style="-fx-background-color:#dfe6e9; -fx-padding:8; -fx-background-radius:10;"/>
+            </HBox>
+
+            <!-- RESUME -->
+            <VBox style="-fx-background-color:white; -fx-padding:15; -fx-background-radius:15;">
+                <Label text="Résumé :" style="-fx-font-size:16px; -fx-font-weight:bold;" />
+                <TextArea fx:id="resumeText" wrapText="true" prefHeight="120"/>
+            </VBox>
+
+            <VBox style="-fx-background-color:white; -fx-padding:15; -fx-background-radius:15;" spacing="10">
+
+                <!-- HEADER + BUTTONS -->
+                <HBox alignment="CENTER_LEFT" spacing="10">
+
+                    <Label text="Document :" style="-fx-font-weight:bold; -fx-font-size:14px;" />
+
+                    <Region HBox.hgrow="ALWAYS"/>
+
+                    <Button text="📥 Télécharger"
+                            onAction="#handleDownload"
+                            style="-fx-background-color:#2ecc71; -fx-text-fill:white; -fx-background-radius:15;"/>
+
+                    <Button text="🖨️ Imprimer"
+                            onAction="#handlePrint"
+                            style="-fx-background-color:#f39c12; -fx-text-fill:white; -fx-background-radius:15;"/>
+                </HBox>
+
+                <!-- PDF -->
+                <WebView fx:id="pdfViewer" prefHeight="500"/>
+
+            </VBox>
+
+            <!-- CHATBOT AREA -->
+            <VBox spacing="10" style="-fx-background-color:#f7f5ff; -fx-padding:15; -fx-background-radius:15;">
+
+                <Label text="💬 Assistant du chapitre"
+                       style="-fx-font-weight:bold; -fx-text-fill:#5b3cc4;" />
+
+                <ScrollPane prefHeight="150" fitToWidth="true"
+                            style="-fx-background:transparent;">
+                    <VBox fx:id="chatBox" spacing="8"/>
+                </ScrollPane>
+
+                <HBox spacing="10">
+                    <TextField fx:id="questionField"
+                               promptText="Pose ta question..."
+                               style="-fx-background-radius:20; -fx-border-radius:20;" />
+
+                    <Button text="Envoyer"
+                            onAction="#handleAsk"
+                            style="-fx-background-color:#7c4dff; -fx-text-fill:white; -fx-background-radius:20;" />
+                </HBox>
+
+            </VBox>
+
+            <!-- BUTTONS -->
+            <HBox spacing="15">
+                <Button fx:id="doneBtn"
+                        text="Marquer comme terminé"
+                        onAction="#handleTerminer"/>
+
+                <Button text="Retour aux cours"
+                        style="-fx-background-color:#ff4757; -fx-text-fill:white;"
+                        onAction="#goBack"/>
+            </HBox>
+
+        </VBox>
+    </center>
+
+</BorderPane>

@@ -11,7 +11,6 @@ public class ChapitreService {
 
     Connection cnx = MyDatabase.getInstance().getConnection();
 
-    // CREATE
     public void ajouter(Chapitre c) {
 
         String sql = "INSERT INTO chapitre (titre, ordre, type_contenu, contenu_texte, contenu_fichier, duree_estimee, resume, cours_id) VALUES (?,?,?,?,?,?,?,?)";
@@ -29,7 +28,6 @@ public class ChapitreService {
 
             ps.executeUpdate();
 
-            // ✅ récupérer ID généré
             ResultSet rs = ps.getGeneratedKeys();
             if (rs.next()) {
                 c.setId(rs.getInt(1));
@@ -40,7 +38,6 @@ public class ChapitreService {
         }
     }
 
-    // READ BY COURS
     public List<Chapitre> getAll(int coursId) {
 
         List<Chapitre> list = new ArrayList<>();
@@ -75,7 +72,6 @@ public class ChapitreService {
         return list;
     }
 
-    // UPDATE ✅ FIX
     public void modifier(Chapitre c) {
 
         String sql = "UPDATE chapitre SET titre=?, ordre=?, type_contenu=?, contenu_texte=?, contenu_fichier=?, duree_estimee=?, resume=?, cours_id=? WHERE id=?";
@@ -102,8 +98,6 @@ public class ChapitreService {
         }
     }
 
-
-    // DELETE
     public void supprimer(int id) {
         String sql = "DELETE FROM chapitre WHERE id=?";
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
@@ -125,6 +119,83 @@ public class ChapitreService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return 0;
+    }
+    public int countByCoursId(int coursId) {
+        int count = 0;
+
+        try {
+            String sql = "SELECT COUNT(*) FROM chapitre WHERE cours_id = ?";
+            PreparedStatement ps = cnx.prepareStatement(sql);
+            ps.setInt(1, coursId);
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return count;
+    }
+    public List<Chapitre> getByCoursId(int coursId) {
+
+        List<Chapitre> list = new ArrayList<>();
+
+        try {
+            String sql = "SELECT * FROM chapitre WHERE cours_id = ?";
+            PreparedStatement ps = cnx.prepareStatement(sql);
+            ps.setInt(1, coursId);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Chapitre ch = new Chapitre();
+                ch.setId(rs.getInt("id"));
+                ch.setTitre(rs.getString("titre"));
+                ch.setOrdre(rs.getInt("ordre"));
+                ch.setTypeContenu(rs.getString("type_contenu"));
+                ch.setContenuTexte(rs.getString("contenu_texte"));
+                ch.setContenuFichier(rs.getString("contenu_fichier"));
+                ch.setDureeEstimee(rs.getInt("duree_estimee"));
+                ch.setCoursId(rs.getInt("cours_id"));
+
+                list.add(ch);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+    public int getCourseProgress(int userId, int coursId) {
+
+        try {
+            String sql = """
+            SELECT COALESCE(AVG(progress),0) as avg_progress
+            FROM student_chapitre_progress p
+            JOIN chapitre c ON c.id = p.chapitre_id
+            WHERE p.utilisateur_id = ? AND c.cours_id = ?
+        """;
+
+            PreparedStatement ps = MyDatabase.getInstance().getConnection().prepareStatement(sql);
+
+            ps.setInt(1, userId);
+            ps.setInt(2, coursId);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("avg_progress");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         return 0;
     }
 }

@@ -1,12 +1,17 @@
 package tn.esprit.controllers;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.event.ActionEvent;
+
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+
+import javafx.scene.control.Hyperlink;
+
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.FlowPane;
@@ -15,7 +20,11 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import tn.esprit.entities.Chapitre;
 import tn.esprit.services.ChapitreService;
+import tn.esprit.services.CoursService;
+import tn.esprit.entities.Cours;
 
+import java.awt.*;
+import java.io.File;
 import java.util.List;
 
 public class ChapitreList {
@@ -32,22 +41,19 @@ public class ChapitreList {
     private final ChapitreService service = new ChapitreService();
 
     private int coursId;
+    private CoursService coursService = new CoursService();
 
-    // =========================
-    // INIT Cours
-    // =========================
     public void setCoursId(int id) {
         this.coursId = id;
         loadChapitres();
 
-        if (coursTitle != null) {
-            coursTitle.setText("Chapitres du cours ID: " + id);
+        Cours cours = coursService.getById(id);
+
+        if (cours != null && coursTitle != null) {
+            coursTitle.setText("Chapitres du cours : " + cours.getTitre());
         }
     }
 
-    // =========================
-    // LOAD
-    // =========================
     private void loadChapitres() {
         chapitreContainer.getChildren().clear();
 
@@ -57,10 +63,6 @@ public class ChapitreList {
             chapitreContainer.getChildren().add(createCard(ch));
         }
     }
-
-    // =========================
-    // SEARCH
-    // =========================
     @FXML
     void searchChapitre() {
 
@@ -77,10 +79,6 @@ public class ChapitreList {
             }
         }
     }
-
-    // =========================
-    // CARD UI
-    // =========================
     private VBox createCard(Chapitre chapitre) {
 
         VBox card = new VBox(10);
@@ -102,15 +100,38 @@ public class ChapitreList {
             contenu.setWrapText(true);
         }
 
-        Label file = new Label();
+        Hyperlink fileLink = new Hyperlink();
+
         if (chapitre.getContenuFichier() != null && !chapitre.getContenuFichier().isEmpty()) {
-            file.setText("Fichier : " + chapitre.getContenuFichier());
-            file.setStyle("-fx-text-fill:blue;");
+
+            fileLink.setText("Ouvrir fichier");
+
+            fileLink.setOnAction(e -> {
+                try {
+                    File file = new File("uploads/" + chapitre.getContenuFichier());
+
+                    if (file.exists()) {
+                        Desktop.getDesktop().open(file);
+                    } else {
+                        System.out.println("Fichier introuvable !");
+                    }
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            });
+
+        } else {
+            fileLink.setText("Aucun fichier");
+            fileLink.setDisable(true);
         }
 
         Label info = new Label(
                 "Ordre: " + chapitre.getOrdre() +
                         " | Durée: " + chapitre.getDureeEstimee() + " min"
+        );
+        Label durée = new Label(
+                " Durée: " + chapitre.getDureeEstimee() + " min"
         );
         info.setStyle("-fx-text-fill:#888; -fx-font-size:11px;");
 
@@ -127,22 +148,15 @@ public class ChapitreList {
 
         HBox actions = new HBox(10, edit, delete);
 
-        card.getChildren().addAll(titre, type, contenu, file, info, actions);
+        card.getChildren().addAll(titre, type, contenu, fileLink, info, actions);
 
         return card;
     }
-
-    // =========================
-    // ADD
-    // =========================
     @FXML
     void goToAdd() {
         openForm(null);
     }
 
-    // =========================
-    // OPEN FORM
-    // =========================
     private void openForm(Chapitre ch) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ChapitreForm.fxml"));
@@ -158,10 +172,6 @@ public class ChapitreList {
             e.printStackTrace();
         }
     }
-
-    // =========================
-    // BACK BUTTON
-    // =========================
     @FXML
     void goBack() {
         try {

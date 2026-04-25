@@ -11,7 +11,6 @@ public class CoursService {
 
     Connection cnx = MyDatabase.getInstance().getConnection();
 
-    // CREATE
     public int ajouter(Cours c) {
         int id = -1;
 
@@ -42,8 +41,6 @@ public class CoursService {
 
         return id;
     }
-
-    // READ ✅
     public List<Cours> getAll() {
         List<Cours> list = new ArrayList<>();
 
@@ -73,7 +70,6 @@ public class CoursService {
         return list;
     }
 
-    // UPDATE
     public void modifier(Cours c) {
         try {
             String sql = "UPDATE cours SET titre=?, description=?, niveau=?, date_creation=?, titre_traduit=?, description_traduit=?, badge=? WHERE id=?";
@@ -95,7 +91,6 @@ public class CoursService {
         }
     }
 
-    // DELETE
     public void supprimer(int id) {
         try {
             String sql = "DELETE FROM cours WHERE id=?";
@@ -122,6 +117,34 @@ public class CoursService {
         }
 
         return 0;
+    }
+    public Cours getById(int id) {
+        Cours c = null;
+
+        try {
+            String sql = "SELECT * FROM cours WHERE id = ?";
+            PreparedStatement ps = cnx.prepareStatement(sql);
+            ps.setInt(1, id);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                c = new Cours();
+                c.setId(rs.getInt("id"));
+                c.setTitre(rs.getString("titre"));
+                c.setDescription(rs.getString("description"));
+                c.setNiveau(rs.getString("niveau"));
+                c.setDateCreation(rs.getDate("date_creation"));
+                c.setTitreTraduit(rs.getString("titre_traduit"));
+                c.setDescriptionTraduit(rs.getString("description_traduit"));
+                c.setBadge(rs.getString("badge"));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return c;
     }
 }
 

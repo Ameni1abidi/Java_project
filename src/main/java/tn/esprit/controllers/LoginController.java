@@ -1,6 +1,7 @@
 package tn.esprit.controllers;
 
 import javafx.event.ActionEvent;
+import javafx.concurrent.Task;
 import tn.esprit.entities.User;
 import tn.esprit.services.UserService;
 import javafx.fxml.FXML;
@@ -9,6 +10,9 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
+import tn.esprit.services.AuditLogService;
+import tn.esprit.services.auth.GoogleAuthService;
+import tn.esprit.utils.UserSession;
 
 import java.util.Optional;
 
@@ -19,6 +23,8 @@ public class LoginController {
     @FXML private Label         errorLabel;
 
     private final UserService userService = new UserService();
+    private final AuditLogService auditLogService = new AuditLogService();
+    private final GoogleAuthService googleAuthService = new GoogleAuthService();
 
     @FXML
     private void handleLogin() {
@@ -34,11 +40,15 @@ public class LoginController {
             Optional<User> result = userService.login(email, pw);
 
             if (result.isEmpty()) {
+                auditLogService.log(email, "LOGIN_FAILED", "Login failed for provided credentials");
                 showError("Email ou mot de passe incorrect.");
                 return;
             }
 
-            redirectByRole(result.get());
+            User connectedUser = result.get();
+            UserSession.setCurrentUser(connectedUser);
+            auditLogService.log(connectedUser.getEmail(), "LOGIN_SUCCESS", "User logged in with role " + connectedUser.getRole());
+            redirectByRole(connectedUser);
 
         } catch (Exception e) {
             showError("Erreur : " + e.getMessage());
@@ -77,6 +87,44 @@ public class LoginController {
         Stage stage = (Stage) emailField.getScene().getWindow();
         stage.setScene(new Scene(root));
     }
+
+    @FXML
+    private void handleGoogleLogin() {
+        errorLabel.setVisible(false);
+        Task<User> task = new Task<>() {
+            @Override
+            protected User call() throws Exception {
+                GoogleAuthService.GoogleProfile profile = googleAuthService.authenticate();
+                return userService.findOrCreateGoogleUser(profile.email(), profile.name());
+            }
+        };
+
+        task.setOnRunning(event -> {
+            errorLabel.setStyle("-fx-text-fill: #7E57C2; -fx-font-size: 12px;");
+            errorLabel.setText("Ouverture de Google dans le navigateur...");
+            errorLabel.setVisible(true);
+        });
+
+        task.setOnSucceeded(event -> {
+            try {
+                User connectedUser = task.getValue();
+                UserSession.setCurrentUser(connectedUser);
+                auditLogService.log(connectedUser.getEmail(), "LOGIN_GOOGLE_SUCCESS", "User logged in with Google");
+                redirectByRole(connectedUser);
+            } catch (Exception e) {
+                showError("Erreur Google : " + e.getMessage());
+            }
+        });
+
+        task.setOnFailed(event -> {
+            String err = task.getException() != null ? task.getException().getMessage() : "Erreur inconnue";
+            showError("Connexion Google echouee : " + err);
+        });
+
+        Thread th = new Thread(task, "google-login");
+        th.setDaemon(true);
+        th.start();
+    }
     @FXML
     private void goBack(ActionEvent event) {
         try {
@@ -93,6 +141,7 @@ public class LoginController {
     }
 
     private void showError(String msg) {
+        errorLabel.setStyle("-fx-text-fill: #E53935; -fx-font-size: 12px; -fx-background-color: #FFEBEE; -fx-padding: 8 12; -fx-background-radius: 8;");
         errorLabel.setText(msg);
         errorLabel.setVisible(true);
     }

@@ -1,5 +1,6 @@
 package tn.esprit.controllers;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
@@ -7,104 +8,154 @@ import javafx.scene.layout.VBox;
 
 import tn.esprit.entities.commentaire;
 import tn.esprit.services.CommentaireService;
+import tn.esprit.services.TranslationService;
 
 import java.sql.Timestamp;
 
 public class AjoutCommentaire {
 
-    @FXML
-    private VBox commentContainer;
+    @FXML private VBox commentContainer;
+    @FXML private TextArea contenuField;
 
-    @FXML
-    private TextArea contenuField;
-
-    private CommentaireService cs = new CommentaireService();
+    private final CommentaireService cs = new CommentaireService();
+    private final TranslationService ts = new TranslationService();
 
     private int forumId;
 
-    // ================= SET FORUM =================
     public void setForumId(int id) {
         this.forumId = id;
         loadCommentaires();
     }
 
-    // ================= CREATE =================
     @FXML
     public void ajouterCommentaire() {
-
         commentaire c = new commentaire(
                 0,
                 contenuField.getText(),
                 forumId,
                 new Timestamp(System.currentTimeMillis())
         );
-
-        // 🔥 VALIDATION
         String erreur = c.valider();
-
         if (erreur != null) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Erreur");
-            alert.setContentText(erreur);
-            alert.showAndWait();
+            new Alert(Alert.AlertType.ERROR, erreur).showAndWait();
             return;
         }
-
         cs.ajouter(c);
-
         contenuField.clear();
         loadCommentaires();
     }
 
-    // ================= READ =================
     private void loadCommentaires() {
-
         commentContainer.getChildren().clear();
-
         cs.afficher().stream()
                 .filter(c -> c.getForumId() == forumId)
-                .forEach(c -> {
+                .forEach(c -> commentContainer.getChildren().add(buildCommentCard(c)));
+    }
 
-                    VBox box = new VBox(5);
-                    box.setStyle("-fx-background-color:white; -fx-padding:10; -fx-background-radius:10;");
+    private VBox buildCommentCard(commentaire c) {
 
-                    Label contenu = new Label(c.getContenu());
-                    contenu.setWrapText(true);
+        Label contenu = new Label(c.getContenu());
+        contenu.setWrapText(true);
+        contenu.setStyle("-fx-font-size:13px; -fx-text-fill:#222;");
 
-                    Label date = new Label(c.getDateEnvoi().toString());
-                    date.setStyle("-fx-text-fill:gray; -fx-font-size:11px;");
+        Label date = new Label(c.getDateEnvoi().toString());
+        date.setStyle("-fx-text-fill:#aaa; -fx-font-size:11px;");
 
-                    String btnStyle = "-fx-background-color:#2ecc71; -fx-text-fill:white; -fx-background-radius:15;";
+        Button edit   = new Button("Modifier");
+        Button delete = new Button("Supprimer");
+        edit  .setStyle("-fx-background-color:#2ecc71; -fx-text-fill:white; -fx-background-radius:15; -fx-font-size:11px;");
+        delete.setStyle("-fx-background-color:#e74c3c; -fx-text-fill:white; -fx-background-radius:15; -fx-font-size:11px;");
 
-                    Button edit = new Button("Modifier");
-                    edit.setStyle(btnStyle);
+        delete.setOnAction(e -> {
+            cs.supprimer(c.getId());
+            loadCommentaires();
+        });
+        edit.setOnAction(e -> {
+            TextInputDialog dialog = new TextInputDialog(c.getContenu());
+            dialog.setTitle("Modifier commentaire");
+            dialog.showAndWait().ifPresent(newText -> {
+                c.setContenu(newText);
+                cs.modifier(c);
+                loadCommentaires();
+            });
+        });
 
-                    Button delete = new Button("Supprimer");
-                    delete.setStyle(btnStyle);
+        Label translatedLabel = new Label();
+        translatedLabel.setWrapText(true);
+        translatedLabel.setVisible(false);
+        translatedLabel.setManaged(false);
+        translatedLabel.setStyle(
+                "-fx-font-size:13px;" +
+                        "-fx-text-fill:#1a5276;" +
+                        "-fx-background-color:#eaf4fb;" +
+                        "-fx-padding:8 10;" +
+                        "-fx-background-radius:8;" +
+                        "-fx-border-color:#aed6f1;" +
+                        "-fx-border-radius:8;" +
+                        "-fx-border-width:1;"
+        );
 
-                    // 🔹 DELETE
-                    delete.setOnAction(e -> {
-                        cs.supprimer(c.getId());
-                        loadCommentaires();
-                    });
+        Label loadingLabel = new Label("Traduction en cours...");
+        loadingLabel.setVisible(false);
+        loadingLabel.setManaged(false);
+        loadingLabel.setStyle("-fx-font-size:11px; -fx-text-fill:#999; -fx-font-style:italic;");
 
-                    // 🔹 UPDATE
-                    edit.setOnAction(e -> {
-                        TextInputDialog dialog = new TextInputDialog(c.getContenu());
-                        dialog.setTitle("Modifier commentaire");
+        ComboBox<String> langueBox = new ComboBox<>();
+        langueBox.getItems().add("-- Langue --");
+        langueBox.getItems().addAll("fr", "en", "ar", "es", "de", "it", "pt", "zh");
+        langueBox.setValue("-- Langue --");
+        langueBox.setPrefWidth(110);
+        langueBox.setStyle(
+                "-fx-background-color:white;" +
+                        "-fx-border-color:#ccc;" +
+                        "-fx-border-radius:15;" +
+                        "-fx-background-radius:15;" +
+                        "-fx-font-size:12px;"
+        );
 
-                        dialog.showAndWait().ifPresent(newText -> {
-                            c.setContenu(newText);
-                            cs.modifier(c);
-                            loadCommentaires();
-                        });
-                    });
+        langueBox.setOnAction(e -> {
+            String lang = langueBox.getValue();
+            if (lang == null || lang.equals("-- Langue --")) {
+                translatedLabel.setVisible(false);
+                translatedLabel.setManaged(false);
+                return;
+            }
+            loadingLabel.setVisible(true);
+            loadingLabel.setManaged(true);
+            translatedLabel.setVisible(false);
+            translatedLabel.setManaged(false);
+            langueBox.setDisable(true);
 
-                    HBox actions = new HBox(10, edit, delete);
-
-                    box.getChildren().addAll(contenu, date, actions);
-
-                    commentContainer.getChildren().add(box);
+            String original = c.getContenu();
+            new Thread(() -> {
+                String result = ts.traduire(original, lang);
+                Platform.runLater(() -> {
+                    langueBox.setDisable(false);
+                    loadingLabel.setVisible(false);
+                    loadingLabel.setManaged(false);
+                    if (result != null && !result.isBlank()) {
+                        translatedLabel.setText("[" + lang.toUpperCase() + "]  " + result);
+                        translatedLabel.setVisible(true);
+                        translatedLabel.setManaged(true);
+                    } else {
+                        new Alert(Alert.AlertType.WARNING, "Traduction indisponible.").showAndWait();
+                    }
                 });
+            }).start();
+        });
+
+        HBox row1 = new HBox(8, edit, delete);
+        HBox row2 = new HBox(8, langueBox);
+
+        VBox card = new VBox(6, contenu, date, row1, row2, loadingLabel, translatedLabel);
+        card.setStyle(
+                "-fx-background-color:white;" +
+                        "-fx-padding:12;" +
+                        "-fx-background-radius:12;" +
+                        "-fx-border-color:#eee;" +
+                        "-fx-border-radius:12;"
+        );
+        return card;
     }
 }
+/// testestest
