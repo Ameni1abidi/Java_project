@@ -24,6 +24,6 @@
 
     <Button text="Ajouter"
             onAction="#ajouterCommentaire"
-            style="-fx-background-color:#2ecc71; -fx-text-fill:white;"/>
+            style="-fx-background-color:#2ecc71; -fx-text-fill:white; -fx-background-radius:15; -fx-font-size:12px;"/>
 
 </VBox>

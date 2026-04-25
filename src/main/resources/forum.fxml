@@ -16,6 +16,7 @@
       xmlns="http://javafx.com/javafx/17.0.12"
       fx:controller="tn.esprit.controllers.AjoutForum">
 
+    <!-- ── Sidebar ── -->
     <VBox prefWidth="220" style="-fx-background-color: #c4b5e8; -fx-padding: 20; -fx-spacing: 10;">
         <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 20 0;">
             <Label text="EF"
@@ -56,6 +57,7 @@
         </VBox>
     </VBox>
 
+    <!-- ── Contenu principal ── -->
     <StackPane style="-fx-padding: 40; -fx-background-color: #f5f3fb;" HBox.hgrow="ALWAYS">
         <VBox spacing="20"
               style="-fx-background-color: white; -fx-padding: 30; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, #ddd, 8, 0, 0, 2);"
@@ -72,38 +74,45 @@
                         style="-fx-background-color:#2ecc71; -fx-text-fill:white; -fx-background-radius:20;"/>
             </HBox>
 
-            <ScrollPane fitToWidth="true" style="-fx-background-color:transparent;" VBox.vgrow="ALWAYS">
-                <FlowPane fx:id="forumContainer" hgap="20" vgap="20" prefWrapLength="800"/>
-
+            <ScrollPane fitToWidth="true" style="-fx-background-color:transparent; -fx-border-color:transparent;" VBox.vgrow="ALWAYS">
+                <!-- alignment CENTER centre les cards horizontalement -->
+                <FlowPane fx:id="forumContainer"
+                          hgap="24" vgap="24"
+                          alignment="CENTER"
+                          style="-fx-padding: 10;"/>
             </ScrollPane>
 
-            <!-- ✅ PAGINATION ICI -->
+            <!-- Pagination -->
             <HBox spacing="10" alignment="CENTER">
-                <Button text="Previous" onAction="#previousPage"/>
-                <Label fx:id="pageLabel"/>
-                <Button text="Next" onAction="#nextPage"/>
+                <Button text="◀ Precedent" onAction="#previousPage"
+                        style="-fx-background-color:#7c3aed; -fx-text-fill:white; -fx-background-radius:20; -fx-padding:6 16;"/>
+                <Label fx:id="pageLabel"
+                       style="-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#555;"/>
+                <Button text="Suivant ▶" onAction="#nextPage"
+                        style="-fx-background-color:#7c3aed; -fx-text-fill:white; -fx-background-radius:20; -fx-padding:6 16;"/>
             </HBox>
         </VBox>
 
+        <!-- Formulaire création -->
         <VBox fx:id="formPane"
               spacing="15"
               visible="false"
               maxWidth="520"
-              style="-fx-padding:30; -fx-background-color:white; -fx-background-radius:10;">
+              style="-fx-padding:30; -fx-background-color:white; -fx-background-radius:10;
+                     -fx-effect: dropshadow(gaussian, #ccc, 10, 0, 0, 3);">
 
             <Label text="Creer un nouveau sujet" style="-fx-font-size:20px; -fx-font-weight:bold;"/>
 
             <TextField fx:id="titreField" promptText="Titre"/>
             <TextField fx:id="typeField" promptText="Type"/>
-            <TextArea fx:id="contenuField" promptText="Contenu"/>
+            <TextArea fx:id="contenuField" promptText="Contenu" prefHeight="100"/>
 
             <HBox spacing="10">
-                <Button text="Creer" onAction="#ajouterForum" style="-fx-background-color:#2ecc71; -fx-text-fill:white;"/>
-                <Button text="Retour" onAction="#showList" style="-fx-background-color:#2ecc71; -fx-text-fill:white;"/>
+                <Button text="Creer" onAction="#ajouterForum"
+                        style="-fx-background-color:#2ecc71; -fx-text-fill:white; -fx-background-radius:15;"/>
+                <Button text="Retour" onAction="#showList"
+                        style="-fx-background-color:#e74c3c; -fx-text-fill:white; -fx-background-radius:15;"/>
             </HBox>
-
-
-
         </VBox>
     </StackPane>
 </HBox>
