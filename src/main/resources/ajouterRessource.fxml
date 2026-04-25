@@ -1,79 +1,106 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="520.0" prefWidth="720.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="tn.esprit.controllers.ajouterRessource">
-   <children>
-      <VBox alignment="TOP_LEFT" layoutX="20.0" layoutY="20.0" prefHeight="480.0" prefWidth="680.0" spacing="15.0">
-         <children>
-            <Label text="Nouvelle ressource" textFill="#333333">
-               <font>
-                  <Font name="System Bold" size="24.0" />
-               </font>
-            </Label>
+<HBox prefHeight="700" prefWidth="1100" style="-fx-background-color: #f0edf8;"
+      xmlns:fx="http://javafx.com/fxml/1"
+      xmlns="http://javafx.com/javafx/17.0.12"
+      fx:controller="tn.esprit.controllers.ajouterRessource">
 
-            <VBox spacing="5.0">
-               <Label text="TITRE" textFill="#666666">
-                  <font>
-                     <Font size="12.0" />
-                  </font>
-               </Label>
-               <TextField fx:id="titreField" prefHeight="40.0" promptText="Entrez le titre de la ressource" />
+    <VBox prefWidth="220" style="-fx-background-color: #c4b5e8; -fx-padding: 20; -fx-spacing: 10;">
+        <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 20 0;">
+            <Label text="EF"
+                   style="-fx-background-color: #7c5cbf; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16; -fx-background-radius: 10; -fx-padding: 8 10;" />
+            <VBox>
+                <Label text="EduFlex" style="-fx-font-weight: bold; -fx-font-size: 15;" />
+                <Label text="Espace enseignant" style="-fx-font-size: 11; -fx-text-fill: #555;" />
             </VBox>
+        </HBox>
 
-            <VBox spacing="5.0">
-               <Label text="DATE DE DISPONIBILITÉ" textFill="#666666">
-                  <font>
-                     <Font size="12.0" />
-                  </font>
-               </Label>
-               <DatePicker fx:id="datePicker" prefHeight="40.0" />
-            </VBox>
+        <VBox alignment="CENTER" spacing="5"
+              style="-fx-background-color: #d6c9f0; -fx-background-radius: 12; -fx-padding: 15;">
+            <Label text="A"
+                   style="-fx-background-color: #a08cc8; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 18; -fx-background-radius: 30; -fx-padding: 12 16;" />
+            <Label text="Ameni" style="-fx-font-weight: bold; -fx-font-size: 13;" />
+            <Label text="Enseignante" style="-fx-font-size: 11; -fx-text-fill: #666;" />
+        </VBox>
 
-            <VBox spacing="5.0">
-               <Label text="CATÉGORIE" textFill="#666666">
-                  <font>
-                     <Font size="12.0" />
-                  </font>
-               </Label>
-               <ComboBox fx:id="categorieCombo" prefHeight="40.0" promptText="Sélectionnez une catégorie" />
-            </VBox>
+        <VBox spacing="4" style="-fx-padding: 10 0 0 0;">
+            <Button text="DB  Tableau de bord" maxWidth="Infinity" onAction="#goDashboard"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="FO  Forum" maxWidth="Infinity" onAction="#goForum"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="C   Cours" maxWidth="Infinity" onAction="#goCours"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="RS  Ressources" maxWidth="Infinity"
+                    style="-fx-background-color: #b39ddb; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="CT  Categories" maxWidth="Infinity" onAction="#goCategories"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="EX  Examens" maxWidth="Infinity" onAction="#goExamens"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="EV  Evaluations" maxWidth="Infinity" onAction="#goEvaluations"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="RS  Resultats" maxWidth="Infinity" onAction="#goResultats"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="LO  Logout" maxWidth="Infinity" onAction="#goLogout"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+        </VBox>
+    </VBox>
 
-            <HBox fx:id="fileChooserContainer" spacing="10.0" visible="false">
-               <children>
-                  <Button fx:id="browseButton" mnemonicParsing="false" onAction="#browseFile" prefHeight="40.0" prefWidth="160.0" style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6;" text="Choisir fichier" />
-                  <Label fx:id="selectedFileLabel" alignment="CENTER_LEFT" text="Aucun fichier sélectionné" />
-               </children>
+    <VBox style="-fx-padding: 40; -fx-background-color: #f5f3fb;" HBox.hgrow="ALWAYS">
+        <VBox spacing="16"
+              style="-fx-background-color: white; -fx-padding: 30; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, #ddd, 8, 0, 0, 2);">
+
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <Label text="Nouvelle ressource" style="-fx-font-size: 22; -fx-font-weight: bold;" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Button text="Retour" onAction="#retourListe"
+                        style="-fx-background-color: transparent; -fx-border-color: #34495e; -fx-text-fill: #34495e; -fx-border-radius: 8; -fx-background-radius: 8; -fx-padding: 8 16;" />
             </HBox>
 
-            <VBox fx:id="urlContainer" spacing="5.0" visible="false">
-               <Label text="URL DU LIEN" textFill="#666666">
-                  <font>
-                     <Font size="12.0" />
-                  </font>
-               </Label>
-               <TextField fx:id="urlField" prefHeight="40.0" promptText="https://exemple.com" />
+            <VBox spacing="5.0">
+                <Label text="TITRE" style="-fx-text-fill: #666666; -fx-font-size: 12;" />
+                <TextField fx:id="titreField" prefHeight="40.0" promptText="Entrez le titre de la ressource"
+                           style="-fx-background-radius: 10; -fx-border-color: #e0e0e0; -fx-border-radius: 10; -fx-padding: 10;" />
             </VBox>
 
-            <Label fx:id="errorLabel" textFill="red" wrapText="true" />
+            <VBox spacing="5.0">
+                <Label text="DATE DE DISPONIBILITE" style="-fx-text-fill: #666666; -fx-font-size: 12;" />
+                <DatePicker fx:id="datePicker" prefHeight="40.0" />
+            </VBox>
 
-            <HBox spacing="15.0">
-               <Button fx:id="enregistrerButton" mnemonicParsing="false" onAction="#enregistrerRessource" prefHeight="45.0" prefWidth="140.0" style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6;" text="Enregistrer" />
-               <Button fx:id="supprimerButton" mnemonicParsing="false" onAction="#supprimerRessource" prefHeight="45.0" prefWidth="140.0" style="-fx-background-color: #f44336; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6;" text="Supprimer" />
+            <VBox spacing="5.0">
+                <Label text="CATEGORIE" style="-fx-text-fill: #666666; -fx-font-size: 12;" />
+                <ComboBox fx:id="categorieCombo" prefHeight="40.0" promptText="Selectionnez une categorie" />
+            </VBox>
+
+            <HBox fx:id="fileChooserContainer" spacing="10.0" visible="false" managed="false" alignment="CENTER_LEFT">
+                <Button fx:id="browseButton" mnemonicParsing="false" onAction="#browseFile" prefHeight="40.0" prefWidth="160.0"
+                        style="-fx-background-color: #1abc9c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6;" text="Choisir fichier" />
+                <Label fx:id="selectedFileLabel" alignment="CENTER_LEFT" text="Aucun fichier selectionne" />
             </HBox>
-         </children>
-         <padding>
-            <Insets top="10.0" right="10.0" bottom="10.0" left="10.0" />
-         </padding>
-      </VBox>
-   </children>
-</AnchorPane>
+
+            <VBox fx:id="urlContainer" spacing="5.0" visible="false" managed="false">
+                <Label text="URL DU LIEN" style="-fx-text-fill: #666666; -fx-font-size: 12;" />
+                <TextField fx:id="urlField" prefHeight="40.0" promptText="https://exemple.com"
+                           style="-fx-background-radius: 10; -fx-border-color: #e0e0e0; -fx-border-radius: 10; -fx-padding: 10;" />
+            </VBox>
+
+            <Label fx:id="errorLabel" textFill="#d63031" wrapText="true" />
+
+            <HBox spacing="12.0">
+                <Button fx:id="enregistrerButton" mnemonicParsing="false" onAction="#enregistrerRessource" prefHeight="42.0" prefWidth="140.0"
+                        style="-fx-background-color: #1abc9c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;" text="Enregistrer" />
+                <Button fx:id="supprimerButton" mnemonicParsing="false" onAction="#supprimerRessource" prefHeight="42.0" prefWidth="140.0"
+                        style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8;" text="Supprimer" />
+            </HBox>
+        </VBox>
+    </VBox>
+</HBox>

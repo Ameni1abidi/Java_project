@@ -8,16 +8,7 @@
       xmlns:fx="http://javafx.com/fxml/1"
       xmlns="http://javafx.com/javafx/17.0.12"
       fx:controller="tn.esprit.controllers.CreateEvaluationController">
-
-    <!-- SIDEBAR -->
-    <VBox prefWidth="220" style="-fx-background-color: #c4b5e8;">
-        <padding>
-            <Insets top="20" left="20"/>
-        </padding>
-        <Label text="EduFlex"
-               style="-fx-text-fill: white; -fx-font-size: 18; -fx-font-weight: bold;"/>
-    </VBox>
-
+    <fx:include source="/Sidebar.fxml"/>
     <!-- FORM CONTAINER -->
     <VBox HBox.hgrow="ALWAYS" alignment="TOP_CENTER" style="-fx-padding: 40;">
 
@@ -46,7 +37,7 @@
             <!-- ELEVE -->
             <VBox spacing="5">
                 <Label text="Élève"/>
-                <ComboBox fx:id="cbEleve" promptText="Choisir un élève"/>
+                <ComboBox fx:id="cbUser" promptText="Choisir un élève"/>
             </VBox>
 
             <!-- EXAMEN -->
@@ -56,7 +47,7 @@
             </VBox>
 
             <!-- BUTTON -->
-            <Button text="Enregistrer"
+            <Button fx:id="btnSave" text="Enregistrer"
                     onAction="#handleSave"
                     style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-background-radius: 8;"/>
 

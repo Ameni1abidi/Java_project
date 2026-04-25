@@ -25,7 +25,10 @@
                 <HBox HBox.hgrow="ALWAYS"/>
                 <Button text="Cours" onAction="#goCoursList" style="-fx-background-color: white; -fx-text-fill: #7E57C2; -fx-font-weight: bold;"/>
                 <Button text="Examens" onAction="#goExams" style="-fx-background-color: #B39DDB; -fx-text-fill: white;"/>
+                <Button text="Ressources" onAction="#goResources" style="-fx-background-color: #B39DDB; -fx-text-fill: white;"/>
+                <Button text="Categories" onAction="#goCategories" style="-fx-background-color: #B39DDB; -fx-text-fill: white;"/>
                 <Button text="Evaluations" onAction="#goEvaluations" style="-fx-background-color: #B39DDB; -fx-text-fill: white;"/>
+                <Button text="Forum" onAction="#goForum" style="-fx-background-color: #D1C4E9; -fx-text-fill: #4A148C;"/>
                 <Button text="Retour" onAction="#goBack" style="-fx-background-color: #D1C4E9; -fx-text-fill: #4A148C;"/>
                 <Button text="Deconnexion" onAction="#logout" style="-fx-background-color: #EF9A9A; -fx-text-fill: #6D1B1B;"/>
             </HBox>

@@ -2,6 +2,7 @@ package tn.esprit.controllers;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.event.ActionEvent;
 import javafx.scene.*;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
@@ -9,6 +10,7 @@ import javafx.stage.Stage;
 import tn.esprit.entities.Cours;
 import tn.esprit.services.CoursService;
 
+import javafx.event.ActionEvent;
 import java.util.List;
 
 public class CoursList {
@@ -21,7 +23,6 @@ public class CoursList {
 
     private CoursService service = new CoursService();
 
-    // LOAD DATA
     public void initialize() {
         loadData();
     }
@@ -35,8 +36,6 @@ public class CoursList {
             coursContainer.getChildren().add(card);
         }
     }
-
-    // CREATE CARD
     private VBox createCard(Cours c) {
         VBox card = new VBox(10);
         card.setStyle("""
@@ -52,7 +51,6 @@ public class CoursList {
         Label desc = new Label(c.getDescription());
         Label date = new Label("Créé le: " + c.getDateCreation());
 
-        // BUTTONS
 
         Button btnChapitre = new Button("Liste Chapitres");
         btnChapitre.setStyle("-fx-border-color:#007bff; -fx-text-fill:#007bff;");
@@ -65,16 +63,12 @@ public class CoursList {
         Button btnDelete = new Button("Supprimer");
         btnDelete.setStyle("-fx-border-color:#dc3545; -fx-text-fill:#dc3545;");
         btnDelete.setOnAction(e -> deleteCours(c));
-
-// ORDER: Chapitre → Modifier → Delete
         HBox actions = new HBox(10, btnChapitre, btnModifier, btnDelete);
 
         card.getChildren().addAll(titre, desc, date, actions);
 
         return card;
     }
-
-    // 🔍 SEARCH
     @FXML
     void searchCours() {
         String keyword = searchField.getText().toLowerCase();
@@ -86,8 +80,6 @@ public class CoursList {
             }
         }
     }
-
-    // ➕ ADD
     @FXML
     void goToAdd() {
         try {
@@ -102,7 +94,6 @@ public class CoursList {
         }
     }
 
-    // ✏️ MODIFY
     void modifierCours(Cours c) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/CoursForm.fxml"));
@@ -118,16 +109,12 @@ public class CoursList {
             e.printStackTrace();
         }
     }
-
-    // 📚 CHAPITRES
     void goToChapitres(Cours c) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ChapitreList.fxml"));
             Parent root = loader.load();
 
             ChapitreList controller = loader.getController();
-
-            // ✅ CORRECT METHOD
             controller.setCoursId(c.getId());
 
             Stage stage = (Stage) coursContainer.getScene().getWindow();
@@ -137,10 +124,63 @@ public class CoursList {
             e.printStackTrace();
         }
     }
-
-    // ❌ DELETE
     void deleteCours(Cours c) {
         service.supprimer(c.getId());
         loadData();
+    }
+
+    @FXML
+    private void goDashboard(ActionEvent event) {
+        loadPage(event, "/ProfDashboard.fxml");
+    }
+
+    @FXML
+    private void goForum(ActionEvent event) {
+        loadPage(event, "/forum.fxml");
+    }
+
+    @FXML
+    private void goRessources(ActionEvent event) {
+        loadPage(event, "/listeRessources.fxml");
+    }
+
+    @FXML
+    private void goCategories(ActionEvent event) {
+        loadPage(event, "/CategorieList.fxml");
+    }
+
+    @FXML
+    private void goExamens(ActionEvent event) {
+        loadPage(event, "/ExamenView.fxml");
+    }
+
+    @FXML
+    private void goEvaluations(ActionEvent event) {
+        loadPage(event, "/EvaluationView.fxml");
+    }
+
+    @FXML
+    private void goResultats(ActionEvent event) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Resultats");
+        alert.setHeaderText(null);
+        alert.setContentText("La page resultats sera bientot disponible.");
+        alert.showAndWait();
+    }
+
+    @FXML
+    private void goLogout(ActionEvent event) {
+        loadPage(event, "/Login.fxml");
+    }
+
+    private void loadPage(ActionEvent event, String fxmlPath) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

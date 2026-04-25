@@ -6,14 +6,19 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.stage.Stage;
+import tn.esprit.entities.User;
+import tn.esprit.services.AuditLogService;
+import tn.esprit.utils.UserSession;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 public class ProfDashboardController {
+    private final AuditLogService auditLogService = new AuditLogService();
 
     @FXML
     private Label dateLabel;
@@ -43,6 +48,15 @@ public class ProfDashboardController {
     }
 
     @FXML
+    private void goResources(ActionEvent event) {loadPage(event, "/listeRessources.fxml");
+    }
+
+    @FXML
+    private void goCategories(ActionEvent event) {
+        loadPage(event, "/CategorieList.fxml");
+    }
+
+    @FXML
     private void goEvaluations(ActionEvent event) {
         loadPage(event, "/EvaluationView.fxml");
     }
@@ -59,17 +73,28 @@ public class ProfDashboardController {
 
     @FXML
     private void logout(ActionEvent event) {
+        User current = UserSession.getCurrentUser();
+        if (current != null) {
+            auditLogService.log(current.getEmail(), "LOGOUT", "User logged out from Prof dashboard");
+        }
+        UserSession.clear();
         loadPage(event, "/Login.fxml");
     }
 
     private void loadPage(ActionEvent event, String fxmlPath) {
         try {
-            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+            Parent root = loader.load();
             Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
         } catch (Exception e) {
             e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Erreur de navigation");
+            alert.setHeaderText("Impossible d'ouvrir la page");
+            alert.setContentText("Fichier FXML introuvable ou erreur d'ouverture : " + fxmlPath + "\n" + e.getMessage());
+            alert.showAndWait();
         }
     }
 }

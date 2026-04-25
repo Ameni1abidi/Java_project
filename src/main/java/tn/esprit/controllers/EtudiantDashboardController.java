@@ -9,11 +9,15 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.stage.Stage;
+import tn.esprit.entities.User;
+import tn.esprit.services.AuditLogService;
+import tn.esprit.utils.UserSession;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 public class EtudiantDashboardController {
+    private final AuditLogService auditLogService = new AuditLogService();
 
     @FXML
     private Label dateLabel;
@@ -33,8 +37,17 @@ public class EtudiantDashboardController {
     }
 
     @FXML
-    private void goCoursList(ActionEvent event) {
-        loadPage(event, "/CoursList.fxml");
+    public void goCoursList() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/StudentCours.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = (Stage) planningList.getScene().getWindow();
+            stage.setScene(new Scene(root));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -59,6 +72,11 @@ public class EtudiantDashboardController {
 
     @FXML
     private void logout(ActionEvent event) {
+        User current = UserSession.getCurrentUser();
+        if (current != null) {
+            auditLogService.log(current.getEmail(), "LOGOUT", "User logged out from Etudiant dashboard");
+        }
+        UserSession.clear();
         loadPage(event, "/Login.fxml");
     }
 
