@@ -13,13 +13,11 @@ public class TranslationService {
 
     public String traduire(String texte, String langCible) {
         if (texte == null || texte.isBlank()) return "";
-
         for (String src : SOURCES) {
             if (src.equals(langCible)) continue;
             String result = callApi(texte, src, langCible);
             if (result != null) return result;
         }
-
         return "Traduction indisponible.";
     }
 
@@ -45,9 +43,7 @@ public class TranslationService {
             br.close();
 
             String body = sb.toString();
-            System.out.println("[Translation] " + langSource + "|" + langCible + " => " + body);
 
-            // Verifier responseStatus == 200
             int statusIdx = body.indexOf("\"responseStatus\":");
             if (statusIdx == -1) return null;
             int statusStart = statusIdx + 17;
@@ -56,25 +52,21 @@ public class TranslationService {
             int status = Integer.parseInt(body.substring(statusStart, statusEnd).trim());
             if (status != 200) return null;
 
-            // Extraire translatedText
             int idx = body.indexOf("\"translatedText\":\"");
             if (idx == -1) return null;
             int start = idx + 18;
             int end   = findJsonStringEnd(body, start);
             if (end == -1) return null;
 
-            String raw    = body.substring(start, end);
-            String traduit = decodeJsonString(raw);
+            String traduit = decodeJsonString(body.substring(start, end));
 
             if (traduit.isBlank() || traduit.toUpperCase().contains("MYMEMORY WARNING")) {
                 return null;
             }
-
             return traduit;
 
         } catch (Exception e) {
             System.err.println("[TranslationService] Erreur : " + e.getMessage());
-            e.printStackTrace();
             return null;
         }
     }
@@ -83,13 +75,9 @@ public class TranslationService {
         int i = start;
         while (i < body.length()) {
             char ch = body.charAt(i);
-            if (ch == '\\') {
-                i += 2;
-            } else if (ch == '"') {
-                return i;
-            } else {
-                i++;
-            }
+            if (ch == '\\') { i += 2; }
+            else if (ch == '"') { return i; }
+            else { i++; }
         }
         return -1;
     }
@@ -102,40 +90,16 @@ public class TranslationService {
             if (ch == '\\' && i + 1 < raw.length()) {
                 char next = raw.charAt(i + 1);
                 if (next == 'u' && i + 5 < raw.length()) {
-                    String hex = raw.substring(i + 2, i + 6);
                     try {
-                        sb.append((char) Integer.parseInt(hex, 16));
+                        sb.append((char) Integer.parseInt(raw.substring(i + 2, i + 6), 16));
                         i += 6;
-                    } catch (NumberFormatException e) {
-                        sb.append(ch);
-                        i++;
-                    }
-                } else if (next == '"') {
-                    sb.append('"');
-                    i += 2;
-                } else if (next == '\\') {
-                    sb.append('\\');
-                    i += 2;
-                } else if (next == '/') {
-                    sb.append('/');
-                    i += 2;
-                } else if (next == 'n') {
-                    sb.append('\n');
-                    i += 2;
-                } else if (next == 'r') {
-                    sb.append('\r');
-                    i += 2;
-                } else if (next == 't') {
-                    sb.append('\t');
-                    i += 2;
-                } else {
-                    sb.append(next);
-                    i += 2;
-                }
-            } else {
-                sb.append(ch);
-                i++;
-            }
+                    } catch (NumberFormatException e) { sb.append(ch); i++; }
+                } else if (next == '"')  { sb.append('"');  i += 2; }
+                else if (next == '\\') { sb.append('\\'); i += 2; }
+                else if (next == 'n')  { sb.append('\n'); i += 2; }
+                else if (next == 't')  { sb.append('\t'); i += 2; }
+                else                   { sb.append(next); i += 2; }
+            } else { sb.append(ch); i++; }
         }
         return sb.toString();
     }
