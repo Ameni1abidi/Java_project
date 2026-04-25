@@ -1,5 +1,6 @@
 package tn.esprit.controllers;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -14,30 +15,21 @@ import javafx.stage.Stage;
 
 import tn.esprit.entities.forum;
 import tn.esprit.services.ForumService;
+import tn.esprit.services.OllamaService;
 
 import java.sql.Timestamp;
 
 public class AjoutForum {
 
-    @FXML
-    private FlowPane forumContainer;
+    @FXML private FlowPane forumContainer;
+    @FXML private VBox formPane;
+    @FXML private TextField titreField;
+    @FXML private TextField typeField;
+    @FXML private TextArea contenuField;
+    @FXML private Label pageLabel;
 
-    @FXML
-    private VBox formPane;
-
-    @FXML
-    private TextField titreField;
-
-    @FXML
-    private TextField typeField;
-
-    @FXML
-    private TextArea contenuField;
-
-    @FXML
-    private Label pageLabel;
-
-    private ForumService fs = new ForumService();
+    private final ForumService fs     = new ForumService();
+    private final OllamaService ollama = new OllamaService();
 
     private int currentPage = 1;
     private final int pageSize = 2;
@@ -49,19 +41,14 @@ public class AjoutForum {
     }
 
     @FXML
-    public void showCreateForm() {
-        formPane.setVisible(true);
-    }
+    public void showCreateForm() { formPane.setVisible(true); }
 
     @FXML
-    public void showList() {
-        formPane.setVisible(false);
-    }
+    public void showList() { formPane.setVisible(false); }
 
     // ================= CREATE =================
     @FXML
     public void ajouterForum() {
-
         forum f = new forum(
                 0,
                 titreField.getText(),
@@ -71,7 +58,6 @@ public class AjoutForum {
         );
 
         String erreur = f.valider();
-
         if (erreur != null) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setContentText(erreur);
@@ -80,25 +66,21 @@ public class AjoutForum {
         }
 
         fs.ajouter(f);
-
         titreField.clear();
         contenuField.clear();
         typeField.clear();
-
         showList();
         loadForums();
     }
 
     // ================= READ + PAGINATION =================
     private void loadForums() {
-
         forumContainer.getChildren().clear();
 
         int totalItems = fs.countForums();
         totalPages = (int) Math.ceil((double) totalItems / pageSize);
 
         fs.getPaginated(currentPage, pageSize).forEach(f -> {
-
             try {
                 VBox card = new VBox(10);
                 card.setPrefWidth(300);
@@ -112,23 +94,22 @@ public class AjoutForum {
 
                 Label contenu = new Label(f.getContenu());
 
-                String btnStyle = "-fx-background-color:#2ecc71; -fx-text-fill:white; -fx-background-radius:15;";
+                String btnGreen  = "-fx-background-color:#2ecc71; -fx-text-fill:white; -fx-background-radius:15;";
+                String btnViolet = "-fx-background-color:#7c3aed; -fx-text-fill:white; -fx-background-radius:15; -fx-font-size:11px;";
+                String btnRed    = "-fx-background-color:#e74c3c; -fx-text-fill:white; -fx-background-radius:15;";
 
-                Button edit = new Button("Modifier");
-                edit.setStyle(btnStyle);
-
+                Button edit   = new Button("Modifier");
                 Button delete = new Button("Supprimer");
-                delete.setStyle(btnStyle);
+                edit  .setStyle(btnGreen);
+                delete.setStyle(btnRed);
 
                 delete.setOnAction(e -> {
                     fs.supprimer(f.getId());
                     loadForums();
                 });
-
                 edit.setOnAction(e -> {
                     TextInputDialog dialog = new TextInputDialog(f.getContenu());
                     dialog.setTitle("Modifier forum");
-
                     dialog.showAndWait().ifPresent(newText -> {
                         f.setContenu(newText);
                         fs.modifier(f);
@@ -136,15 +117,83 @@ public class AjoutForum {
                     });
                 });
 
+                // ── BOUTON IA ────────────────────────────────────────────
+                Button iaBtn = new Button("Demander a l'IA");
+                iaBtn.setStyle(btnViolet);
+
+                Label iaLoading = new Label("L'IA reflechit...");
+                iaLoading.setVisible(false);
+                iaLoading.setManaged(false);
+                iaLoading.setStyle(
+                        "-fx-font-size:11px;" +
+                                "-fx-text-fill:#7c3aed;" +
+                                "-fx-font-style:italic;"
+                );
+
+                Label iaResponse = new Label();
+                iaResponse.setWrapText(true);
+                iaResponse.setVisible(false);
+                iaResponse.setManaged(false);
+                iaResponse.setStyle(
+                        "-fx-background-color:#f5f3ff;" +
+                                "-fx-border-color:#c4b5fd;" +
+                                "-fx-border-width:1;" +
+                                "-fx-border-radius:8;" +
+                                "-fx-background-radius:8;" +
+                                "-fx-padding:10;" +
+                                "-fx-font-size:12px;" +
+                                "-fx-text-fill:#3b0764;"
+                );
+
+                iaBtn.setOnAction(e -> {
+                    // Toggle : si reponse deja visible, on la masque
+                    if (iaResponse.isVisible()) {
+                        iaResponse.setVisible(false);
+                        iaResponse.setManaged(false);
+                        iaBtn.setText("Demander a l'IA");
+                        iaBtn.setStyle(btnViolet);
+                        return;
+                    }
+
+                    iaBtn.setDisable(true);
+                    iaBtn.setText("Reflexion...");
+                    iaLoading.setVisible(true);
+                    iaLoading.setManaged(true);
+                    iaResponse.setVisible(false);
+                    iaResponse.setManaged(false);
+
+                    // Question = titre + contenu du post
+                    String question = f.getTitre() + " : " + f.getContenu();
+
+                    new Thread(() -> {
+                        String reponse = ollama.poserQuestion(question);
+
+                        Platform.runLater(() -> {
+                            iaLoading.setVisible(false);
+                            iaLoading.setManaged(false);
+                            iaBtn.setDisable(false);
+                            iaBtn.setText("Masquer la reponse IA");
+
+                            iaResponse.setText("IA : " + reponse);
+                            iaResponse.setVisible(true);
+                            iaResponse.setManaged(true);
+                        });
+                    }).start();
+                });
+                // ─────────────────────────────────────────────────────────
+
                 HBox actions = new HBox(10, edit, delete);
 
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/commentaire.fxml"));
                 Parent commentUI = loader.load();
-
                 AjoutCommentaire cc = loader.getController();
                 cc.setForumId(f.getId());
 
-                card.getChildren().addAll(titre, info, contenu, actions, commentUI);
+                card.getChildren().addAll(
+                        titre, info, contenu, actions,
+                        iaBtn, iaLoading, iaResponse,   // <-- IA ici
+                        commentUI
+                );
 
                 forumContainer.getChildren().add(card);
 
@@ -159,50 +208,32 @@ public class AjoutForum {
     // ================= PAGINATION =================
     @FXML
     void nextPage(ActionEvent event) {
-        if (currentPage < totalPages) {
-            currentPage++;
-            loadForums();
-        }
+        if (currentPage < totalPages) { currentPage++; loadForums(); }
     }
 
     @FXML
     void previousPage(ActionEvent event) {
-        if (currentPage > 1) {
-            currentPage--;
-            loadForums();
-        }
+        if (currentPage > 1) { currentPage--; loadForums(); }
     }
 
     // ================= NAVIGATION =================
     @FXML
-    private void goDashboard(ActionEvent event) {
-        loadPage(event, "/ProfDashboard.fxml");
-    }
+    private void goDashboard(ActionEvent event) { loadPage(event, "/ProfDashboard.fxml"); }
 
     @FXML
-    private void goCours(ActionEvent event) {
-        loadPage(event, "/CoursList.fxml");
-    }
+    private void goCours(ActionEvent event) { loadPage(event, "/CoursList.fxml"); }
 
     @FXML
-    private void goRessources(ActionEvent event) {
-        loadPage(event, "/listeRessources.fxml");
-    }
+    private void goRessources(ActionEvent event) { loadPage(event, "/listeRessources.fxml"); }
 
     @FXML
-    private void goCategories(ActionEvent event) {
-        loadPage(event, "/CategorieList.fxml");
-    }
+    private void goCategories(ActionEvent event) { loadPage(event, "/CategorieList.fxml"); }
 
     @FXML
-    private void goExamens(ActionEvent event) {
-        loadPage(event, "/ExamenView.fxml");
-    }
+    private void goExamens(ActionEvent event) { loadPage(event, "/ExamenView.fxml"); }
 
     @FXML
-    private void goEvaluations(ActionEvent event) {
-        loadPage(event, "/EvaluationView.fxml");
-    }
+    private void goEvaluations(ActionEvent event) { loadPage(event, "/EvaluationView.fxml"); }
 
     @FXML
     private void goResultats(ActionEvent event) {
@@ -212,9 +243,7 @@ public class AjoutForum {
     }
 
     @FXML
-    private void goLogout(ActionEvent event) {
-        loadPage(event, "/Login.fxml");
-    }
+    private void goLogout(ActionEvent event) { loadPage(event, "/Login.fxml"); }
 
     private void loadPage(ActionEvent event, String fxmlPath) {
         try {
