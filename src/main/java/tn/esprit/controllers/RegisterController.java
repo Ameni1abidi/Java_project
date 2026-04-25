@@ -42,7 +42,6 @@ public class RegisterController {
     @FXML private CheckBox       agreeTermsCheckBox;
     @FXML private ComboBox<Role> roleCombo;
     @FXML private Label          messageLabel;
-    @FXML private TextField telephoneField;
 
     private final UserService userService = new UserService();
     private final RecaptchaService recaptchaService = new RecaptchaService();
@@ -76,7 +75,6 @@ public class RegisterController {
         String pw      = passwordField.getText();
         String confirm = confirmField.getText();
         Role   role    = roleCombo.getValue();
-        String telephone = telephoneField.getText().trim();
 
         if (nom.isEmpty() || email.isEmpty() || pw.isEmpty()) {
             showError("Tous les champs sont obligatoires.");
@@ -94,10 +92,6 @@ public class RegisterController {
             showError("Mot de passe trop court (min. 6 caractères).");
             return;
         }
-        if (telephone.isEmpty()) {
-            showError("Le numéro de téléphone est obligatoire.");
-            return;
-        }
         if (agreeTermsCheckBox != null && !agreeTermsCheckBox.isSelected()) {
             showError("Veuillez accepter les conditions d'utilisation.");
             return;
@@ -113,7 +107,7 @@ public class RegisterController {
                 showError("Verification reCAPTCHA echouee: " + (captcha.errors().isBlank() ? "token invalide" : captcha.errors()));
                 return;
             }
-            boolean ok = userService.register(new User(nom, pw, email,telephone, role));
+            boolean ok = userService.register(new User(nom, pw, email, role));
 
             if (!ok) {
                 showError("Cet email est déjà utilisé.");
