@@ -21,14 +21,15 @@ public class UserService {
     public boolean register(User user) throws SQLException {
         if (emailExists(user.getEmail())) return false;
 
-        String sql = "INSERT INTO utilisateur (nom, password, email, role, is_verified, is_blocked, status) " +
-                "VALUES (?, ?, ?, ?, 0, 0, 'PENDING')";
+        String sql = "INSERT INTO utilisateur (nom, password, email, telephone, role, is_verified, is_blocked, status) " +
+                "VALUES (?, ?, ?, ?, ?, 0, 0, 'PENDING')";
         try (PreparedStatement ps = cnx.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
             ps.setString(1, user.getNom());
             ps.setString(2, hashedPassword);
             ps.setString(3, user.getEmail());
-            ps.setString(4, user.getRole().name());
+            ps.setString(4, user.getTelephone());
+            ps.setString(5, user.getRole().name());
             ps.executeUpdate();
 
             ResultSet keys = ps.getGeneratedKeys();
@@ -93,7 +94,7 @@ public class UserService {
     //  UPDATE
     // ─────────────────────────────────────────────────────────────────────────
     public boolean updateUser(User user) throws SQLException {
-        String sql = "UPDATE utilisateur SET nom=?, password=?, email=?, role=? WHERE id=?";
+        String sql = "UPDATE utilisateur SET nom=?, password=?, email=?, telephone=?, role=? WHERE id=?";
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
             String passwordValue = user.getPassword();
             if (passwordValue != null && !passwordValue.isBlank() && !isBcryptHash(passwordValue)) {
@@ -102,8 +103,9 @@ public class UserService {
             ps.setString(1, user.getNom());
             ps.setString(2, passwordValue);
             ps.setString(3, user.getEmail());
-            ps.setString(4, user.getRole().name());
-            ps.setInt(5, user.getId());
+            ps.setString(4, user.getTelephone());
+            ps.setString(5, user.getRole().name());
+            ps.setInt(6, user.getId());
             return ps.executeUpdate() > 0;
         }
     }
@@ -137,7 +139,9 @@ public class UserService {
                 rs.getString("nom"),
                 rs.getString("password"),
                 rs.getString("email"),
+                rs.getString("telephone"),
                 Role.fromString(rs.getString("role"))
+
         );
     }
 
@@ -159,7 +163,7 @@ public class UserService {
 
         String name = (displayName == null || displayName.isBlank()) ? "Google User" : displayName.trim();
         String generatedPassword = "google-" + UUID.randomUUID();
-        register(new User(name, generatedPassword, email, Role.ROLE_ETUDIANT));
+        register(new User(name, generatedPassword, email, null, Role.ROLE_ETUDIANT));
         return findByEmail(email).orElseThrow(() ->
                 new SQLException("Creation du compte Google echouee pour " + email));
     }

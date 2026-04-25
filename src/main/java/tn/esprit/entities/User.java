@@ -25,19 +25,21 @@ public class User {
     private String password;
     private String email;
     private Role   role;
+    private String telephone;
 
     // ── Constructeurs ────────────────────────────────────────────────────────
     public User() {}
 
-    public User(String nom, String password, String email, Role role) {
+    public User(String nom, String password, String email, String telephone,Role role) {
         this.nom      = nom;
         this.password = password;
         this.email    = email;
+        this.telephone = telephone;
         this.role     = role;
     }
 
-    public User(int id, String nom, String password, String email, Role role) {
-        this(nom, password, email, role);
+    public User(int id, String nom, String password, String email,String telephone,Role role) {
+        this(nom, password, email, telephone, role);
         this.id = id;
     }
 
@@ -47,15 +49,17 @@ public class User {
     public String getPassword() { return password; }
     public String getEmail()    { return email; }
     public Role   getRole()     { return role; }
+    public String getTelephone() { return telephone; }
 
     public void setId(int id)             { this.id = id; }
     public void setNom(String nom)        { this.nom = nom; }
     public void setPassword(String pw)    { this.password = pw; }
     public void setEmail(String email)    { this.email = email; }
+    public void setTelephone(String telephone) { this.telephone = telephone; }
     public void setRole(Role role)        { this.role = role; }
 
     @Override
     public String toString() {
-        return "User{id=%d, nom='%s', email='%s', role=%s}".formatted(id, nom, email, role);
+        return "User{id=%d, nom='%s', email='%s', telephone='%s', role=%s}".formatted(id, nom, email, telephone,role);
     }
 }
