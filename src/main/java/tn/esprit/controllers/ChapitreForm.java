@@ -15,6 +15,8 @@ import tn.esprit.services.CoursService;
 import tn.esprit.entities.Cours;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 public class ChapitreForm {
 
@@ -174,34 +176,31 @@ public class ChapitreForm {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Choisir un fichier");
 
-        String type = typeContenuField.getValue();
-
-        if ("PDF".equalsIgnoreCase(type)) {
-            fileChooser.getExtensionFilters().add(
-                    new FileChooser.ExtensionFilter("PDF Files", "*.pdf")
-            );
-        }
-        else if ("IMAGE".equalsIgnoreCase(type)) {
-            fileChooser.getExtensionFilters().add(
-                    new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg", "*.jpeg")
-            );
-        }
-        else if ("VIDEO".equalsIgnoreCase(type)) {
-            fileChooser.getExtensionFilters().add(
-                    new FileChooser.ExtensionFilter("Videos", "*.mp4", "*.avi")
-            );
-        }
-        else {
-            fileChooser.getExtensionFilters().add(
-                    new FileChooser.ExtensionFilter("All Files", "*.*")
-            );
-        }
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("PDF Files", "*.pdf")
+        );
 
         Stage stage = (Stage) titreField.getScene().getWindow();
         File file = fileChooser.showOpenDialog(stage);
 
         if (file != null) {
-            contenuFichierField.setText(file.getAbsolutePath());
+
+            try {
+                // 📁 create uploads folder if not exists
+                File uploadDir = new File("uploads");
+                if (!uploadDir.exists()) uploadDir.mkdir();
+
+                File target = new File(uploadDir, file.getName());
+
+                Files.copy(file.toPath(), target.toPath(),
+                        StandardCopyOption.REPLACE_EXISTING);
+
+                // ✅ store ONLY filename
+                contenuFichierField.setText(file.getAbsolutePath());
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
