@@ -50,6 +50,12 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>com.twilio.sdk</groupId>
+            <artifactId>twilio</artifactId>
+            <version>10.4.2</version>
+        </dependency>
+
 
         <dependency>
             <groupId>org.mindrot</groupId>

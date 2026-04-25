@@ -14,6 +14,7 @@ import tn.esprit.entities.Examen;
 import tn.esprit.entities.User;
 import tn.esprit.services.CoursService;
 import tn.esprit.services.ExamenService;
+import tn.esprit.services.SmsService;
 import tn.esprit.services.UserService;
 
 import java.io.File;
@@ -28,9 +29,11 @@ public class CreateExamenController {
     @FXML private TextField txtDuree;
     @FXML private ComboBox<Cours> cbCours;
     @FXML private ComboBox<User> cbEnseignant;
+
     private String filePath;
 
-    private ExamenService service = new ExamenService();
+    private final SmsService smsService = new SmsService();
+    private final ExamenService service = new ExamenService();
     @FXML
     public void initialize() {
 
@@ -173,7 +176,11 @@ public class CreateExamenController {
 
             // ================= SAVE DB =================
             service.create(e);
-
+            // 2️⃣ SMS APRES SUCCESS
+            smsService.sendSms(
+                    "+21629693334",
+                    "📢 Nouvel examen ajouté : " + e.getTitre()
+            );
             new Alert(Alert.AlertType.INFORMATION,
                     "Examen ajouté avec succès !").show();
 
@@ -182,6 +189,9 @@ public class CreateExamenController {
         } catch (Exception ex) {
             ex.printStackTrace();
             showAlert("Erreur lors de l'enregistrement en base !");
+
+
+
         }
     }
 
