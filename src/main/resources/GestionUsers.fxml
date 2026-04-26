@@ -180,7 +180,8 @@
                                    VBox.vgrow="ALWAYS"
                                    prefHeight="600"
                                    minHeight="400"
-                                   columnResizePolicy="CONSTRAINED_RESIZE_POLICY">
+                                   styleClass="admin-table"
+                                   >
                             <columns>
                                 <TableColumn fx:id="colAvatar" text="Avatar" prefWidth="70"/>
                                 <TableColumn fx:id="colName" text="Full Name" prefWidth="170"/>

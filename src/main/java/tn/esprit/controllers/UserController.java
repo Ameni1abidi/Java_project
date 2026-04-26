@@ -110,10 +110,15 @@ public class UserController {
     // ── Initialisation ───────────────────────────────────────────────────────
     @FXML
     public void initialize() {
+        if (table != null) {
+            table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        }
         colAvatar.setCellValueFactory(cell -> new javafx.beans.property.SimpleStringProperty(avatarFor(cell.getValue())));
         colName.setCellValueFactory(new PropertyValueFactory<>("nom"));
         colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
-        colRole.setCellValueFactory(new PropertyValueFactory<>("role"));
+        colRole.setCellValueFactory(cell -> new javafx.beans.property.SimpleStringProperty(
+                cell.getValue() == null || cell.getValue().getRole() == null ? "" : cell.getValue().getRole().name()
+        ));
         colStatus.setCellValueFactory(cell -> new javafx.beans.property.SimpleStringProperty(statusFor(cell.getValue())));
         colCreated.setCellValueFactory(cell -> new javafx.beans.property.SimpleStringProperty(createdDateFor(cell.getValue()).format(UI_DATE)));
         colLastLogin.setCellValueFactory(cell -> new javafx.beans.property.SimpleStringProperty(lastLoginFor(cell.getValue()).format(UI_DATE)));
@@ -132,10 +137,12 @@ public class UserController {
                 Button activeBtn = new Button("Activer");
                 Button deactiveBtn = new Button("Desactiver");
                 Button blockBtn = new Button("Bloquer");
+                Button unblockBtn = new Button("Debloquer");
                 viewBtn.getStyleClass().add("btn-table-neutral");
                 activeBtn.getStyleClass().add("btn-table-active");
                 deactiveBtn.getStyleClass().add("btn-table-warning");
                 blockBtn.getStyleClass().add("btn-table-danger");
+                unblockBtn.getStyleClass().add("btn-table-neutral");
                 viewBtn.setOnAction(e -> {
                     table.getSelectionModel().select(rowUser);
                     selectUser();
@@ -143,7 +150,8 @@ public class UserController {
                 activeBtn.setOnAction(e -> setUserStatus(rowUser, "Active"));
                 deactiveBtn.setOnAction(e -> setUserStatus(rowUser, "Deactive"));
                 blockBtn.setOnAction(e -> setUserStatus(rowUser, "Blocked"));
-                HBox box = new HBox(6, viewBtn, activeBtn, deactiveBtn, blockBtn);
+                unblockBtn.setOnAction(e -> setUserBlocked(rowUser, false));
+                HBox box = new HBox(6, viewBtn, activeBtn, deactiveBtn, blockBtn, unblockBtn);
                 box.setFillHeight(false);
                 setGraphic(box);
                 setText(null);
@@ -824,28 +832,48 @@ public class UserController {
 
     private String statusFor(User user) {
         if (user == null) return "Deactive";
-        String override = userStatusOverrides.get(user.getId());
-        if (override != null && !override.isBlank()) return override;
-        int mod = Math.abs(user.getId()) % 3;
-        if (mod == 0) return "Active";
-        if (mod == 1) return "Deactive";
-        return "Blocked";
+        if (user.isBlocked()) return "Blocked";
+        String s = user.getStatus();
+        if (s == null || s.isBlank()) return "Deactive";
+        return s.trim();
     }
 
     private void setUserStatus(User user, String status) {
         if (user == null || status == null || status.isBlank()) return;
-        userStatusOverrides.put(user.getId(), status);
-        String actor = currentActorEmail();
-        auditLogService.log(actor, "ADMIN_STATUS_CHANGE", "User id=" + user.getId() + " status=" + status);
-        applySearchFilterSort();
+        try {
+            userService.setStatus(user.getId(), status);
+            String actor = currentActorEmail();
+            auditLogService.log(actor, "ADMIN_STATUS_CHANGE", "User id=" + user.getId() + " status=" + status);
+            loadUsers();
+        } catch (SQLException e) {
+            showAlert("Erreur", "Changement de statut impossible: " + e.getMessage());
+        }
+    }
+
+    private void setUserBlocked(User user, boolean blocked) {
+        if (user == null) return;
+        try {
+            userService.setBlocked(user.getId(), blocked);
+            String actor = currentActorEmail();
+            auditLogService.log(actor, "ADMIN_BLOCK_CHANGE", "User id=" + user.getId() + " blocked=" + blocked);
+            loadUsers();
+        } catch (SQLException e) {
+            showAlert("Erreur", "Blocage/déblocage impossible: " + e.getMessage());
+        }
     }
 
     private LocalDate createdDateFor(User user) {
+        if (user != null && user.getCreatedAt() != null) {
+            return user.getCreatedAt().toLocalDate();
+        }
         int days = user == null ? 0 : Math.max(0, user.getId() % 180);
         return LocalDate.now().minusDays(days);
     }
 
     private LocalDate lastLoginFor(User user) {
+        if (user != null && user.getLastLoginAt() != null) {
+            return user.getLastLoginAt().toLocalDate();
+        }
         int days = user == null ? 0 : Math.max(0, user.getId() % 30);
         return LocalDate.now().minusDays(days);
     }
