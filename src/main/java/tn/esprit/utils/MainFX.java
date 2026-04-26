@@ -14,9 +14,16 @@ public class MainFX extends Application {
         //FXMLLoader loader = new FXMLLoader(getClass().getResource("/CategorieList.fxml"));
         //FXMLLoader loader = new FXMLLoader(getClass().getResource("/CoursList.fxml"));
         //FXMLLoader loader = new FXMLLoader(getClass().getResource("/ProfDashboard.fxml"));
+<<<<<<< HEAD
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/EtudiantDashboard.fxml"));
+=======
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/statistique.fxml"));
+        //FXMLLoader loader = new FXMLLoader(getClass().getResource("/EtudiantDashboard.fxml"));
+        //FXMLLoader loader = new FXMLLoader(getClass().getResource("/ajouterCours.fxml"));
+>>>>>>> 2056add8ce795e92793f186235ce44a76dad93a5
 
         Scene scene = new Scene(loader.load());
+        PopupStyleInstaller.install();
 
         stage.setTitle("EDUFLEX");
         stage.setScene(scene);
@@ -29,7 +36,7 @@ public class MainFX extends Application {
 
         stage.setTitle("EduFlex Forum");
         stage.setScene(scene2);
-        stage.show();*/
+        stage.show();
 
 
         //FXMLLoader loader2 = new FXMLLoader(getClass().getResource("/EvaluationView.fxml"));

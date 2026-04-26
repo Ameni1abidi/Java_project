@@ -1,4 +1,7 @@
 package tn.esprit.entities;
+
+import java.time.LocalDateTime;
+
 public class User {
 
     public enum Role {
@@ -25,6 +28,11 @@ public class User {
     private String password;
     private String email;
     private Role   role;
+    private boolean verified;
+    private boolean blocked;
+    private String status;
+    private LocalDateTime createdAt;
+    private LocalDateTime lastLoginAt;
 
     // ── Constructeurs ────────────────────────────────────────────────────────
     public User() {}
@@ -34,6 +42,9 @@ public class User {
         this.password = password;
         this.email    = email;
         this.role     = role;
+        this.verified = false;
+        this.blocked = false;
+        this.status = "PENDING";
     }
 
     public User(int id, String nom, String password, String email, Role role) {
@@ -47,15 +58,26 @@ public class User {
     public String getPassword() { return password; }
     public String getEmail()    { return email; }
     public Role   getRole()     { return role; }
+    public boolean isVerified() { return verified; }
+    public boolean isBlocked()  { return blocked; }
+    public String getStatus()   { return status; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public LocalDateTime getLastLoginAt() { return lastLoginAt; }
 
     public void setId(int id)             { this.id = id; }
     public void setNom(String nom)        { this.nom = nom; }
     public void setPassword(String pw)    { this.password = pw; }
     public void setEmail(String email)    { this.email = email; }
     public void setRole(Role role)        { this.role = role; }
+    public void setVerified(boolean verified) { this.verified = verified; }
+    public void setBlocked(boolean blocked) { this.blocked = blocked; }
+    public void setStatus(String status) { this.status = status; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public void setLastLoginAt(LocalDateTime lastLoginAt) { this.lastLoginAt = lastLoginAt; }
 
     @Override
     public String toString() {
-        return "User{id=%d, nom='%s', email='%s', role=%s}".formatted(id, nom, email, role);
+        return "User{id=%d, nom='%s', email='%s', role=%s, status=%s, blocked=%s, verified=%s}"
+                .formatted(id, nom, email, role, status, blocked, verified);
     }
 }

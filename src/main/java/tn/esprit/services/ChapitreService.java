@@ -171,6 +171,7 @@ public class ChapitreService {
 
         return list;
     }
+<<<<<<< HEAD
 
     public List<Chapitre> getAllChapitres() {
         List<Chapitre> list = new ArrayList<>();
@@ -223,6 +224,34 @@ public class ChapitreService {
             e.printStackTrace();
         }
         return null;
+=======
+    public int getCourseProgress(int userId, int coursId) {
+
+        try {
+            String sql = """
+            SELECT COALESCE(AVG(progress),0) as avg_progress
+            FROM student_chapitre_progress p
+            JOIN chapitre c ON c.id = p.chapitre_id
+            WHERE p.utilisateur_id = ? AND c.cours_id = ?
+        """;
+
+            PreparedStatement ps = MyDatabase.getInstance().getConnection().prepareStatement(sql);
+
+            ps.setInt(1, userId);
+            ps.setInt(2, coursId);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("avg_progress");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+>>>>>>> 2056add8ce795e92793f186235ce44a76dad93a5
     }
 }
 

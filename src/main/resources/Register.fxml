@@ -1,110 +1,100 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.geometry.Insets?>
+<?import javafx.scene.web.WebView?>
 
-<VBox xmlns:fx="http://javafx.com/fxml"
-      fx:controller="tn.esprit.controllers.RegisterController"
-      alignment="CENTER" spacing="0"
-      style="-fx-background-color: linear-gradient(to bottom, #EDE7F6, #E8F5E9);"
-      prefWidth="460" prefHeight="660">
+<AnchorPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.controllers.RegisterController"
+            prefWidth="900" prefHeight="760"
+            stylesheets="@style.css"
+            style="-fx-background-color: linear-gradient(to bottom, #F3F0FB, #F6FBF6);">
 
-    <!-- Card centrale -->
-    <VBox alignment="CENTER" spacing="15"
-          style="-fx-background-color: white; -fx-padding: 36 48;
-                 -fx-background-radius: 20;
-                 -fx-effect: dropshadow(gaussian, rgba(156,120,210,0.25), 20, 0, 0, 8);"
-          maxWidth="400">
+    <children>
+        <ScrollPane fitToWidth="true" pannable="true"
+                    style="-fx-background-color: transparent;"
+                    AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+                    AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+            <content>
+                <VBox alignment="TOP_CENTER" spacing="0" style="-fx-padding: 22 0 22 0;">
 
-        <!-- Titre -->
-        <VBox alignment="CENTER" spacing="6">
-            <Label text="✦ EduFlex"
-                   style="-fx-font-size: 26px; -fx-font-weight: bold;
-                          -fx-text-fill: #7E57C2;"/>
-            <Label text="Créer votre compte"
-                   style="-fx-font-size: 13px; -fx-text-fill: #B39DDB;"/>
-        </VBox>
+            <VBox spacing="12" maxWidth="500"
+                  style="-fx-background-color: rgba(255,255,255,0.90); -fx-padding: 28 34;
+                         -fx-background-radius: 18;
+                         -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 18, 0, 0, 6);">
 
-        <Separator style="-fx-background-color: #EDE7F6;"/>
+                <Label text="Créer un compte"
+                       style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #5E35B1;"/>
+                <Label text="Create account"
+                       style="-fx-font-size: 14px; -fx-text-fill: rgba(94,53,177,0.60);"/>
 
-        <!-- Nom -->
-        <VBox spacing="5">
-            <Label text="Nom complet *"
-                   style="-fx-font-size: 12px; -fx-font-weight: bold;
-                          -fx-text-fill: #7E57C2;"/>
-            <TextField fx:id="nomField" promptText="Ahmed Ben Ali"
-                       style="-fx-padding: 10 14; -fx-font-size: 13px;
-                              -fx-border-color: #CE93D8; -fx-border-radius: 10;
-                              -fx-background-radius: 10; -fx-background-color: #FAF7FF;"/>
-        </VBox>
+                <Separator/>
 
-        <!-- Email -->
-        <VBox spacing="5">
-            <Label text="Email *"
-                   style="-fx-font-size: 12px; -fx-font-weight: bold;
-                          -fx-text-fill: #7E57C2;"/>
-            <TextField fx:id="emailField" promptText="votre@email.com"
-                       style="-fx-padding: 10 14; -fx-font-size: 13px;
-                              -fx-border-color: #CE93D8; -fx-border-radius: 10;
-                              -fx-background-radius: 10; -fx-background-color: #FAF7FF;"/>
-        </VBox>
+                <VBox spacing="5">
+                    <Label text="Nom complet *" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #5E35B1;"/>
+                    <TextField fx:id="nomField" promptText="Entrez votre nom"
+                               style="-fx-pref-height: 42; -fx-background-color: #FAF7FF; -fx-border-color: rgba(94,53,177,0.22); -fx-border-radius: 10; -fx-background-radius: 10;"/>
+                </VBox>
 
-        <!-- Mot de passe -->
-        <VBox spacing="5">
-            <Label text="Mot de passe *"
-                   style="-fx-font-size: 12px; -fx-font-weight: bold;
-                          -fx-text-fill: #7E57C2;"/>
-            <PasswordField fx:id="passwordField" promptText="Min. 6 caractères"
-                           style="-fx-padding: 10 14; -fx-font-size: 13px;
-                                  -fx-border-color: #CE93D8; -fx-border-radius: 10;
-                                  -fx-background-radius: 10; -fx-background-color: #FAF7FF;"/>
-        </VBox>
+                <VBox spacing="5">
+                    <Label text="Email *" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #5E35B1;"/>
+                    <TextField fx:id="emailField" promptText="Entrez votre e-mail"
+                               style="-fx-pref-height: 42; -fx-background-color: #FAF7FF; -fx-border-color: rgba(94,53,177,0.22); -fx-border-radius: 10; -fx-background-radius: 10;"/>
+                </VBox>
 
-        <!-- Confirmer -->
-        <VBox spacing="5">
-            <Label text="Confirmer le mot de passe *"
-                   style="-fx-font-size: 12px; -fx-font-weight: bold;
-                          -fx-text-fill: #7E57C2;"/>
-            <PasswordField fx:id="confirmField" promptText="Répétez le mot de passe"
-                           style="-fx-padding: 10 14; -fx-font-size: 13px;
-                                  -fx-border-color: #CE93D8; -fx-border-radius: 10;
-                                  -fx-background-radius: 10; -fx-background-color: #FAF7FF;"/>
-        </VBox>
+                <VBox spacing="5">
+                    <Label text="Mot de passe *" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #5E35B1;"/>
+                    <StackPane>
+                        <PasswordField fx:id="passwordField" promptText="Mot de passe"
+                                       style="-fx-pref-height: 42; -fx-background-color: #FAF7FF; -fx-border-color: rgba(94,53,177,0.22); -fx-border-radius: 10; -fx-background-radius: 10;"/>
+                        <TextField fx:id="passwordVisibleField" promptText="Mot de passe" visible="false" managed="false"
+                                   style="-fx-pref-height: 42; -fx-background-color: #FAF7FF; -fx-border-color: rgba(94,53,177,0.22); -fx-border-radius: 10; -fx-background-radius: 10;"/>
+                    </StackPane>
+                </VBox>
 
-        <!-- Rôle -->
-        <VBox spacing="5">
-            <Label text="Rôle *"
-                   style="-fx-font-size: 12px; -fx-font-weight: bold;
-                          -fx-text-fill: #7E57C2;"/>
-            <ComboBox fx:id="roleCombo" maxWidth="Infinity"
-                      style="-fx-font-size: 13px; -fx-background-color: #FAF7FF;
-                             -fx-border-color: #CE93D8; -fx-border-radius: 10;
-                             -fx-background-radius: 10;"/>
-        </VBox>
+                <VBox spacing="5">
+                    <Label text="Confirmer le mot de passe *" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #5E35B1;"/>
+                    <StackPane>
+                        <PasswordField fx:id="confirmField" promptText="Répétez le mot de passe"
+                                       style="-fx-pref-height: 42; -fx-background-color: #FAF7FF; -fx-border-color: rgba(94,53,177,0.22); -fx-border-radius: 10; -fx-background-radius: 10;"/>
+                        <TextField fx:id="confirmVisibleField" promptText="Répétez le mot de passe" visible="false" managed="false"
+                                   style="-fx-pref-height: 42; -fx-background-color: #FAF7FF; -fx-border-color: rgba(94,53,177,0.22); -fx-border-radius: 10; -fx-background-radius: 10;"/>
+                    </StackPane>
+                </VBox>
 
-        <!-- Message feedback -->
-        <Label fx:id="messageLabel" text="" visible="false" wrapText="true"
-               style="-fx-font-size: 12px; -fx-padding: 8 12;
-                      -fx-background-radius: 8;"/>
+                <CheckBox fx:id="togglePasswordsCheckBox" text="Afficher les mots de passe"
+                          style="-fx-text-fill: rgba(46,42,58,0.82);"/>
 
-        <!-- Bouton inscription -->
-        <Button text="Créer mon compte" onAction="#handleRegister"
-                maxWidth="Infinity"
-                style="-fx-background-color: #66BB6A; -fx-text-fill: white;
-                       -fx-font-size: 14px; -fx-font-weight: bold;
-                       -fx-padding: 13; -fx-background-radius: 12;
-                       -fx-cursor: hand;"/>
+                <VBox spacing="5">
+                    <Label text="Rôle *" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #5E35B1;"/>
+                    <ComboBox fx:id="roleCombo" maxWidth="Infinity"
+                              style="-fx-pref-height: 42; -fx-background-color: #FAF7FF; -fx-border-color: rgba(94,53,177,0.22); -fx-border-radius: 10; -fx-background-radius: 10;"/>
+                </VBox>
 
-        <!-- Lien login -->
-        <HBox alignment="CENTER" spacing="6">
-            <Label text="Déjà inscrit ?"
-                   style="-fx-text-fill: #B39DDB; -fx-font-size: 12px;"/>
-            <Button text="Se connecter" onAction="#handleGoLogin"
-                    style="-fx-background-color: transparent;
-                           -fx-border-color: transparent;
-                           -fx-text-fill: #7E57C2; -fx-font-size: 12px;
-                           -fx-cursor: hand; -fx-underline: true;"/>
-            <Button text="⬅ Retour" onAction="#goBack"/>
-        </HBox>
-    </VBox>
-</VBox>
+                <CheckBox fx:id="agreeTermsCheckBox" text="J'accepte les conditions d'utilisation"
+                          style="-fx-text-fill: rgba(46,42,58,0.82);"/>
+
+                <VBox spacing="8" style="-fx-background-color: rgba(126,87,194,0.08); -fx-padding: 10; -fx-background-radius: 10; -fx-border-color: rgba(94,53,177,0.18); -fx-border-radius: 10;">
+                    <Label text="Vérification reCAPTCHA *" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #5E35B1;"/>
+                    <WebView fx:id="recaptchaWebView" prefHeight="108" minHeight="100" maxHeight="120"/>
+                </VBox>
+
+                <Label fx:id="messageLabel" visible="false" wrapText="true"
+                       style="-fx-font-size: 12px; -fx-padding: 8 10; -fx-background-radius: 8;"/>
+
+                <Button fx:id="registerButton" text="S'inscrire" onAction="#handleRegister"
+                        maxWidth="Infinity"
+                        style="-fx-background-color: #7E57C2; -fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold; -fx-padding: 12; -fx-background-radius: 10; -fx-cursor: hand;"/>
+
+                <HBox alignment="CENTER" spacing="8">
+                    <Label text="Déjà inscrit ?" style="-fx-text-fill: rgba(94,53,177,0.65);"/>
+                    <Hyperlink text="Se connecter" onAction="#handleGoLogin" style="-fx-text-fill: #5E35B1;"/>
+                    <Button text="⬅ Retour" onAction="#goBack"
+                            style="-fx-background-color: transparent; -fx-border-color: rgba(94,53,177,0.35); -fx-text-fill: #5E35B1; -fx-border-radius: 8; -fx-background-radius: 8;"/>
+                </HBox>
+            </VBox>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </children>
+</AnchorPane>

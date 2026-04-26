@@ -6,9 +6,11 @@ import tn.esprit.entities.User.Role;
 import tn.esprit.utils.MyDatabase;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public class UserService {
 
@@ -47,17 +49,29 @@ public class UserService {
             if (!rs.next()) return Optional.empty();
 
             User user = mapRow(rs);
+            enforceLoginAllowed(user);
             String stored = user.getPassword() == null ? "" : user.getPassword().trim();
             String input = password == null ? "" : password.trim();
 
             // Supports migrated bcrypt and legacy plain passwords.
-            boolean valid = isBcryptHash(stored) ? BCrypt.checkpw(input, stored) : stored.equals(input);
+            boolean valid;
+            if (isBcryptHash(stored)) {
+                try {
+                    valid = BCrypt.checkpw(input, stored);
+                } catch (IllegalArgumentException ex) {
+                    // Some rows may contain malformed/partial bcrypt strings; fallback to legacy plain match.
+                    valid = stored.equals(input);
+                }
+            } else {
+                valid = stored.equals(input);
+            }
             if (!valid) return Optional.empty();
 
             // Auto-migrate legacy plain text password after successful login.
             if (!isBcryptHash(stored)) {
                 updatePasswordHash(user.getId(), BCrypt.hashpw(input, BCrypt.gensalt()));
             }
+            markLastLoginNowIfPossible(user.getId());
             return Optional.of(user);
         }
     }
@@ -144,13 +158,64 @@ public class UserService {
     }
 
     private User mapRow(ResultSet rs) throws SQLException {
-        return new User(
+        User u = new User(
                 rs.getInt("id"),
                 rs.getString("nom"),
                 rs.getString("password"),
                 rs.getString("email"),
                 Role.fromString(rs.getString("role"))
         );
+        if (hasColumn(rs, "is_verified")) u.setVerified(rs.getBoolean("is_verified"));
+        if (hasColumn(rs, "is_blocked")) u.setBlocked(rs.getBoolean("is_blocked"));
+        if (hasColumn(rs, "status")) u.setStatus(rs.getString("status"));
+        if (hasColumn(rs, "created_at")) {
+            Timestamp ts = rs.getTimestamp("created_at");
+            if (ts != null) u.setCreatedAt(ts.toLocalDateTime());
+        }
+        if (hasColumn(rs, "last_login_at")) {
+            Timestamp ts = rs.getTimestamp("last_login_at");
+            if (ts != null) u.setLastLoginAt(ts.toLocalDateTime());
+        } else if (hasColumn(rs, "last_login")) {
+            Timestamp ts = rs.getTimestamp("last_login");
+            if (ts != null) u.setLastLoginAt(ts.toLocalDateTime());
+        }
+        return u;
+    }
+
+    public Optional<User> findByEmail(String email) throws SQLException {
+        String sql = "SELECT * FROM utilisateur WHERE LOWER(TRIM(email)) = LOWER(TRIM(?))";
+        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+            ps.setString(1, email);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return Optional.of(mapRow(rs));
+            return Optional.empty();
+        }
+    }
+
+    public User findOrCreateGoogleUser(String email, String displayName) throws SQLException {
+        Optional<User> existing = findByEmail(email);
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+
+        String name = (displayName == null || displayName.isBlank()) ? "Google User" : displayName.trim();
+        String generatedPassword = "google-" + UUID.randomUUID();
+        register(new User(name, generatedPassword, email, Role.ROLE_ETUDIANT));
+        return findByEmail(email).orElseThrow(() ->
+                new SQLException("Creation du compte Google echouee pour " + email));
+    }
+
+    public User findOrCreateGithubUser(String email, String displayName) throws SQLException {
+        Optional<User> existing = findByEmail(email);
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+
+        String name = (displayName == null || displayName.isBlank()) ? "GitHub User" : displayName.trim();
+        String generatedPassword = "github-" + UUID.randomUUID();
+        register(new User(name, generatedPassword, email, Role.ROLE_ETUDIANT));
+        return findByEmail(email).orElseThrow(() ->
+                new SQLException("Creation du compte GitHub echouee pour " + email));
     }
 
     private boolean isBcryptHash(String value) {
@@ -167,4 +232,102 @@ public class UserService {
             ps.executeUpdate();
         }
     }
+<<<<<<< HEAD
 }
+=======
+
+    public void setBlocked(int userId, boolean blocked) throws SQLException {
+        String sql = "UPDATE utilisateur SET is_blocked = ? WHERE id = ?";
+        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+            ps.setBoolean(1, blocked);
+            ps.setInt(2, userId);
+            ps.executeUpdate();
+        }
+        if (blocked) {
+            setStatus(userId, "Blocked");
+        }
+    }
+
+    public void setStatus(int userId, String status) throws SQLException {
+        String sql = "UPDATE utilisateur SET status = ? WHERE id = ?";
+        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setInt(2, userId);
+            ps.executeUpdate();
+        }
+        if ("Blocked".equalsIgnoreCase(status)) {
+            try {
+                String sql2 = "UPDATE utilisateur SET is_blocked = 1 WHERE id = ?";
+                try (PreparedStatement ps2 = cnx.prepareStatement(sql2)) {
+                    ps2.setInt(1, userId);
+                    ps2.executeUpdate();
+                }
+            } catch (SQLException ignored) {}
+        }
+        if ("Active".equalsIgnoreCase(status)) {
+            try {
+                String sql2 = "UPDATE utilisateur SET is_blocked = 0 WHERE id = ?";
+                try (PreparedStatement ps2 = cnx.prepareStatement(sql2)) {
+                    ps2.setInt(1, userId);
+                    ps2.executeUpdate();
+                }
+            } catch (SQLException ignored) {}
+        }
+    }
+
+    private void enforceLoginAllowed(User user) {
+        if (user == null) return;
+        if (user.isBlocked()) {
+            throw new IllegalStateException("Compte bloque par un administrateur.");
+        }
+        String status = user.getStatus() == null ? "" : user.getStatus().trim();
+        if (!status.isBlank()) {
+            String s = status.toLowerCase();
+            if (s.contains("block")) throw new IllegalStateException("Compte bloque.");
+            if (s.contains("archiv")) throw new IllegalStateException("Compte archive.");
+            if (s.contains("deactiv") || s.contains("inactiv")) throw new IllegalStateException("Compte desactive.");
+            if (s.contains("pending")) throw new IllegalStateException("Compte en attente de validation.");
+        }
+    }
+
+    private void markLastLoginNowIfPossible(int userId) {
+        // Optional: only works if column exists.
+        // We try both names commonly used in schemas.
+        try {
+            String sql = "UPDATE utilisateur SET last_login_at = ? WHERE id = ?";
+            try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+                ps.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+                ps.setInt(2, userId);
+                ps.executeUpdate();
+                return;
+            }
+        } catch (SQLException ignored) {
+        }
+        try {
+            String sql = "UPDATE utilisateur SET last_login = ? WHERE id = ?";
+            try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+                ps.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
+                ps.setInt(2, userId);
+                ps.executeUpdate();
+            }
+        } catch (SQLException ignored) {
+        }
+    }
+
+    private static boolean hasColumn(ResultSet rs, String name) {
+        if (rs == null || name == null || name.isBlank()) return false;
+        try {
+            ResultSetMetaData md = rs.getMetaData();
+            int n = md.getColumnCount();
+            for (int i = 1; i <= n; i++) {
+                String label = md.getColumnLabel(i);
+                if (label != null && label.equalsIgnoreCase(name)) return true;
+                String col = md.getColumnName(i);
+                if (col != null && col.equalsIgnoreCase(name)) return true;
+            }
+        } catch (SQLException ignored) {
+        }
+        return false;
+    }
+}
+>>>>>>> 2056add8ce795e92793f186235ce44a76dad93a5

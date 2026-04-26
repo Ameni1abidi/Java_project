@@ -26,6 +26,7 @@ public class CreateEvaluationController {
 
     private final EvaluationService service = new EvaluationService();
     private Evaluation evaluationToEdit;
+    @FXML private Button btnSave;
 
     @FXML
     public void initialize() {
@@ -34,29 +35,21 @@ public class CreateEvaluationController {
         ExamenService examenService = new ExamenService();
 
         try {
-            // 🔥 USERS (tu peux filtrer si besoin)
-            UserService UserService = new UserService();
+            cbUser.setItems(FXCollections.observableArrayList(
+                    userService.getAllUsers().stream()
+                            .filter(u -> u.getRole() == User.Role.ROLE_ETUDIANT)
+                            .toList()
+            ));
 
-            try {
-                cbUser.setItems(FXCollections.observableArrayList(
-                        userService.getAllUsers().stream()
-                                .filter(u -> u.getRole() == User.Role.ROLE_ETUDIANT)
-                                .toList()
-                ));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            cbExamen.setItems(FXCollections.observableArrayList(
+                    examenService.getAll()
+            ));
 
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        // 🔥 EXAMENS
-        cbExamen.setItems(FXCollections.observableArrayList(
-                examenService.getAll()
-        ));
-
-        // ================= AFFICHAGE USER =================
+        // USER DISPLAY
         cbUser.setCellFactory(param -> new ListCell<>() {
             @Override
             protected void updateItem(User u, boolean empty) {
@@ -73,7 +66,7 @@ public class CreateEvaluationController {
             }
         });
 
-        // ================= AFFICHAGE EXAMEN =================
+        // EXAMEN DISPLAY
         cbExamen.setCellFactory(param -> new ListCell<>() {
             @Override
             protected void updateItem(Examen ex, boolean empty) {
@@ -89,6 +82,14 @@ public class CreateEvaluationController {
                 setText(empty || ex == null ? null : ex.getTitre());
             }
         });
+
+        // DISABLE BUTTON (PRO UX)
+        btnSave.disableProperty().bind(
+                txtNote.textProperty().isEmpty()
+                        .or(txtAppreciation.textProperty().isEmpty())
+                        .or(cbUser.valueProperty().isNull())
+                        .or(cbExamen.valueProperty().isNull())
+        );
     }
 
     // ================= EDIT =================
@@ -117,8 +118,9 @@ public class CreateEvaluationController {
     @FXML
     private void handleSave() {
         try {
-            if (cbUser.getValue() == null || cbExamen.getValue() == null) {
-                showAlert("Erreur", "Choisir utilisateur et examen !");
+
+            // 🔴 VALIDATION OBLIGATOIRE
+            if (!validateForm()) {
                 return;
             }
 
@@ -126,10 +128,11 @@ public class CreateEvaluationController {
                     ? evaluationToEdit
                     : new Evaluation();
 
-            evaluation.setNote(Double.parseDouble(txtNote.getText()));
-            evaluation.setAppreciation(txtAppreciation.getText());
+            double note = Double.parseDouble(txtNote.getText());
 
-            // 🔥 IMPORTANT
+            evaluation.setNote(note);
+            evaluation.setAppreciation(txtAppreciation.getText().trim());
+
             evaluation.setEleveId(cbUser.getValue().getId());
             evaluation.setExamenId(cbExamen.getValue().getId());
 
@@ -145,8 +148,9 @@ public class CreateEvaluationController {
 
         } catch (Exception ex) {
             ex.printStackTrace();
-            showAlert("Erreur", "Vérifie les champs !");
+            showAlert("Erreur", "Erreur inattendue !");
         }
+
     }
 
     // ================= NAV =================
@@ -207,5 +211,62 @@ public class CreateEvaluationController {
         alert.setHeaderText(null);
         alert.setContentText("La page resultats sera bientot disponible.");
         alert.showAndWait();
+    }
+
+    private boolean validateForm() {
+
+        StringBuilder errors = new StringBuilder();
+
+        // NOTE
+        String noteStr = txtNote.getText();
+
+        if (noteStr == null || noteStr.trim().isEmpty()) {
+            errors.append("- La note est obligatoire\n");
+        } else {
+            try {
+                double note = Double.parseDouble(noteStr);
+
+                if (note < 0 || note > 20) {
+                    errors.append("- La note doit être entre 0 et 20\n");
+                }
+
+            } catch (NumberFormatException e) {
+                errors.append("- La note doit être un nombre valide\n");
+            }
+        }
+
+        // APPRECIATION
+        if (txtAppreciation.getText() == null || txtAppreciation.getText().trim().isEmpty()) {
+            errors.append("- L'appréciation est obligatoire\n");
+        }
+
+        // USER
+        if (cbUser.getValue() == null) {
+            errors.append("- Veuillez sélectionner un étudiant\n");
+        }
+
+        // EXAMEN
+        if (cbExamen.getValue() == null) {
+            errors.append("- Veuillez sélectionner un examen\n");
+        }
+
+        // SHOW ERROR
+        if (errors.length() > 0) {
+
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Erreur de validation");
+            alert.setHeaderText("Veuillez corriger les champs");
+
+            TextArea area = new TextArea(errors.toString());
+            area.setEditable(false);
+            area.setWrapText(true);
+
+            alert.getDialogPane().setContent(area);
+
+            alert.showAndWait();
+            return false;
+        }
+
+        return true;
     }
 }

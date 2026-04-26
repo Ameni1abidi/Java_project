@@ -8,7 +8,11 @@ import tn.esprit.entities.Cours;
 import tn.esprit.services.CoursService;
 
 import javafx.event.ActionEvent;
+import tn.esprit.services.EmailService;
+import tn.esprit.utils.FlashSession;
+
 import java.sql.Date;
+import java.util.List;
 
 public class CoursForm {
 
@@ -90,17 +94,19 @@ public class CoursForm {
 
         if (!valid) return;
 
+        Cours savedCours;
+
         if (currentCours == null) {
 
-            Cours c = new Cours();
+            savedCours = new Cours();
 
-            c.setTitre(titre);
-            c.setDescription(description);
-            c.setNiveau(niveau);
-            c.setBadge(badge);
-            c.setDateCreation(Date.valueOf(date));
+            savedCours.setTitre(titre);
+            savedCours.setDescription(description);
+            savedCours.setNiveau(niveau);
+            savedCours.setBadge(badge);
+            savedCours.setDateCreation(Date.valueOf(date));
 
-            service.ajouter(c);
+            service.ajouter(savedCours);
 
         } else {
 
@@ -111,7 +117,28 @@ public class CoursForm {
             currentCours.setDateCreation(Date.valueOf(date));
 
             service.modifier(currentCours);
+
+            savedCours = currentCours;
         }
+        // 📩 EMAIL REAL (MailHog)
+        EmailService emailService = new EmailService();
+
+        List<String> students = List.of(
+                "student1@test.com",
+                "student2@test.com"
+        );
+
+        int sent = emailService.sendToStudents(
+                students,
+                "📚 Nouveau cours",
+                "Un cours a été ajouté/modifié: " + savedCours.getTitre()
+        );
+
+        // 🔔 FLASH MESSAGE (IMPORTANT)
+        FlashSession.setFlash(
+                "📩 Cours enregistré avec succès. " + sent + " email(s) envoyé(s).",
+                "success"
+        );
 
         goToList();
     }

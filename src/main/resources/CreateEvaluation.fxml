@@ -47,7 +47,7 @@
             </VBox>
 
             <!-- BUTTON -->
-            <Button text="Enregistrer"
+            <Button fx:id="btnSave" text="Enregistrer"
                     onAction="#handleSave"
                     style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-background-radius: 8;"/>
 

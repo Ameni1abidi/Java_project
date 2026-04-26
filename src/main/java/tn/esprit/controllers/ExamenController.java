@@ -346,4 +346,63 @@ public class ExamenController {
             filtrerParTitre(titre);
         }
     }
+
+    private boolean validateForm(String titre, String type, String dureeStr, LocalDate date) {
+
+        StringBuilder errors = new StringBuilder();
+
+        // TITRE
+        if (titre == null || titre.trim().isEmpty()) {
+            errors.append("- Le titre est obligatoire\n");
+        } else if (titre.length() < 3) {
+            errors.append("- Le titre doit contenir au moins 3 caractères\n");
+        }
+
+        // TYPE
+        if (type == null || type.trim().isEmpty()) {
+            errors.append("- Le type est obligatoire\n");
+        }
+
+        // DATE
+        if (date == null) {
+            errors.append("- La date est obligatoire\n");
+        } else if (date.isBefore(LocalDate.now())) {
+            errors.append("- La date ne peut pas être dans le passé\n");
+        }
+
+        // DUREE
+        if (dureeStr == null || dureeStr.trim().isEmpty()) {
+            errors.append("- La durée est obligatoire\n");
+        } else {
+            try {
+                int duree = Integer.parseInt(dureeStr);
+
+                if (duree <= 0) {
+                    errors.append("- La durée doit être positive\n");
+                }
+
+            } catch (NumberFormatException e) {
+                errors.append("- La durée doit être un nombre entier\n");
+            }
+        }
+
+        // AFFICHAGE ERREURS
+        if (errors.length() > 0) {
+
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Erreur de validation");
+            alert.setHeaderText("Veuillez corriger les erreurs :");
+
+            TextArea area = new TextArea(errors.toString());
+            area.setEditable(false);
+            area.setWrapText(true);
+
+            alert.getDialogPane().setContent(area);
+            alert.showAndWait();
+
+            return false;
+        }
+
+        return true;
+    }
 }
