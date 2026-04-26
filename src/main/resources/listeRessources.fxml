@@ -79,6 +79,7 @@
                     <TableColumn fx:id="dateColumn" prefWidth="130.0" text="Disponible le" />
                     <TableColumn fx:id="statusColumn" prefWidth="130.0" text="Statut" />
                     <TableColumn fx:id="contenuColumn" prefWidth="240.0" text="Contenu" />
+                    <TableColumn fx:id="actionsColumn" prefWidth="160.0" text="Actions" />
                 </columns>
             </TableView>
         </VBox>

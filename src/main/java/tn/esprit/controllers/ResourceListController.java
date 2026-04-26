@@ -8,14 +8,17 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import tn.esprit.entities.User;
 import tn.esprit.entities.categorie;
@@ -46,6 +49,8 @@ public class ResourceListController {
     private TableColumn<resources, String> statusColumn;
     @FXML
     private TableColumn<resources, String> contenuColumn;
+    @FXML
+    private TableColumn<resources, Void> actionsColumn;
     @FXML
     private TextField searchField;
     @FXML
@@ -87,6 +92,9 @@ public class ResourceListController {
         if (createButton != null) {
             createButton.setVisible(false);
             createButton.setManaged(false);
+        }
+        if (actionsColumn != null) {
+            actionsColumn.setVisible(false);
         }
         String titreChapitre = ResourceNavigationContext.getChapitreTitre();
         if (pageTitleLabel != null && titreChapitre != null && !titreChapitre.isBlank()) {
@@ -143,6 +151,36 @@ public class ResourceListController {
 
         contenuColumn.setCellValueFactory(cellData ->
                 new SimpleStringProperty(formatContenu(cellData.getValue().getContenu())));
+
+        actionsColumn.setCellFactory(col -> new TableCell<>() {
+            private final Button editBtn = new Button("Modifier");
+            private final Button deleteBtn = new Button("Supprimer");
+            private final HBox pane = new HBox(8, editBtn, deleteBtn);
+
+            {
+                editBtn.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 12;");
+                deleteBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 12;");
+                pane.setAlignment(Pos.CENTER);
+                editBtn.setOnAction(event -> {
+                    resources res = getTableView().getItems().get(getIndex());
+                    if (res != null) {
+                        openResourceForm(res);
+                    }
+                });
+                deleteBtn.setOnAction(event -> {
+                    resources res = getTableView().getItems().get(getIndex());
+                    if (res != null) {
+                        handleDelete(res);
+                    }
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : pane);
+            }
+        });
     }
 
     private String toDisplayType(String type) {
@@ -246,6 +284,32 @@ public class ResourceListController {
     @FXML
     private void goLogout(ActionEvent event) {
         loadPage(event, "/Login.fxml");
+    }
+
+    private void handleDelete(resources resource) {
+        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmation.setTitle("Confirmation");
+        confirmation.setHeaderText("Supprimer la ressource");
+        confirmation.setContentText("Etes-vous sur de vouloir supprimer la ressource \"" + resource.getTitre() + "\" ?");
+
+        if (confirmation.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+            try {
+                resourceService.delete(resource.getId());
+                loadResources();
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Succes");
+                alert.setHeaderText(null);
+                alert.setContentText("Ressource supprimee avec succes !");
+                alert.showAndWait();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Erreur");
+                alert.setHeaderText("Impossible de supprimer la ressource");
+                alert.setContentText(e.getMessage());
+                alert.showAndWait();
+            }
+        }
     }
 
     private void openResourceForm(resources resource) {
