@@ -88,6 +88,19 @@ public class UserService {
         }
     }
 
+    public Optional<User> getFirstByRole(Role role) throws SQLException {
+        String sql = "SELECT * FROM utilisateur WHERE role = ? ORDER BY id ASC LIMIT 1";
+        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+            ps.setString(1, role.name());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return Optional.of(mapRow(rs));
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     //  UPDATE
     // ─────────────────────────────────────────────────────────────────────────

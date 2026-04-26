@@ -171,5 +171,58 @@ public class ChapitreService {
 
         return list;
     }
+
+    public List<Chapitre> getAllChapitres() {
+        List<Chapitre> list = new ArrayList<>();
+
+        String sql = "SELECT * FROM chapitre ORDER BY cours_id, ordre, id";
+
+        try (PreparedStatement ps = cnx.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                Chapitre ch = new Chapitre();
+                ch.setId(rs.getInt("id"));
+                ch.setTitre(rs.getString("titre"));
+                ch.setOrdre(rs.getInt("ordre"));
+                ch.setTypeContenu(rs.getString("type_contenu"));
+                ch.setContenuTexte(rs.getString("contenu_texte"));
+                ch.setContenuFichier(rs.getString("contenu_fichier"));
+                ch.setDureeEstimee(rs.getInt("duree_estimee"));
+                ch.setCoursId(rs.getInt("cours_id"));
+                ch.setResume(rs.getString("resume"));
+                list.add(ch);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public Chapitre getById(int chapitreId) {
+        String sql = "SELECT * FROM chapitre WHERE id = ?";
+        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+            ps.setInt(1, chapitreId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Chapitre ch = new Chapitre();
+                    ch.setId(rs.getInt("id"));
+                    ch.setTitre(rs.getString("titre"));
+                    ch.setOrdre(rs.getInt("ordre"));
+                    ch.setTypeContenu(rs.getString("type_contenu"));
+                    ch.setContenuTexte(rs.getString("contenu_texte"));
+                    ch.setContenuFichier(rs.getString("contenu_fichier"));
+                    ch.setDureeEstimee(rs.getInt("duree_estimee"));
+                    ch.setCoursId(rs.getInt("cours_id"));
+                    ch.setResume(rs.getString("resume"));
+                    return ch;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }
 

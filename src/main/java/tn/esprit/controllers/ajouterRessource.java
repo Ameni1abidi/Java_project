@@ -18,8 +18,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
+import tn.esprit.entities.Chapitre;
 import tn.esprit.entities.categorie;
 import tn.esprit.entities.resources;
+import tn.esprit.services.ChapitreService;
 import tn.esprit.services.CategoryService;
 import tn.esprit.services.CloudinaryStorageService;
 import tn.esprit.services.ResourceService;
@@ -43,6 +46,9 @@ public class ajouterRessource {
 
     @FXML
     private ComboBox<categorie> categorieCombo;
+
+    @FXML
+    private ComboBox<Chapitre> chapitreCombo;
 
     @FXML
     private HBox fileChooserContainer;
@@ -70,6 +76,7 @@ public class ajouterRessource {
 
     private final ResourceService resourceService = new ResourceService();
     private final CategoryService categoryService = new CategoryService();
+    private final ChapitreService chapitreService = new ChapitreService();
     private final CloudinaryStorageService cloudinaryStorageService = new CloudinaryStorageService();
     private resources currentResource;
     private String selectedFilePath = "";
@@ -77,6 +84,7 @@ public class ajouterRessource {
     @FXML
     public void initialize() {
         loadCategories();
+        loadChapitres();
         categorieCombo.valueProperty().addListener((obs, oldCat, newCat) -> handleCategoryChange(newCat));
 
         fileChooserContainer.setVisible(false);
@@ -161,6 +169,30 @@ public class ajouterRessource {
         }
     }
 
+    private void loadChapitres() {
+        try {
+            List<Chapitre> chapitres = chapitreService.getAllChapitres();
+            chapitreCombo.setItems(javafx.collections.FXCollections.observableArrayList(chapitres));
+            chapitreCombo.setConverter(new StringConverter<>() {
+                @Override
+                public String toString(Chapitre chapitre) {
+                    if (chapitre == null) {
+                        return "";
+                    }
+                    return "Cours " + chapitre.getCoursId() + " - " + chapitre.getOrdre() + ". " + chapitre.getTitre();
+                }
+
+                @Override
+                public Chapitre fromString(String string) {
+                    return null;
+                }
+            });
+        } catch (Exception e) {
+            errorLabel.setText("Erreur lors du chargement des chapitres.");
+            e.printStackTrace();
+        }
+    }
+
     public void setResource(resources resource) {
         this.currentResource = resource;
         if (resource != null) {
@@ -182,6 +214,13 @@ public class ajouterRessource {
                     break;
                 }
             }
+
+            for (Chapitre ch : chapitreCombo.getItems()) {
+                if (ch.getId() == resource.getChapitreId()) {
+                    chapitreCombo.setValue(ch);
+                    break;
+                }
+            }
             handleCategoryChange(categorieCombo.getValue());
 
             enregistrerButton.setText("Modifier");
@@ -195,6 +234,7 @@ public class ajouterRessource {
 
         String titre = titreField.getText().trim();
         categorie categorie = categorieCombo.getValue();
+        Chapitre chapitre = chapitreCombo.getValue();
         LocalDate date = datePicker.getValue();
 
         if (titre.isEmpty()) {
@@ -203,6 +243,10 @@ public class ajouterRessource {
         }
         if (categorie == null) {
             errorLabel.setText("Veuillez selectionner une categorie.");
+            return;
+        }
+        if (chapitre == null) {
+            errorLabel.setText("Veuillez selectionner un chapitre.");
             return;
         }
 
@@ -244,7 +288,7 @@ public class ajouterRessource {
 
         try {
             if (currentResource == null) {
-                resources newResource = new resources(titre, contenu, categorie.getNom(), type, disponibleLe);
+                resources newResource = new resources(titre, contenu, categorie.getNom(), type, disponibleLe, chapitre.getId());
                 resourceService.add(newResource);
                 showAlert("Succes", "Ressource creee avec succes !");
             } else {
@@ -253,6 +297,7 @@ public class ajouterRessource {
                 currentResource.setCategorieNom(categorie.getNom());
                 currentResource.setType(type);
                 currentResource.setDisponibleLe(disponibleLe);
+                currentResource.setChapitreId(chapitre.getId());
                 resourceService.update(currentResource);
                 showAlert("Succes", "Ressource modifiee avec succes !");
             }

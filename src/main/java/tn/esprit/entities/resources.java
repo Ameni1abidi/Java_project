@@ -7,6 +7,8 @@ public class resources {
     private String categorieNom;
     private String type;
     private String disponibleLe;
+    private int chapitreId;
+    private boolean favori;
 
     public resources() {
     }
@@ -17,6 +19,7 @@ public class resources {
         this.categorieNom = categorieNom;
         this.type = type;
         this.disponibleLe = disponibleLe;
+        this.chapitreId = 0;
     }
 
     public resources(int id, String titre, String contenu, String categorieNom, String type, String disponibleLe) {
@@ -26,6 +29,26 @@ public class resources {
         this.categorieNom = categorieNom;
         this.type = type;
         this.disponibleLe = disponibleLe;
+        this.chapitreId = 0;
+    }
+
+    public resources(String titre, String contenu, String categorieNom, String type, String disponibleLe, int chapitreId) {
+        this.titre = titre;
+        this.contenu = contenu;
+        this.categorieNom = categorieNom;
+        this.type = type;
+        this.disponibleLe = disponibleLe;
+        this.chapitreId = chapitreId;
+    }
+
+    public resources(int id, String titre, String contenu, String categorieNom, String type, String disponibleLe, int chapitreId) {
+        this.id = id;
+        this.titre = titre;
+        this.contenu = contenu;
+        this.categorieNom = categorieNom;
+        this.type = type;
+        this.disponibleLe = disponibleLe;
+        this.chapitreId = chapitreId;
     }
 
     public resources(String ressourceTest, String contenuTest, int id) {
@@ -79,9 +102,25 @@ public class resources {
         this.disponibleLe = disponibleLe;
     }
 
+    public int getChapitreId() {
+        return chapitreId;
+    }
+
+    public void setChapitreId(int chapitreId) {
+        this.chapitreId = chapitreId;
+    }
+
+    public boolean isFavori() {
+        return favori;
+    }
+
+    public void setFavori(boolean favori) {
+        this.favori = favori;
+    }
+
     @Override
     public String toString() {
-        return "resources{id=" + id + ", titre='" + titre + "', contenu='" + contenu + "', type='" + type + "', categorieNom='" + categorieNom + "', disponibleLe='" + disponibleLe + "'}";
+        return "resources{id=" + id + ", titre='" + titre + "', contenu='" + contenu + "', type='" + type + "', categorieNom='" + categorieNom + "', disponibleLe='" + disponibleLe + "', chapitreId=" + chapitreId + ", favori=" + favori + "}";
     }
 }
 

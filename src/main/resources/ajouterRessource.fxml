@@ -81,6 +81,11 @@
                 <ComboBox fx:id="categorieCombo" prefHeight="40.0" promptText="Selectionnez une categorie" />
             </VBox>
 
+            <VBox spacing="5.0">
+                <Label text="CHAPITRE" style="-fx-text-fill: #666666; -fx-font-size: 12;" />
+                <ComboBox fx:id="chapitreCombo" prefHeight="40.0" promptText="Selectionnez un chapitre" />
+            </VBox>
+
             <HBox fx:id="fileChooserContainer" spacing="10.0" visible="false" managed="false" alignment="CENTER_LEFT">
                 <Button fx:id="browseButton" mnemonicParsing="false" onAction="#browseFile" prefHeight="40.0" prefWidth="160.0"
                         style="-fx-background-color: #1abc9c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6;" text="Choisir fichier" />
