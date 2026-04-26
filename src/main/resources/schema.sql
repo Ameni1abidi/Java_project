@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS ressource (
     type VARCHAR(50),
     disponible_le VARCHAR(100),
     chapitre_id INT NULL,
+    is_sensitive TINYINT(1) NOT NULL DEFAULT 0,
     CONSTRAINT fk_ressource_categorie
         FOREIGN KEY (categorie_nom) REFERENCES categorie(nom)
         ON DELETE RESTRICT

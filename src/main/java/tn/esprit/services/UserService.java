@@ -232,9 +232,6 @@ public class UserService {
             ps.executeUpdate();
         }
     }
-<<<<<<< HEAD
-}
-=======
 
     public void setBlocked(int userId, boolean blocked) throws SQLException {
         String sql = "UPDATE utilisateur SET is_blocked = ? WHERE id = ?";
@@ -330,4 +327,3 @@ public class UserService {
         return false;
     }
 }
->>>>>>> 2056add8ce795e92793f186235ce44a76dad93a5

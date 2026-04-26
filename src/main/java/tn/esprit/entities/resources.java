@@ -9,6 +9,7 @@ public class resources {
     private String disponibleLe;
     private int chapitreId;
     private boolean favori;
+    private boolean sensitive;
 
     public resources() {
     }
@@ -20,6 +21,7 @@ public class resources {
         this.type = type;
         this.disponibleLe = disponibleLe;
         this.chapitreId = 0;
+        this.sensitive = false;
     }
 
     public resources(int id, String titre, String contenu, String categorieNom, String type, String disponibleLe) {
@@ -30,6 +32,7 @@ public class resources {
         this.type = type;
         this.disponibleLe = disponibleLe;
         this.chapitreId = 0;
+        this.sensitive = false;
     }
 
     public resources(String titre, String contenu, String categorieNom, String type, String disponibleLe, int chapitreId) {
@@ -39,6 +42,7 @@ public class resources {
         this.type = type;
         this.disponibleLe = disponibleLe;
         this.chapitreId = chapitreId;
+        this.sensitive = false;
     }
 
     public resources(int id, String titre, String contenu, String categorieNom, String type, String disponibleLe, int chapitreId) {
@@ -49,6 +53,18 @@ public class resources {
         this.type = type;
         this.disponibleLe = disponibleLe;
         this.chapitreId = chapitreId;
+        this.sensitive = false;
+    }
+
+    public resources(int id, String titre, String contenu, String categorieNom, String type, String disponibleLe, int chapitreId, boolean sensitive) {
+        this.id = id;
+        this.titre = titre;
+        this.contenu = contenu;
+        this.categorieNom = categorieNom;
+        this.type = type;
+        this.disponibleLe = disponibleLe;
+        this.chapitreId = chapitreId;
+        this.sensitive = sensitive;
     }
 
     public resources(String ressourceTest, String contenuTest, int id) {
@@ -118,9 +134,17 @@ public class resources {
         this.favori = favori;
     }
 
+    public boolean isSensitive() {
+        return sensitive;
+    }
+
+    public void setSensitive(boolean sensitive) {
+        this.sensitive = sensitive;
+    }
+
     @Override
     public String toString() {
-        return "resources{id=" + id + ", titre='" + titre + "', contenu='" + contenu + "', type='" + type + "', categorieNom='" + categorieNom + "', disponibleLe='" + disponibleLe + "', chapitreId=" + chapitreId + ", favori=" + favori + "}";
+        return "resources{id=" + id + ", titre='" + titre + "', contenu='" + contenu + "', type='" + type + "', categorieNom='" + categorieNom + "', disponibleLe='" + disponibleLe + "', chapitreId=" + chapitreId + ", favori=" + favori + ", sensitive=" + sensitive + "}";
     }
 }
 

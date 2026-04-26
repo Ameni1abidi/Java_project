@@ -11,7 +11,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ResourceService {
     private final Connection connection = MyDatabase.getInstance().getConnection();
@@ -59,6 +61,13 @@ public class ResourceService {
             if (!hasColumn("chapitre_id")) {
                 try {
                     executeUpdate("ALTER TABLE ressource ADD COLUMN chapitre_id INT NULL");
+                } catch (SQLException ignored) {
+                }
+            }
+
+            if (!hasColumn("is_sensitive")) {
+                try {
+                    executeUpdate("ALTER TABLE ressource ADD COLUMN is_sensitive TINYINT(1) NOT NULL DEFAULT 0");
                 } catch (SQLException ignored) {
                 }
             }
@@ -125,7 +134,7 @@ public class ResourceService {
     }
 
     public void add(resources r) {
-        String sql = "INSERT INTO ressource(titre, contenu, categorie_nom, type, disponible_le, chapitre_id) VALUES(?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO ressource(titre, contenu, categorie_nom, type, disponible_le, chapitre_id, is_sensitive) VALUES(?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, r.getTitre());
@@ -138,6 +147,7 @@ public class ResourceService {
             } else {
                 ps.setNull(6, java.sql.Types.INTEGER);
             }
+            ps.setBoolean(7, r.isSensitive());
             ps.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -145,7 +155,7 @@ public class ResourceService {
     }
 
     public List<resources> getAll() {
-        String sql = "SELECT id, titre, contenu, categorie_nom, type, disponible_le, chapitre_id FROM ressource";
+        String sql = "SELECT id, titre, contenu, categorie_nom, type, disponible_le, chapitre_id, is_sensitive FROM ressource";
 
         List<resources> list = new ArrayList<>();
 
@@ -163,7 +173,7 @@ public class ResourceService {
     }
 
     public resources getById(int id) {
-        String sql = "SELECT id, titre, contenu, categorie_nom, type, disponible_le, chapitre_id FROM ressource WHERE id = ?";
+        String sql = "SELECT id, titre, contenu, categorie_nom, type, disponible_le, chapitre_id, is_sensitive FROM ressource WHERE id = ?";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, id);
@@ -180,7 +190,7 @@ public class ResourceService {
     }
 
     public boolean update(resources r) {
-        String sql = "UPDATE ressource SET titre=?, contenu=?, categorie_nom=?, type=?, disponible_le=?, chapitre_id=? WHERE id=?";
+        String sql = "UPDATE ressource SET titre=?, contenu=?, categorie_nom=?, type=?, disponible_le=?, chapitre_id=?, is_sensitive=? WHERE id=?";
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, r.getTitre());
@@ -193,7 +203,8 @@ public class ResourceService {
             } else {
                 ps.setNull(6, java.sql.Types.INTEGER);
             }
-            ps.setInt(7, r.getId());
+            ps.setBoolean(7, r.isSensitive());
+            ps.setInt(8, r.getId());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -212,7 +223,7 @@ public class ResourceService {
     }
 
     public List<resources> getByCategoryNom(String categorieNom) {
-        String sql = "SELECT id, titre, contenu, categorie_nom, type, disponible_le, chapitre_id FROM ressource WHERE categorie_nom = ?";
+        String sql = "SELECT id, titre, contenu, categorie_nom, type, disponible_le, chapitre_id, is_sensitive FROM ressource WHERE categorie_nom = ?";
         List<resources> resourceList = new ArrayList<>();
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -231,7 +242,7 @@ public class ResourceService {
     }
 
     public List<resources> getByChapitreId(int chapitreId) {
-        String sql = "SELECT id, titre, contenu, categorie_nom, type, disponible_le, chapitre_id FROM ressource WHERE chapitre_id = ? ORDER BY id DESC";
+        String sql = "SELECT id, titre, contenu, categorie_nom, type, disponible_le, chapitre_id, is_sensitive FROM ressource WHERE chapitre_id = ? ORDER BY id DESC";
         List<resources> resourceList = new ArrayList<>();
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -249,7 +260,7 @@ public class ResourceService {
     }
 
     public List<resources> search(String keyword) {
-        String sql = "SELECT id, titre, contenu, categorie_nom, type, disponible_le, chapitre_id FROM ressource WHERE titre LIKE ? OR contenu LIKE ?";
+        String sql = "SELECT id, titre, contenu, categorie_nom, type, disponible_le, chapitre_id, is_sensitive FROM ressource WHERE titre LIKE ? OR contenu LIKE ?";
 
         List<resources> list = new ArrayList<>();
 
@@ -316,6 +327,19 @@ public class ResourceService {
         }
     }
 
+    public Map<Integer, String> getChapitreTitles() {
+        Map<Integer, String> chapitreTitles = new HashMap<>();
+        String sql = "SELECT id, titre FROM chapitre";
+        try (PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                chapitreTitles.put(rs.getInt("id"), rs.getString("titre"));
+            }
+        } catch (SQLException ignored) {
+        }
+        return chapitreTitles;
+    }
+
     private void ensureFavoriteTableSafe() {
         try {
             executeUpdate("CREATE TABLE IF NOT EXISTS ressource_favori (" +
@@ -331,15 +355,15 @@ public class ResourceService {
     }
 
     private resources mapRow(ResultSet rs) throws SQLException {
-        resources resource = new resources(
+        return new resources(
                 rs.getInt("id"),
                 rs.getString("titre"),
                 rs.getString("contenu"),
                 rs.getString("categorie_nom"),
                 rs.getString("type"),
                 rs.getString("disponible_le"),
-                rs.getInt("chapitre_id")
+                rs.getInt("chapitre_id"),
+                rs.getBoolean("is_sensitive")
         );
-        return resource;
     }
 }

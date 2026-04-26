@@ -23,7 +23,9 @@ import tn.esprit.entities.resources;
 import tn.esprit.services.ChapitreService;
 import tn.esprit.services.CoursService;
 import tn.esprit.services.ResourceService;
+import tn.esprit.services.SensitiveResourceAccessService;
 import tn.esprit.services.UserService;
+import tn.esprit.services.YouTubeLinkService;
 import tn.esprit.utils.ResourceNavigationContext;
 import tn.esprit.utils.UserSession;
 
@@ -68,12 +70,15 @@ public class StudentChapterResourcesController {
     private ChapitreService chapitreService;
     private CoursService coursService;
     private UserService userService;
+    private SensitiveResourceAccessService sensitiveAccessService;
+    private YouTubeLinkService youTubeLinkService;
 
     private int chapitreId = -1;
     private int currentUserId = -1;
     private boolean favoritesOnly = false;
     private int favoriteCount = 0;
     private boolean darkMode = false;
+    private User currentUser;
 
     @FXML
     public void initialize() {
@@ -81,6 +86,8 @@ public class StudentChapterResourcesController {
         chapitreService = new ChapitreService();
         coursService = new CoursService();
         userService = new UserService();
+        sensitiveAccessService = new SensitiveResourceAccessService();
+        youTubeLinkService = new YouTubeLinkService();
 
         setupStudentIdentity();
         loadContext();
@@ -99,6 +106,7 @@ public class StudentChapterResourcesController {
             return;
         }
 
+        currentUser = user;
         currentUserId = user.getId();
         String nom = user.getNom() == null || user.getNom().isBlank() ? "Etudiant" : user.getNom();
         studentNameLabel.setText(nom);
@@ -215,6 +223,11 @@ public class StudentChapterResourcesController {
                 ? "-fx-background-color:#dcfce7; -fx-text-fill:#166534; -fx-padding:4 10; -fx-background-radius:10;"
                 : "-fx-background-color:#fef3c7; -fx-text-fill:#92400e; -fx-padding:4 10; -fx-background-radius:10;");
         chips.getChildren().add(dispoChip);
+        if (resource.isSensitive()) {
+            Label sensitiveChip = new Label("Sensible");
+            sensitiveChip.setStyle("-fx-background-color:#fee2e2; -fx-text-fill:#991b1b; -fx-padding:4 10; -fx-background-radius:10; -fx-font-weight:bold;");
+            chips.getChildren().add(sensitiveChip);
+        }
 
         if (!disponible) {
             VBox warningBox = new VBox();
@@ -230,7 +243,7 @@ public class StudentChapterResourcesController {
             return card;
         }
 
-        if ("image".equalsIgnoreCase(resource.getType())) {
+        if ("image".equalsIgnoreCase(resource.getType()) && !resource.isSensitive()) {
             ImageView imageView = new ImageView();
             imageView.setFitHeight(170);
             imageView.setFitWidth(334);
@@ -246,11 +259,16 @@ public class StudentChapterResourcesController {
                 fallback.setStyle(darkMode ? "-fx-text-fill:#cbd5e1;" : "-fx-text-fill:#667085;");
                 card.getChildren().addAll(topRow, chips, fallback, buildActionButtons(resource, true));
             }
+        } else if ("image".equalsIgnoreCase(resource.getType()) && resource.isSensitive()) {
+            Label masked = new Label("Apercu masque (ressource sensible)");
+            masked.setWrapText(true);
+            masked.setStyle(darkMode ? "-fx-text-fill:#fca5a5; -fx-font-weight:bold;" : "-fx-text-fill:#b91c1c; -fx-font-weight:bold;");
+            card.getChildren().addAll(topRow, chips, masked, buildActionButtons(resource, true));
         } else if ("lien".equalsIgnoreCase(resource.getType())) {
             Button openLink = new Button("Ouvrir le lien");
             openLink.setStyle("-fx-background-color:#bbf7d0; -fx-text-fill:#166534; -fx-font-size:14; -fx-font-weight:bold; -fx-background-radius:10;");
             openLink.setOnAction(e -> openResource(resource));
-            Label urlLabel = new Label(safe(resource.getContenu()));
+            Label urlLabel = new Label(resource.isSensitive() ? "Lien protege" : safe(resource.getContenu()));
             urlLabel.setWrapText(true);
             urlLabel.setStyle(darkMode ? "-fx-text-fill:#cbd5e1;" : "-fx-text-fill:#667085;");
             card.getChildren().addAll(topRow, chips, openLink, urlLabel, buildActionButtons(resource, true));
@@ -387,6 +405,23 @@ public class StudentChapterResourcesController {
     }
 
     private void openResource(resources resource) {
+        if (resource == null) {
+            showError("Ressource invalide.");
+            return;
+        }
+        if (!sensitiveAccessService.canAccess(currentUser, resource)) {
+            sensitiveAccessService.logAccess(currentUser, resource, false, "ACCESS_DENIED");
+            showError("Acces refuse a cette ressource sensible.");
+            return;
+        }
+
+        String accessToken = sensitiveAccessService.issueToken(resource, currentUser);
+        if (resource.isSensitive() && !sensitiveAccessService.validateToken(resource, currentUser, accessToken)) {
+            sensitiveAccessService.logAccess(currentUser, resource, false, "TOKEN_INVALID");
+            showError("Jeton d'acces securise invalide.");
+            return;
+        }
+
         String contenu = resource.getContenu();
         if (contenu == null || contenu.isBlank()) {
             showError("Ressource invalide.");
@@ -395,9 +430,13 @@ public class StudentChapterResourcesController {
 
         try {
             if (contenu.startsWith("http://") || contenu.startsWith("https://")) {
+                if (youTubeLinkService.isYoutubeUrl(contenu)) {
+                    contenu = youTubeLinkService.normalizeForOpen(contenu);
+                }
                 if (Desktop.isDesktopSupported()) {
                     Desktop.getDesktop().browse(URI.create(contenu));
                 }
+                sensitiveAccessService.logAccess(currentUser, resource, true, "REMOTE_OPEN");
                 return;
             }
 
@@ -415,7 +454,9 @@ public class StudentChapterResourcesController {
                 return;
             }
             Files.copy(source, target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            sensitiveAccessService.logAccess(currentUser, resource, true, "LOCAL_COPY");
         } catch (Exception e) {
+            sensitiveAccessService.logAccess(currentUser, resource, false, "ERROR:" + e.getClass().getSimpleName());
             showError("Erreur d'ouverture: " + e.getMessage());
         }
     }
