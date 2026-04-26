@@ -1008,29 +1008,66 @@ public class UserController {
 
 
     private String buildLocalInsights() {
-        List<User> base = processedUsers != null ? processedUsers : allUsers;
-        if (base == null) base = List.of();
+        List<User> view = processedUsers != null ? processedUsers : allUsers;
+        if (view == null) view = List.of();
+        List<User> all = allUsers != null ? allUsers : List.of();
 
-        long admins = base.stream().filter(u -> u.getRole() == Role.ROLE_ADMIN).count();
-        long profs = base.stream().filter(u -> u.getRole() == Role.ROLE_PROF).count();
-        long etudiants = base.stream().filter(u -> u.getRole() == Role.ROLE_ETUDIANT).count();
-        long parents = base.stream().filter(u -> u.getRole() == Role.ROLE_PARENT).count();
+        long viewAdmins = view.stream().filter(u -> u.getRole() == Role.ROLE_ADMIN).count();
+        long viewProfs = view.stream().filter(u -> u.getRole() == Role.ROLE_PROF).count();
+        long viewEtudiants = view.stream().filter(u -> u.getRole() == Role.ROLE_ETUDIANT).count();
+        long viewParents = view.stream().filter(u -> u.getRole() == Role.ROLE_PARENT).count();
+
+        long viewBlocked = view.stream().filter(u -> "Blocked".equalsIgnoreCase(statusFor(u)) || (u != null && u.isBlocked())).count();
+        long viewInactive = view.stream().filter(u -> "Deactive".equalsIgnoreCase(statusFor(u))).count();
+        long viewPending = view.stream().filter(u -> "PENDING".equalsIgnoreCase(statusFor(u))).count();
+
+        String keyword = searchField != null ? safe(searchField.getText()) : "";
+        String roleFilter = filterRoleCombo != null ? safe(filterRoleCombo.getValue()) : "";
+        String statusFilter = filterStatusCombo != null ? safe(filterStatusCombo.getValue()) : "";
+        String sortMode = sortCombo != null ? safe(sortCombo.getValue()) : "";
+
+        User selected = table != null ? table.getSelectionModel().getSelectedItem() : null;
 
         StringBuilder sb = new StringBuilder();
-        sb.append("Brief IA Gestion Utilisateurs\n");
-        sb.append("Resume\n");
-        sb.append("- Parc utilisateurs: ").append(base.size()).append(" comptes (vue actuelle)\n");
-        sb.append("- Repartition roles: admin=").append(admins)
-                .append(", prof=").append(profs)
-                .append(", etudiant=").append(etudiants)
-                .append(", parent=").append(parents).append("\n\n");
+        sb.append("Contexte — Gestion Utilisateurs (EduFlex)\n\n");
 
-        sb.append("Anomalies\n");
-        sb.append("- Donnees de verification/blocage non disponibles dans ce module (champs manquants).\n\n");
+        sb.append("Vue courante\n");
+        sb.append("- Résultats affichés: ").append(view.size()).append("\n");
+        sb.append("- Filtres: search='").append(keyword).append("', role='").append(roleFilter)
+                .append("', status='").append(statusFilter).append("', tri='").append(sortMode).append("'\n");
+        sb.append("- Répartition (vue): admin=").append(viewAdmins)
+                .append(", prof=").append(viewProfs)
+                .append(", étudiant=").append(viewEtudiants)
+                .append(", parent=").append(viewParents).append("\n");
+        sb.append("- Statuts (vue): blocked=").append(viewBlocked)
+                .append(", deactive=").append(viewInactive)
+                .append(", pending=").append(viewPending).append("\n\n");
 
-        sb.append("Actions prioritaires\n");
-        sb.append("- Completer le modele User (statut, blocage) si tu veux les badges APPROVED/REJECTED/BLOCKED.\n");
-        sb.append("- Ajouter des colonnes Actions (Voir/Modifier/Approuver/Rejeter/Bloquer) sur la table.\n");
+        sb.append("Base globale\n");
+        sb.append("- Total comptes (DB): ").append(all.size()).append("\n\n");
+
+        if (selected != null) {
+            sb.append("Utilisateur sélectionné\n");
+            sb.append("- id=").append(selected.getId())
+                    .append(", nom='").append(safe(selected.getNom())).append("'")
+                    .append(", email='").append(safe(selected.getEmail())).append("'")
+                    .append(", role=").append(selected.getRole() != null ? selected.getRole().name() : "")
+                    .append(", status=").append(safe(statusFor(selected)))
+                    .append(", blocked=").append(selected.isBlocked())
+                    .append("\n\n");
+        }
+
+        sb.append("Top actions sûres (règles)\n");
+        sb.append("- Un user Blocked/Deactive/Archived/Pending ne doit pas pouvoir s'authentifier.\n");
+        sb.append("- 'Activer' => status=Active & is_blocked=0.\n");
+        sb.append("- 'Bloquer' => status=Blocked & is_blocked=1.\n\n");
+
+        sb.append("À analyser\n");
+        sb.append("- Propose 3 actions prioritaires basées sur la vue et les statuts.\n");
+        if (selected != null) {
+            sb.append("- Pour l'utilisateur sélectionné, propose un diagnostic + prochaine action.\n");
+        }
+
         return sb.toString();
     }
 
@@ -1056,11 +1093,39 @@ public class UserController {
             protected String call() throws Exception {
                 OllamaClient client = OllamaClient.localDefault();
                 usedModel[0] = client.pickAvailableModel(preferredModel);
-                String system = "Tu es un copilote admin pour une application JavaFX (EduFlex). " +
-                        "Réponds en français, de façon concise et actionnable.";
+                String system = """
+                        Tu es un copilote ADMIN pour l'écran 'Gestion des utilisateurs' d'une application JavaFX (EduFlex).
+                        Ton objectif: aider à prendre des décisions opérationnelles (bloquer/débloquer, activer/désactiver, contrôler les statuts),
+                        détecter des anomalies et proposer des actions concrètes.
+                        
+                        Contraintes:
+                        - Répondre en français.
+                        - Être concis, mais précis.
+                        - Toujours proposer des actions réalisables dans l'écran actuel.
+                        - Si tu manques d'info, pose 1 seule question maximum.
+                        """.trim();
+
                 String userPrompt = (question.isBlank()
-                        ? "Analyse ces infos et propose un bref résumé + actions.\n\n" + context
-                        : "Question: " + question + "\n\nContexte:\n" + context);
+                        ? """
+                        Analyse le contexte suivant et réponds avec:
+                        1) Un diagnostic (3 puces max)
+                        2) 3 actions recommandées (checklist)
+                        3) Risques / points d'attention (2 puces max)
+                        
+                        Contexte:
+                        %s
+                        """.formatted(context).trim()
+                        : """
+                        Question admin: %s
+                        
+                        Réponds avec:
+                        - Réponse directe (1-3 phrases)
+                        - Étapes dans l'UI (liste numérotée)
+                        - Vérification après action (1 puce)
+                        
+                        Contexte:
+                        %s
+                        """.formatted(question, context).trim());
 
                 return client.chatOnce(usedModel[0], system, userPrompt);
             }
@@ -1083,6 +1148,11 @@ public class UserController {
         Thread th = new Thread(t, "ollama-copilot");
         th.setDaemon(true);
         th.start();
+    }
+
+    private static String safe(String s) {
+        if (s == null) return "";
+        return s.replace("\n", " ").replace("\r", " ").trim();
     }
 
     public void showAlert(String title, String message) {
