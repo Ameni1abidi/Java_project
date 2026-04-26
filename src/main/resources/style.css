@@ -748,6 +748,70 @@
     -fx-cursor: hand;
 }
 
+.btn-table-menu {
+    -fx-font-size: 11px;
+    -fx-font-weight: 800;
+    -fx-padding: 6 10;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-cursor: hand;
+    -fx-background-color: linear-gradient(to bottom, #6C63FF, #8B5CF6);
+    -fx-text-fill: white;
+    -fx-effect: dropshadow(gaussian, rgba(17,24,39,0.18), 12, 0, 0, 4);
+}
+
+.btn-table-menu:hover {
+    -fx-background-color: linear-gradient(to bottom, #5A52E8, #7C3AED);
+}
+
+.btn-table-menu:pressed {
+    -fx-background-color: linear-gradient(to bottom, #4C46D6, #6D28D9);
+}
+
+.btn-table-menu .label {
+    -fx-text-fill: white;
+}
+
+.btn-table-menu .arrow-button {
+    -fx-padding: 0 6 0 6;
+}
+
+.btn-table-menu .arrow {
+    -fx-background-color: rgba(255,255,255,0.92);
+}
+
+.context-menu {
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: rgba(17, 24, 39, 0.10);
+    -fx-effect: dropshadow(gaussian, rgba(17, 24, 39, 0.18), 18, 0, 0, 8);
+    -fx-padding: 6;
+}
+
+.context-menu .separator:horizontal .line {
+    -fx-border-color: rgba(17,24,39,0.08);
+}
+
+.context-menu .menu-item {
+    -fx-padding: 8 12;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+}
+
+.context-menu .menu-item:focused {
+    -fx-background-color: rgba(108,99,255,0.12);
+}
+
+.context-menu .menu-item .label {
+    -fx-text-fill: #111827;
+    -fx-font-weight: 700;
+}
+
+.context-menu .menu-item .graphic-container {
+    -fx-padding: 0 8 0 0;
+}
+
 .btn-table-neutral {
     -fx-background-color: #EEF2FF;
     -fx-text-fill: #4F46E5;

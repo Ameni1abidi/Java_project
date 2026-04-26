@@ -133,27 +133,41 @@ public class UserController {
                     return;
                 }
                 User rowUser = table.getItems().get(getIndex());
-                Button viewBtn = new Button("Voir");
-                Button activeBtn = new Button("Activer");
-                Button deactiveBtn = new Button("Desactiver");
-                Button blockBtn = new Button("Bloquer");
-                Button unblockBtn = new Button("Debloquer");
-                viewBtn.getStyleClass().add("btn-table-neutral");
-                activeBtn.getStyleClass().add("btn-table-active");
-                deactiveBtn.getStyleClass().add("btn-table-warning");
-                blockBtn.getStyleClass().add("btn-table-danger");
-                unblockBtn.getStyleClass().add("btn-table-neutral");
-                viewBtn.setOnAction(e -> {
+                MenuItem viewItem = new MenuItem("Voir");
+                MenuItem activeItem = new MenuItem("Activer");
+                MenuItem deactiveItem = new MenuItem("Désactiver");
+                MenuItem blockItem = new MenuItem("Bloquer");
+                MenuItem unblockItem = new MenuItem("Débloquer");
+
+                // Lightweight icons (no extra deps)
+                viewItem.setGraphic(new Label("👁"));
+                activeItem.setGraphic(new Label("✅"));
+                deactiveItem.setGraphic(new Label("⏸"));
+                blockItem.setGraphic(new Label("⛔"));
+                unblockItem.setGraphic(new Label("🔓"));
+
+                viewItem.setOnAction(e -> {
                     table.getSelectionModel().select(rowUser);
                     selectUser();
                 });
-                activeBtn.setOnAction(e -> setUserStatus(rowUser, "Active"));
-                deactiveBtn.setOnAction(e -> setUserStatus(rowUser, "Deactive"));
-                blockBtn.setOnAction(e -> setUserStatus(rowUser, "Blocked"));
-                unblockBtn.setOnAction(e -> setUserBlocked(rowUser, false));
-                HBox box = new HBox(6, viewBtn, activeBtn, deactiveBtn, blockBtn, unblockBtn);
-                box.setFillHeight(false);
-                setGraphic(box);
+                activeItem.setOnAction(e -> setUserStatus(rowUser, "Active"));
+                deactiveItem.setOnAction(e -> setUserStatus(rowUser, "Deactive"));
+                blockItem.setOnAction(e -> setUserStatus(rowUser, "Blocked"));
+                unblockItem.setOnAction(e -> setUserBlocked(rowUser, false));
+
+                MenuButton actions = new MenuButton("Actions", null,
+                        viewItem,
+                        new SeparatorMenuItem(),
+                        activeItem,
+                        deactiveItem,
+                        blockItem,
+                        unblockItem
+                );
+                actions.setGraphic(new Label("⋯"));
+                actions.getStyleClass().add("btn-table-menu");
+                actions.setPopupSide(javafx.geometry.Side.BOTTOM);
+
+                setGraphic(actions);
                 setText(null);
             }
         });
