@@ -13,6 +13,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
@@ -23,11 +24,13 @@ import tn.esprit.entities.User.Role;
 import tn.esprit.config.LocalSecrets;
 import tn.esprit.services.security.RecaptchaService;
 import tn.esprit.services.UserService;
+import tn.esprit.services.EmailVerificationService;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 public class RegisterController {
     @FXML private TextField      nomField;
@@ -45,6 +48,7 @@ public class RegisterController {
 
     private final UserService userService = new UserService();
     private final RecaptchaService recaptchaService = new RecaptchaService();
+    private final EmailVerificationService emailVerificationService = new EmailVerificationService();
     private volatile String recaptchaToken = "";
     private HttpServer recaptchaLocalServer;
 
@@ -114,10 +118,24 @@ public class RegisterController {
                 return;
             }
 
-            showSuccess("Compte créé avec succès ! Redirection...");
+            showSuccess("Compte créé. Envoi du code de confirmation...");
+            emailVerificationService.sendVerificationCode(email);
 
+            Optional<String> code = askForVerificationCode(email);
+            if (code.isEmpty()) {
+                showError("Confirmation annulée. Votre compte reste en attente.");
+                return;
+            }
+            if (!emailVerificationService.verifyCode(email, code.get())) {
+                showError("Code invalide ou expiré. Veuillez réessayer.");
+                return;
+            }
+            emailVerificationService.markConsumed(email);
+            userService.markUserVerified(email);
+
+            showSuccess("Email confirmé. Vous pouvez vous connecter.");
             new Thread(() -> {
-                try { Thread.sleep(1200); } catch (InterruptedException ignored) {}
+                try { Thread.sleep(900); } catch (InterruptedException ignored) {}
                 Platform.runLater(() -> {
                     try { handleGoLogin(); } catch (Exception ex) { ex.printStackTrace(); }
                 });
@@ -127,6 +145,15 @@ public class RegisterController {
             showError("Erreur : " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private Optional<String> askForVerificationCode(String email) {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Confirmation email");
+        dialog.setHeaderText("Un code a été envoyé à " + email);
+        dialog.setContentText("Code (6 chiffres):");
+        dialog.getEditor().setPromptText("123456");
+        return dialog.showAndWait().map(String::trim).filter(s -> !s.isBlank());
     }
 
     private void initRecaptchaWidget() {

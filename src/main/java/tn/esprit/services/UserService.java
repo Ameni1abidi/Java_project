@@ -264,6 +264,9 @@ public class UserService {
         if (user.isBlocked()) {
             throw new IllegalStateException("Compte bloque par un administrateur.");
         }
+        if (!user.isVerified()) {
+            throw new IllegalStateException("Compte non verifie. Verifiez votre email.");
+        }
         String status = user.getStatus() == null ? "" : user.getStatus().trim();
         if (!status.isBlank()) {
             String s = status.toLowerCase();
@@ -271,6 +274,14 @@ public class UserService {
             if (s.contains("archiv")) throw new IllegalStateException("Compte archive.");
             if (s.contains("deactiv") || s.contains("inactiv")) throw new IllegalStateException("Compte desactive.");
             if (s.contains("pending")) throw new IllegalStateException("Compte en attente de validation.");
+        }
+    }
+
+    public void markUserVerified(String email) throws SQLException {
+        String sql = "UPDATE utilisateur SET is_verified = 1, status = 'Active', is_blocked = 0 WHERE LOWER(TRIM(email)) = LOWER(TRIM(?))";
+        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+            ps.setString(1, email);
+            ps.executeUpdate();
         }
     }
 
