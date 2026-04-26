@@ -58,7 +58,7 @@
         <VBox spacing="20"
               style="-fx-background-color: white; -fx-padding: 30; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, #ddd, 8, 0, 0, 2);">
             <HBox alignment="CENTER_LEFT" spacing="10">
-                <Label text="Ressources" style="-fx-font-size: 22; -fx-font-weight: bold;" />
+                <Label fx:id="pageTitleLabel" text="Ressources" style="-fx-font-size: 22; -fx-font-weight: bold;" />
                 <Region HBox.hgrow="ALWAYS"/>
                 <Button fx:id="createButton" text="Creer" onAction="#onCreateClick"
                         style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 20;"/>
@@ -73,11 +73,12 @@
             <TableView fx:id="resourceTable" VBox.vgrow="ALWAYS"
                        style="-fx-background-color: white; -fx-border-color: #e0e0e0; -fx-border-radius: 8; -fx-table-cell-border-color: #f0f0f0;">
                 <columns>
-                    <TableColumn fx:id="titreColumn" prefWidth="250.0" text="Titre" />
-                    <TableColumn fx:id="categorieColumn" prefWidth="170.0" text="Categorie" />
-                    <TableColumn fx:id="dateColumn" prefWidth="170.0" text="Disponible le" />
-                    <TableColumn fx:id="fileColumn" prefWidth="170.0" text="Fichier" />
-                    <TableColumn fx:id="actionColumn" prefWidth="160.0" text="Actions" />
+                    <TableColumn fx:id="titreColumn" prefWidth="160.0" text="Titre" />
+                    <TableColumn fx:id="categorieColumn" prefWidth="120.0" text="Categorie" />
+                    <TableColumn fx:id="chapitreColumn" prefWidth="180.0" text="Chapitre" />
+                    <TableColumn fx:id="dateColumn" prefWidth="130.0" text="Disponible le" />
+                    <TableColumn fx:id="statusColumn" prefWidth="130.0" text="Statut" />
+                    <TableColumn fx:id="contenuColumn" prefWidth="240.0" text="Contenu" />
                 </columns>
             </TableView>
         </VBox>
