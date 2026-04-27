@@ -21,7 +21,9 @@ import tn.esprit.entities.Cours;
 import tn.esprit.entities.User;
 import tn.esprit.entities.resources;
 import tn.esprit.services.ChapitreService;
+import tn.esprit.services.CloudinaryStorageService;
 import tn.esprit.services.CoursService;
+import tn.esprit.services.QrCodeService;
 import tn.esprit.services.ResourceService;
 import tn.esprit.services.RessourceDashboardService;
 import tn.esprit.services.SensitiveResourceAccessService;
@@ -74,6 +76,8 @@ public class StudentChapterResourcesController {
     private SensitiveResourceAccessService sensitiveAccessService;
     private YouTubeLinkService youTubeLinkService;
     private RessourceDashboardService ressourceDashboardService;
+    private QrCodeService qrCodeService;
+    private CloudinaryStorageService cloudinaryStorageService;
 
     private int chapitreId = -1;
     private int currentUserId = -1;
@@ -91,6 +95,8 @@ public class StudentChapterResourcesController {
         sensitiveAccessService = new SensitiveResourceAccessService();
         youTubeLinkService = new YouTubeLinkService();
         ressourceDashboardService = new RessourceDashboardService();
+        qrCodeService = new QrCodeService();
+        cloudinaryStorageService = new CloudinaryStorageService();
 
         setupStudentIdentity();
         loadContext();
@@ -253,20 +259,26 @@ public class StudentChapterResourcesController {
             imageView.setPreserveRatio(false);
             imageView.setStyle("-fx-background-radius: 12;");
             Image image = buildImage(resource.getContenu());
+            VBox qrBox = buildQrBox(resource);
             if (image != null) {
                 imageView.setImage(image);
-                card.getChildren().addAll(topRow, chips, imageView, buildActionButtons(resource, true));
+                card.getChildren().addAll(topRow, chips, imageView, qrBox, buildActionButtons(resource, true));
             } else {
-                Label fallback = new Label(safe(resource.getContenu()));
+                Label fallback = new Label("Image securisee via QR code.");
                 fallback.setWrapText(true);
                 fallback.setStyle(darkMode ? "-fx-text-fill:#cbd5e1;" : "-fx-text-fill:#667085;");
-                card.getChildren().addAll(topRow, chips, fallback, buildActionButtons(resource, true));
+                card.getChildren().addAll(topRow, chips, fallback, qrBox, buildActionButtons(resource, true));
             }
         } else if ("image".equalsIgnoreCase(resource.getType()) && resource.isSensitive()) {
             Label masked = new Label("Apercu masque (ressource sensible)");
             masked.setWrapText(true);
             masked.setStyle(darkMode ? "-fx-text-fill:#fca5a5; -fx-font-weight:bold;" : "-fx-text-fill:#b91c1c; -fx-font-weight:bold;");
-            card.getChildren().addAll(topRow, chips, masked, buildActionButtons(resource, true));
+            card.getChildren().addAll(topRow, chips, masked, buildQrBox(resource), buildActionButtons(resource, true));
+        } else if ("video".equalsIgnoreCase(resource.getType())) {
+            Label videoInfo = new Label("Video securisee. Scannez le QR code pour l'ouvrir sur Cloudinary.");
+            videoInfo.setWrapText(true);
+            videoInfo.setStyle(darkMode ? "-fx-text-fill:#cbd5e1;" : "-fx-text-fill:#667085;");
+            card.getChildren().addAll(topRow, chips, videoInfo, buildQrBox(resource), buildActionButtons(resource, true));
         } else if ("lien".equalsIgnoreCase(resource.getType())) {
             Button openLink = new Button("Ouvrir le lien");
             openLink.setStyle("-fx-background-color:#bbf7d0; -fx-text-fill:#166534; -fx-font-size:14; -fx-font-weight:bold; -fx-background-radius:10;");
@@ -283,6 +295,81 @@ public class StudentChapterResourcesController {
         }
 
         return card;
+    }
+
+    private VBox buildQrBox(resources resource) {
+        VBox box = new VBox(6);
+        box.setStyle(darkMode
+                ? "-fx-background-color:#111827; -fx-background-radius:12; -fx-padding:10;"
+                : "-fx-background-color:#f8fafc; -fx-background-radius:12; -fx-padding:10;");
+
+        Label label = new Label("QR code d'acces securise");
+        label.setStyle(darkMode
+                ? "-fx-text-fill:#e5e7eb; -fx-font-weight:bold;"
+                : "-fx-text-fill:#334155; -fx-font-weight:bold;");
+
+        if (!sensitiveAccessService.canAccess(currentUser, resource)) {
+            Label denied = new Label("QR code protege.");
+            denied.setStyle("-fx-text-fill:#dc2626; -fx-font-weight:bold;");
+            box.getChildren().addAll(label, denied);
+            return box;
+        }
+        String accessUrl = resolveAccessUrl(resource);
+        if (accessUrl == null || accessUrl.isBlank()) {
+            Label unavailable = new Label("QR code indisponible pour cette ressource.");
+            unavailable.setStyle("-fx-text-fill:#dc2626;");
+            box.getChildren().addAll(label, unavailable);
+            return box;
+        }
+
+        Image qrImage = qrCodeService.generateImage(accessUrl, 150);
+        if (qrImage == null) {
+            Label unavailable = new Label("QR code indisponible.");
+            unavailable.setStyle("-fx-text-fill:#dc2626;");
+            box.getChildren().addAll(label, unavailable);
+            return box;
+        }
+
+        ImageView qrView = new ImageView(qrImage);
+        qrView.setFitWidth(150);
+        qrView.setFitHeight(150);
+        qrView.setPreserveRatio(true);
+
+        Label hint = new Label("Scan -> Cloudinary");
+        hint.setStyle(darkMode ? "-fx-text-fill:#9ca3af;" : "-fx-text-fill:#64748b;");
+        box.getChildren().addAll(label, qrView, hint);
+        return box;
+    }
+
+    private String resolveAccessUrl(resources resource) {
+        String content = resource.getContenu();
+        if (isRemoteUrl(content)) {
+            return content;
+        }
+        if (content == null || content.isBlank()) {
+            return null;
+        }
+
+        try {
+            Path source = resolveLocalPath(content);
+            if (source == null) {
+                return null;
+            }
+
+            if (cloudinaryStorageService.isEnabled()) {
+                String cloudinaryUrl = "image".equalsIgnoreCase(resource.getType())
+                        ? cloudinaryStorageService.uploadImage(source)
+                        : cloudinaryStorageService.uploadVideo(source);
+                resource.setContenu(cloudinaryUrl);
+                resourceService.update(resource);
+                return cloudinaryUrl;
+            }
+
+            return source.toUri().toString();
+        } catch (Exception e) {
+            Path source = resolveLocalPath(content);
+            return source == null ? null : source.toUri().toString();
+        }
     }
 
     private HBox buildActionButtons(resources resource, boolean disponible) {
@@ -495,6 +582,10 @@ public class StudentChapterResourcesController {
 
     private String safe(String value) {
         return value == null || value.isBlank() ? "N/A" : value;
+    }
+
+    private boolean isRemoteUrl(String value) {
+        return value != null && (value.startsWith("http://") || value.startsWith("https://"));
     }
 
     private String safeType(String type) {

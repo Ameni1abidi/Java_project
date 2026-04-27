@@ -18,14 +18,15 @@ public class CloudinaryStorageService {
         String apiKey = LocalSecrets.get("CLOUDINARY_API_KEY");
         String apiSecret = LocalSecrets.get("CLOUDINARY_API_SECRET");
 
-        if (cloudinaryUrl != null && !cloudinaryUrl.isBlank()) {
+        if (!isBlank(cloudinaryUrl) && !isPlaceholder(cloudinaryUrl)) {
             this.cloudinary = new Cloudinary(cloudinaryUrl);
             this.cloudinary.config.secure = true;
             this.enabled = true;
             return;
         }
 
-        if (isBlank(cloudName) || isBlank(apiKey) || isBlank(apiSecret)) {
+        if (isBlank(cloudName) || isBlank(apiKey) || isBlank(apiSecret)
+                || isPlaceholder(cloudName) || isPlaceholder(apiKey) || isPlaceholder(apiSecret)) {
             this.cloudinary = null;
             this.enabled = false;
             return;
@@ -122,6 +123,18 @@ public class CloudinaryStorageService {
 
     private boolean isBlank(String value) {
         return value == null || value.isBlank();
+    }
+
+    private boolean isPlaceholder(String value) {
+        if (value == null) {
+            return false;
+        }
+        String normalized = value.trim().toLowerCase();
+        return normalized.contains("your-cloud")
+                || normalized.contains("your-cloudinary")
+                || normalized.contains("<api_key>")
+                || normalized.contains("<api_secret>")
+                || normalized.contains("<cloud_name>");
     }
 
 }

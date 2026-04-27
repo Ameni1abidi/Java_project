@@ -8,6 +8,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
@@ -15,10 +17,16 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import tn.esprit.entities.User;
 import tn.esprit.entities.resources;
+import tn.esprit.services.CloudinaryStorageService;
+import tn.esprit.services.QrCodeService;
 import tn.esprit.services.ResourceService;
+import tn.esprit.services.SensitiveResourceAccessService;
 import tn.esprit.utils.UserSession;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 public class StudentFavoritesController {
@@ -29,6 +37,9 @@ public class StudentFavoritesController {
     private Label infoLabel;
 
     private final ResourceService resourceService = new ResourceService();
+    private final QrCodeService qrCodeService = new QrCodeService();
+    private final SensitiveResourceAccessService sensitiveAccessService = new SensitiveResourceAccessService();
+    private final CloudinaryStorageService cloudinaryStorageService = new CloudinaryStorageService();
     private int currentUserId = -1;
 
     @FXML
@@ -78,7 +89,9 @@ public class StudentFavoritesController {
         HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
         topRow.getChildren().addAll(titre, spacer, typeBadge);
 
-        Label contenu = new Label(safe(resource.getContenu()));
+        Label contenu = new Label(isMultimedia(resource)
+                ? "Ressource Cloudinary protegee par QR code."
+                : safe(resource.getContenu()));
         contenu.setWrapText(true);
         contenu.setStyle("-fx-text-fill:#667085;");
 
@@ -95,8 +108,118 @@ public class StudentFavoritesController {
         });
 
         actions.getChildren().addAll(openBtn, removeBtn);
-        card.getChildren().addAll(topRow, contenu, actions);
+        card.getChildren().addAll(topRow, contenu);
+        if (isMultimedia(resource)) {
+            card.getChildren().add(buildQrBox(resource));
+        }
+        card.getChildren().add(actions);
         return card;
+    }
+
+    private VBox buildQrBox(resources resource) {
+        VBox box = new VBox(6);
+        box.setStyle("-fx-background-color:#f8fafc; -fx-background-radius:12; -fx-padding:10;");
+
+        Label label = new Label("QR code d'acces securise");
+        label.setStyle("-fx-text-fill:#334155; -fx-font-weight:bold;");
+
+        User currentUser = UserSession.getCurrentUser();
+        if (!sensitiveAccessService.canAccess(currentUser, resource)) {
+            Label denied = new Label("QR code protege.");
+            denied.setStyle("-fx-text-fill:#dc2626; -fx-font-weight:bold;");
+            box.getChildren().addAll(label, denied);
+            return box;
+        }
+        String accessUrl = resolveAccessUrl(resource);
+        if (accessUrl == null || accessUrl.isBlank()) {
+            Label unavailable = new Label("QR code indisponible pour cette ressource.");
+            unavailable.setStyle("-fx-text-fill:#dc2626;");
+            box.getChildren().addAll(label, unavailable);
+            return box;
+        }
+
+        Image qrImage = qrCodeService.generateImage(accessUrl, 150);
+        if (qrImage == null) {
+            Label unavailable = new Label("QR code indisponible.");
+            unavailable.setStyle("-fx-text-fill:#dc2626;");
+            box.getChildren().addAll(label, unavailable);
+            return box;
+        }
+
+        ImageView qrView = new ImageView(qrImage);
+        qrView.setFitWidth(150);
+        qrView.setFitHeight(150);
+        qrView.setPreserveRatio(true);
+
+        Label hint = new Label("Scan -> Cloudinary");
+        hint.setStyle("-fx-text-fill:#64748b;");
+        box.getChildren().addAll(label, qrView, hint);
+        return box;
+    }
+
+    private boolean isMultimedia(resources resource) {
+        return resource != null && ("image".equalsIgnoreCase(resource.getType()) || "video".equalsIgnoreCase(resource.getType()));
+    }
+
+    private boolean isRemoteUrl(String value) {
+        return value != null && (value.startsWith("http://") || value.startsWith("https://"));
+    }
+
+    private String resolveAccessUrl(resources resource) {
+        String content = resource.getContenu();
+        if (isRemoteUrl(content)) {
+            return content;
+        }
+        if (content == null || content.isBlank()) {
+            return null;
+        }
+
+        try {
+            Path source = resolveLocalPath(content);
+            if (source == null) {
+                return null;
+            }
+            if (cloudinaryStorageService.isEnabled()) {
+                String cloudinaryUrl = "image".equalsIgnoreCase(resource.getType())
+                        ? cloudinaryStorageService.uploadImage(source)
+                        : cloudinaryStorageService.uploadVideo(source);
+                resource.setContenu(cloudinaryUrl);
+                resourceService.update(resource);
+                return cloudinaryUrl;
+            }
+            return source.toUri().toString();
+        } catch (Exception e) {
+            Path source = resolveLocalPath(content);
+            return source == null ? null : source.toUri().toString();
+        }
+    }
+
+    private Path resolveLocalPath(String raw) {
+        try {
+            Path p = Paths.get(raw).toAbsolutePath().normalize();
+            if (Files.exists(p)) {
+                return p;
+            }
+        } catch (Exception ignored) {
+        }
+        try {
+            Path p = Paths.get("").toAbsolutePath().resolve(raw).normalize();
+            if (Files.exists(p)) {
+                return p;
+            }
+        } catch (Exception ignored) {
+        }
+        try {
+            Path file = Paths.get(raw).getFileName();
+            if (file != null) {
+                Path p = Paths.get("storage", "resources").toAbsolutePath().resolve(file.toString()).normalize();
+                if (Files.exists(p)) {
+                    return p;
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
     }
 
     private void openResource(resources resource) {

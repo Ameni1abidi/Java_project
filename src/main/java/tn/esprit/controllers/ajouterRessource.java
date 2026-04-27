@@ -26,6 +26,7 @@ import tn.esprit.entities.resources;
 import tn.esprit.services.ChapitreService;
 import tn.esprit.services.CategoryService;
 import tn.esprit.services.CloudinaryStorageService;
+import tn.esprit.services.QrCodeService;
 import tn.esprit.services.ResourceService;
 import tn.esprit.services.YouTubeLinkService;
 
@@ -82,6 +83,7 @@ public class ajouterRessource {
     private final CategoryService categoryService = new CategoryService();
     private final ChapitreService chapitreService = new ChapitreService();
     private final CloudinaryStorageService cloudinaryStorageService = new CloudinaryStorageService();
+    private final QrCodeService qrCodeService = new QrCodeService();
     private final YouTubeLinkService youTubeLinkService = new YouTubeLinkService();
     private resources currentResource;
     private String selectedFilePath = "";
@@ -373,6 +375,9 @@ public class ajouterRessource {
 
     private String prepareStoredFilePath(String sourcePath, String type) throws IOException {
         if (isRemoteUrl(sourcePath)) {
+            if ("image".equals(type) || "video".equals(type)) {
+                qrCodeService.generateAndSave(sourcePath);
+            }
             return sourcePath;
         }
 
@@ -381,13 +386,28 @@ public class ajouterRessource {
             throw new IOException("fichier introuvable");
         }
 
-        if (cloudinaryStorageService.isEnabled() && ("image".equals(type) || "video".equals(type))) {
-            if ("image".equals(type)) {
-                return cloudinaryStorageService.uploadImage(source);
+        if ("image".equals(type) || "video".equals(type)) {
+            if (cloudinaryStorageService.isEnabled()) {
+                try {
+                    String cloudinaryUrl = "image".equals(type)
+                            ? cloudinaryStorageService.uploadImage(source)
+                            : cloudinaryStorageService.uploadVideo(source);
+                    qrCodeService.generateAndSave(cloudinaryUrl);
+                    return cloudinaryUrl;
+                } catch (Exception ignored) {
+                    // Fallback local si Cloudinary est indisponible au moment de l'ajout.
+                }
             }
-            return cloudinaryStorageService.uploadVideo(source);
+
+            String localPath = storeLocalFile(source);
+            qrCodeService.generateAndSave(Path.of(localPath).toUri().toString());
+            return localPath;
         }
 
+        return storeLocalFile(source);
+    }
+
+    private String storeLocalFile(Path source) throws IOException {
         Path storageDir = Path.of("storage", "resources").toAbsolutePath().normalize();
         Files.createDirectories(storageDir);
 
