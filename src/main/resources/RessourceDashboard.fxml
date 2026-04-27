@@ -1,18 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.PieChart?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<HBox prefHeight="700" prefWidth="1100" style="-fx-background-color: #f0edf8;"
-      xmlns:fx="http://javafx.com/fxml/1"
+<HBox prefHeight="700" prefWidth="1100" style="-fx-background-color: #f5f6fa;"
       xmlns="http://javafx.com/javafx/17.0.12"
-      fx:controller="tn.esprit.controllers.ResourceListController">
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="tn.esprit.controllers.RessourceDashboardController">
 
     <VBox prefWidth="220" style="-fx-background-color: #c4b5e8; -fx-padding: 20; -fx-spacing: 10;">
         <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 20 0;">
@@ -39,7 +41,9 @@
                     style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
             <Button text="C   Cours" maxWidth="Infinity" onAction="#goCours"
                     style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
-            <Button text="RS  Ressources" maxWidth="Infinity"
+            <Button text="RS  Ressources" maxWidth="Infinity" onAction="#goRessources"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="RD  Dashboard ressources" maxWidth="Infinity"
                     style="-fx-background-color: #b39ddb; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
             <Button text="CT  Categories" maxWidth="Infinity" onAction="#goCategories"
                     style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
@@ -47,48 +51,41 @@
                     style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
             <Button text="EV  Evaluations" maxWidth="Infinity" onAction="#goEvaluations"
                     style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
-            <Button text="RS  Resultats" maxWidth="Infinity" onAction="#goResultats"
-                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
             <Button text="LO  Logout" maxWidth="Infinity" onAction="#goLogout"
                     style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
         </VBox>
     </VBox>
 
-    <VBox style="-fx-padding: 40; -fx-background-color: #f5f3fb;" HBox.hgrow="ALWAYS">
-        <VBox spacing="20"
-              style="-fx-background-color: white; -fx-padding: 30; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, #ddd, 8, 0, 0, 2);">
-            <HBox alignment="CENTER_LEFT" spacing="10">
-                <Label fx:id="pageTitleLabel" text="Ressources" style="-fx-font-size: 22; -fx-font-weight: bold;" />
-                <Region HBox.hgrow="ALWAYS"/>
-                <Button fx:id="createButton" text="Creer" onAction="#onCreateClick"
-                        style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 20;"/>
-            </HBox>
+    <VBox spacing="12" style="-fx-padding: 18; -fx-background-color: #f5f6fa;" HBox.hgrow="ALWAYS">
+        <GridPane hgap="12" vgap="12">
+            <VBox prefWidth="315" prefHeight="335" style="-fx-background-color: white; -fx-padding: 18; -fx-background-radius: 8; -fx-border-color: #e5e7eb; -fx-border-radius: 8;">
+                <Label text="Engagement par ressource" style="-fx-font-weight: bold; -fx-font-size: 12;" />
+                <BarChart fx:id="engagementChart" legendVisible="true" prefHeight="285">
+                    <xAxis><CategoryAxis fx:id="engagementXAxis" /></xAxis>
+                    <yAxis><NumberAxis fx:id="engagementYAxis" /></yAxis>
+                </BarChart>
+            </VBox>
 
-            <HBox spacing="10" alignment="CENTER_LEFT">
-                <TextField fx:id="searchField" promptText="Rechercher une ressource..." HBox.hgrow="ALWAYS"/>
-                <Button fx:id="searchButton" text="Rechercher" onAction="#onSearchClick"
-                        style="-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 20;"/>
-            </HBox>
+            <VBox prefWidth="315" prefHeight="335" GridPane.columnIndex="1" style="-fx-background-color: white; -fx-padding: 18; -fx-background-radius: 8; -fx-border-color: #e5e7eb; -fx-border-radius: 8;">
+                <Label text="Top ressources par score" style="-fx-font-weight: bold; -fx-font-size: 12;" />
+                <BarChart fx:id="topScoreChart" legendVisible="false" prefHeight="285">
+                    <xAxis><CategoryAxis fx:id="topScoreXAxis" /></xAxis>
+                    <yAxis><NumberAxis fx:id="topScoreYAxis" /></yAxis>
+                </BarChart>
+            </VBox>
 
-            <HBox alignment="CENTER_RIGHT" spacing="10">
-                <Button text="📊 Dashboard" onAction="#goRessourceDashboard"
-                        style="-fx-background-color: #6D5BD0; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 20;"/>
-                <Button text="📅 Calendrier" onAction="#goRessourceCalendar"
-                        style="-fx-background-color: #0EA5E9; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 20;"/>
-            </HBox>
+            <VBox prefWidth="315" prefHeight="335" GridPane.columnIndex="2" style="-fx-background-color: white; -fx-padding: 18; -fx-background-radius: 8; -fx-border-color: #e5e7eb; -fx-border-radius: 8;">
+                <Label text="Repartition des ressources par categorie" style="-fx-font-weight: bold; -fx-font-size: 12;" />
+                <PieChart fx:id="categoryPieChart" prefHeight="285" />
+            </VBox>
 
-            <TableView fx:id="resourceTable" VBox.vgrow="ALWAYS"
-                       style="-fx-background-color: white; -fx-border-color: #e0e0e0; -fx-border-radius: 8; -fx-table-cell-border-color: #f0f0f0;">
-                <columns>
-                    <TableColumn fx:id="titreColumn" prefWidth="160.0" text="Titre" />
-                    <TableColumn fx:id="categorieColumn" prefWidth="120.0" text="Categorie" />
-                    <TableColumn fx:id="chapitreColumn" prefWidth="180.0" text="Chapitre" />
-                    <TableColumn fx:id="dateColumn" prefWidth="130.0" text="Disponible le" />
-                    <TableColumn fx:id="statusColumn" prefWidth="130.0" text="Statut" />
-                    <TableColumn fx:id="contenuColumn" prefWidth="240.0" text="Contenu" />
-                    <TableColumn fx:id="actionsColumn" prefWidth="160.0" text="Actions" />
-                </columns>
-            </TableView>
-        </VBox>
+            <VBox prefWidth="315" prefHeight="335" GridPane.rowIndex="1" style="-fx-background-color: white; -fx-padding: 18; -fx-background-radius: 8; -fx-border-color: #e5e7eb; -fx-border-radius: 8;">
+                <Label text="Evolution des interactions (30 jours)" style="-fx-font-weight: bold; -fx-font-size: 12;" />
+                <LineChart fx:id="evolutionChart" legendVisible="true" prefHeight="285">
+                    <xAxis><CategoryAxis /></xAxis>
+                    <yAxis><NumberAxis /></yAxis>
+                </LineChart>
+            </VBox>
+        </GridPane>
     </VBox>
 </HBox>

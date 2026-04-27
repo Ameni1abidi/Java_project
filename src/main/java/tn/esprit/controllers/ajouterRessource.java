@@ -91,6 +91,9 @@ public class ajouterRessource {
         loadCategories();
         loadChapitres();
         categorieCombo.valueProperty().addListener((obs, oldCat, newCat) -> handleCategoryChange(newCat));
+        if (datePicker.getValue() == null) {
+            datePicker.setValue(LocalDate.now());
+        }
 
         fileChooserContainer.setVisible(false);
         fileChooserContainer.setManaged(false);
@@ -463,6 +466,11 @@ public class ajouterRessource {
     @FXML
     private void goCategories(ActionEvent event) {
         loadPage(event, "/CategorieList.fxml");
+    }
+
+    @FXML
+    private void goRessourceDashboard(ActionEvent event) {
+        loadPage(event, "/RessourceDashboard.fxml");
     }
 
     @FXML

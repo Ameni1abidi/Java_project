@@ -327,6 +327,28 @@ public class ResourceService {
         }
     }
 
+    public List<resources> getFavoritesByUserId(int userId) {
+        if (userId <= 0) {
+            return new ArrayList<>();
+        }
+        ensureFavoriteTableSafe();
+        String sql = "SELECT r.id, r.titre, r.contenu, r.categorie_nom, r.type, r.disponible_le, r.chapitre_id, r.is_sensitive " +
+                "FROM ressource r INNER JOIN ressource_favori rf ON r.id = rf.ressource_id " +
+                "WHERE rf.user_id = ? ORDER BY rf.created_at DESC";
+        List<resources> list = new ArrayList<>();
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapRow(rs));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur lors de la recuperation des favoris", e);
+        }
+        return list;
+    }
+
     public Map<Integer, String> getChapitreTitles() {
         Map<Integer, String> chapitreTitles = new HashMap<>();
         String sql = "SELECT id, titre FROM chapitre";

@@ -23,6 +23,7 @@ import tn.esprit.entities.resources;
 import tn.esprit.services.ChapitreService;
 import tn.esprit.services.CoursService;
 import tn.esprit.services.ResourceService;
+import tn.esprit.services.RessourceDashboardService;
 import tn.esprit.services.SensitiveResourceAccessService;
 import tn.esprit.services.UserService;
 import tn.esprit.services.YouTubeLinkService;
@@ -72,6 +73,7 @@ public class StudentChapterResourcesController {
     private UserService userService;
     private SensitiveResourceAccessService sensitiveAccessService;
     private YouTubeLinkService youTubeLinkService;
+    private RessourceDashboardService ressourceDashboardService;
 
     private int chapitreId = -1;
     private int currentUserId = -1;
@@ -88,6 +90,7 @@ public class StudentChapterResourcesController {
         userService = new UserService();
         sensitiveAccessService = new SensitiveResourceAccessService();
         youTubeLinkService = new YouTubeLinkService();
+        ressourceDashboardService = new RessourceDashboardService();
 
         setupStudentIdentity();
         loadContext();
@@ -429,6 +432,7 @@ public class StudentChapterResourcesController {
         }
 
         try {
+            ressourceDashboardService.recordView(resource.getId(), currentUserId);
             if (contenu.startsWith("http://") || contenu.startsWith("https://")) {
                 if (youTubeLinkService.isYoutubeUrl(contenu)) {
                     contenu = youTubeLinkService.normalizeForOpen(contenu);

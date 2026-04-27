@@ -42,6 +42,8 @@
                     style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
             <Button text="RS  Ressources" maxWidth="Infinity"
                     style="-fx-background-color: #b39ddb; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="RD  Dashboard ressources" maxWidth="Infinity" onAction="#goRessourceDashboard"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
             <Button text="CT  Categories" maxWidth="Infinity" onAction="#goCategories"
                     style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
             <Button text="EX  Examens" maxWidth="Infinity" onAction="#goExamens"
