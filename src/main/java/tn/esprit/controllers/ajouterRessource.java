@@ -10,6 +10,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
@@ -18,11 +19,15 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
+import tn.esprit.entities.Chapitre;
 import tn.esprit.entities.categorie;
 import tn.esprit.entities.resources;
+import tn.esprit.services.ChapitreService;
 import tn.esprit.services.CategoryService;
 import tn.esprit.services.CloudinaryStorageService;
 import tn.esprit.services.ResourceService;
+import tn.esprit.services.YouTubeLinkService;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,6 +50,9 @@ public class ajouterRessource {
     private ComboBox<categorie> categorieCombo;
 
     @FXML
+    private ComboBox<Chapitre> chapitreCombo;
+
+    @FXML
     private HBox fileChooserContainer;
 
     @FXML
@@ -61,6 +69,8 @@ public class ajouterRessource {
 
     @FXML
     private Label errorLabel;
+    @FXML
+    private CheckBox sensitiveCheckBox;
 
     @FXML
     private Button enregistrerButton;
@@ -70,13 +80,16 @@ public class ajouterRessource {
 
     private final ResourceService resourceService = new ResourceService();
     private final CategoryService categoryService = new CategoryService();
+    private final ChapitreService chapitreService = new ChapitreService();
     private final CloudinaryStorageService cloudinaryStorageService = new CloudinaryStorageService();
+    private final YouTubeLinkService youTubeLinkService = new YouTubeLinkService();
     private resources currentResource;
     private String selectedFilePath = "";
 
     @FXML
     public void initialize() {
         loadCategories();
+        loadChapitres();
         categorieCombo.valueProperty().addListener((obs, oldCat, newCat) -> handleCategoryChange(newCat));
 
         fileChooserContainer.setVisible(false);
@@ -161,6 +174,30 @@ public class ajouterRessource {
         }
     }
 
+    private void loadChapitres() {
+        try {
+            List<Chapitre> chapitres = chapitreService.getAllChapitres();
+            chapitreCombo.setItems(javafx.collections.FXCollections.observableArrayList(chapitres));
+            chapitreCombo.setConverter(new StringConverter<>() {
+                @Override
+                public String toString(Chapitre chapitre) {
+                    if (chapitre == null) {
+                        return "";
+                    }
+                    return "Cours " + chapitre.getCoursId() + " - " + chapitre.getOrdre() + ". " + chapitre.getTitre();
+                }
+
+                @Override
+                public Chapitre fromString(String string) {
+                    return null;
+                }
+            });
+        } catch (Exception e) {
+            errorLabel.setText("Erreur lors du chargement des chapitres.");
+            e.printStackTrace();
+        }
+    }
+
     public void setResource(resources resource) {
         this.currentResource = resource;
         if (resource != null) {
@@ -168,6 +205,7 @@ public class ajouterRessource {
             selectedFilePath = resource.getContenu();
             selectedFileLabel.setText(extractFileName(resource.getContenu()));
             urlField.setText("lien".equals(resource.getType()) ? resource.getContenu() : "");
+            sensitiveCheckBox.setSelected(resource.isSensitive());
 
             if (resource.getDisponibleLe() != null && !resource.getDisponibleLe().isEmpty()) {
                 try {
@@ -179,6 +217,13 @@ public class ajouterRessource {
             for (categorie cat : categorieCombo.getItems()) {
                 if (cat.getNom().equals(resource.getCategorieNom())) {
                     categorieCombo.setValue(cat);
+                    break;
+                }
+            }
+
+            for (Chapitre ch : chapitreCombo.getItems()) {
+                if (ch.getId() == resource.getChapitreId()) {
+                    chapitreCombo.setValue(ch);
                     break;
                 }
             }
@@ -195,6 +240,7 @@ public class ajouterRessource {
 
         String titre = titreField.getText().trim();
         categorie categorie = categorieCombo.getValue();
+        Chapitre chapitre = chapitreCombo.getValue();
         LocalDate date = datePicker.getValue();
 
         if (titre.isEmpty()) {
@@ -203,6 +249,10 @@ public class ajouterRessource {
         }
         if (categorie == null) {
             errorLabel.setText("Veuillez selectionner une categorie.");
+            return;
+        }
+        if (chapitre == null) {
+            errorLabel.setText("Veuillez selectionner un chapitre.");
             return;
         }
 
@@ -227,6 +277,9 @@ public class ajouterRessource {
                 errorLabel.setText("L'URL doit commencer par http:// ou https://");
                 return;
             }
+            if (youTubeLinkService.isYoutubeUrl(contenu)) {
+                contenu = youTubeLinkService.normalizeForOpen(contenu);
+            }
         } else {
             if (selectedFilePath.isEmpty()) {
                 errorLabel.setText("Veuillez selectionner un fichier.");
@@ -241,10 +294,12 @@ public class ajouterRessource {
         }
 
         String disponibleLe = date.toString();
+        boolean sensitive = sensitiveCheckBox != null && sensitiveCheckBox.isSelected();
 
         try {
             if (currentResource == null) {
-                resources newResource = new resources(titre, contenu, categorie.getNom(), type, disponibleLe);
+                resources newResource = new resources(titre, contenu, categorie.getNom(), type, disponibleLe, chapitre.getId());
+                newResource.setSensitive(sensitive);
                 resourceService.add(newResource);
                 showAlert("Succes", "Ressource creee avec succes !");
             } else {
@@ -253,6 +308,8 @@ public class ajouterRessource {
                 currentResource.setCategorieNom(categorie.getNom());
                 currentResource.setType(type);
                 currentResource.setDisponibleLe(disponibleLe);
+                currentResource.setChapitreId(chapitre.getId());
+                currentResource.setSensitive(sensitive);
                 resourceService.update(currentResource);
                 showAlert("Succes", "Ressource modifiee avec succes !");
             }
@@ -321,8 +378,11 @@ public class ajouterRessource {
             throw new IOException("fichier introuvable");
         }
 
-        if (cloudinaryStorageService.isEnabled()) {
-            return cloudinaryStorageService.upload(source, type);
+        if (cloudinaryStorageService.isEnabled() && ("image".equals(type) || "video".equals(type))) {
+            if ("image".equals(type)) {
+                return cloudinaryStorageService.uploadImage(source);
+            }
+            return cloudinaryStorageService.uploadVideo(source);
         }
 
         Path storageDir = Path.of("storage", "resources").toAbsolutePath().normalize();

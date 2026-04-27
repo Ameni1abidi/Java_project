@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
@@ -80,6 +81,14 @@
                 <Label text="CATEGORIE" style="-fx-text-fill: #666666; -fx-font-size: 12;" />
                 <ComboBox fx:id="categorieCombo" prefHeight="40.0" promptText="Selectionnez une categorie" />
             </VBox>
+
+            <VBox spacing="5.0">
+                <Label text="CHAPITRE" style="-fx-text-fill: #666666; -fx-font-size: 12;" />
+                <ComboBox fx:id="chapitreCombo" prefHeight="40.0" promptText="Selectionnez un chapitre" />
+            </VBox>
+
+            <CheckBox fx:id="sensitiveCheckBox" text="Ressource sensible (acces securise)"
+                      style="-fx-text-fill: #374151; -fx-font-size: 13; -fx-font-weight: bold;" />
 
             <HBox fx:id="fileChooserContainer" spacing="10.0" visible="false" managed="false" alignment="CENTER_LEFT">
                 <Button fx:id="browseButton" mnemonicParsing="false" onAction="#browseFile" prefHeight="40.0" prefWidth="160.0"

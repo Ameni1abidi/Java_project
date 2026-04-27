@@ -2,7 +2,6 @@ package tn.esprit.services;
 
 import jakarta.mail.Authenticator;
 import jakarta.mail.Message;
-import jakarta.mail.MessagingException;
 import jakarta.mail.PasswordAuthentication;
 import jakarta.mail.Session;
 import jakarta.mail.Transport;
@@ -10,16 +9,54 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import tn.esprit.config.LocalSecrets;
 
+import java.util.List;
 import java.util.Properties;
 
 public final class EmailService {
-    public void sendTextEmail(String to, String subject, String body) throws MessagingException {
+
+    // ✅ Send single email using SMTP config
+    public void sendEmail(String to, String subject, String content) {
+        try {
+            Session session = createSession();
+
+            MimeMessage message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(getFromAddress()));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to, false));
+            message.setSubject(subject, "UTF-8");
+            message.setText(content, "UTF-8");
+
+            Transport.send(message);
+
+            System.out.println("✅ Email sent to " + to);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // ✅ Alias method (for compatibility)
+    public void sendTextEmail(String to, String subject, String body) {
+        sendEmail(to, subject, body);
+    }
+
+    // ✅ Bulk email sending
+    public int sendToStudents(List<String> emails, String subject, String content) {
+        int count = 0;
+
+        for (String email : emails) {
+            sendEmail(email, subject, content);
+            count++;
+        }
+
+        return count;
+    }
+
+    // ✅ Create SMTP session
+    private Session createSession() {
         String host = required("SMTP_HOST");
         String port = LocalSecrets.get("SMTP_PORT");
         String user = required("SMTP_USER");
         String pass = required("SMTP_PASS");
-        String from = LocalSecrets.get("SMTP_FROM");
-        if (from == null || from.isBlank()) from = user;
 
         boolean startTls = "true".equalsIgnoreCase(LocalSecrets.get("SMTP_STARTTLS"));
 
@@ -29,28 +66,31 @@ public final class EmailService {
         props.put("mail.smtp.port", (port == null || port.isBlank()) ? "587" : port.trim());
         props.put("mail.smtp.starttls.enable", String.valueOf(startTls));
 
-        Session session = Session.getInstance(props, new Authenticator() {
+        return Session.getInstance(props, new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
                 return new PasswordAuthentication(user, pass);
             }
         });
-
-        MimeMessage message = new MimeMessage(session);
-        message.setFrom(new InternetAddress(from));
-        message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to, false));
-        message.setSubject(subject, "UTF-8");
-        message.setText(body, "UTF-8");
-
-        Transport.send(message);
     }
 
-    private static String required(String key) {
-        String v = LocalSecrets.get(key);
-        if (v == null || v.isBlank()) {
-            throw new IllegalStateException("Configuration manquante: " + key + " (local.secrets.properties / env / -D)");
+    // ✅ Get sender address
+    private String getFromAddress() {
+        String from = LocalSecrets.get("SMTP_FROM");
+        if (from == null || from.isBlank()) {
+            from = required("SMTP_USER");
         }
-        return v.trim();
+        return from;
+    }
+
+    // ✅ Required config
+    private static String required(String key) {
+        String value = LocalSecrets.get(key);
+
+        if (value == null || value.isBlank()) {
+            throw new IllegalStateException("Missing configuration: " + key);
+        }
+
+        return value.trim();
     }
 }
-
