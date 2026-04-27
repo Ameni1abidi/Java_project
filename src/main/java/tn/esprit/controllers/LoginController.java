@@ -9,8 +9,10 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import tn.esprit.services.AuditLogService;
+import tn.esprit.services.PasswordResetService;
 import tn.esprit.services.auth.GitHubAuthService;
 import tn.esprit.services.auth.GoogleAuthService;
 import tn.esprit.utils.UserSession;
@@ -25,6 +27,7 @@ public class LoginController {
 
     private final UserService userService = new UserService();
     private final AuditLogService auditLogService = new AuditLogService();
+    private final PasswordResetService passwordResetService = new PasswordResetService();
     private final GoogleAuthService googleAuthService = new GoogleAuthService();
     private final GitHubAuthService gitHubAuthService = new GitHubAuthService();
 
@@ -88,6 +91,52 @@ public class LoginController {
         Parent root = FXMLLoader.load(getClass().getResource("/Register.fxml"));
         Stage stage = (Stage) emailField.getScene().getWindow();
         stage.setScene(new Scene(root));
+    }
+
+    @FXML
+    private void handleForgotPassword() {
+        try {
+            Optional<String> emailOpt = askEmailForReset();
+            if (emailOpt.isEmpty()) return;
+            String email = emailOpt.get().trim();
+            if (email.isBlank()) {
+                showError("Email requis pour la réinitialisation.");
+                return;
+            }
+            if (userService.findByEmail(email).isEmpty()) {
+                showError("Aucun compte trouvé avec cet email.");
+                return;
+            }
+
+            passwordResetService.sendResetCode(email);
+
+            Optional<ResetPayload> payload = askResetPayload(email);
+            if (payload.isEmpty()) {
+                showError("Réinitialisation annulée.");
+                return;
+            }
+            ResetPayload p = payload.get();
+            if (!passwordResetService.verifyCode(email, p.code())) {
+                showError("Code invalide ou expiré.");
+                return;
+            }
+            if (!p.newPassword().equals(p.confirmPassword())) {
+                showError("Les mots de passe ne correspondent pas.");
+                return;
+            }
+            if (p.newPassword().trim().length() < 6) {
+                showError("Mot de passe trop court (min. 6 caractères).");
+                return;
+            }
+
+            userService.resetPasswordByEmail(email, p.newPassword());
+            passwordResetService.consume(email);
+            errorLabel.setStyle("-fx-text-fill: #2E7D32; -fx-font-size: 12px; -fx-background-color: #E8F5E9; -fx-padding: 8 12; -fx-background-radius: 8;");
+            errorLabel.setText("Mot de passe réinitialisé avec succès.");
+            errorLabel.setVisible(true);
+        } catch (Exception e) {
+            showError("Reset mot de passe échoué: " + e.getMessage());
+        }
     }
 
     @FXML
@@ -201,4 +250,45 @@ public class LoginController {
                 : "unknown";
         return type + " — " + msg + " @ " + at;
     }
+
+    private Optional<String> askEmailForReset() {
+        TextInputDialog d = new TextInputDialog(emailField != null ? emailField.getText() : "");
+        d.setTitle("Mot de passe oublié");
+        d.setHeaderText("Réinitialiser le mot de passe");
+        d.setContentText("Email du compte:");
+        return d.showAndWait().map(String::trim).filter(s -> !s.isBlank());
+    }
+
+    private Optional<ResetPayload> askResetPayload(String email) {
+        Dialog<ResetPayload> dialog = new Dialog<>();
+        dialog.setTitle("Confirmation reset");
+        dialog.setHeaderText("Code envoyé à " + email);
+
+        ButtonType confirmType = new ButtonType("Valider", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(confirmType, ButtonType.CANCEL);
+
+        PasswordField codeField = new PasswordField();
+        codeField.setPromptText("Code reçu par email");
+        PasswordField newPwField = new PasswordField();
+        newPwField.setPromptText("Nouveau mot de passe");
+        PasswordField confirmPwField = new PasswordField();
+        confirmPwField.setPromptText("Confirmer le mot de passe");
+
+        VBox box = new VBox(8, new Label("Code"), codeField, new Label("Nouveau mot de passe"), newPwField, new Label("Confirmation"), confirmPwField);
+        dialog.getDialogPane().setContent(box);
+
+        dialog.setResultConverter(btn -> {
+            if (btn == confirmType) {
+                return new ResetPayload(
+                        codeField.getText() == null ? "" : codeField.getText().trim(),
+                        newPwField.getText() == null ? "" : newPwField.getText(),
+                        confirmPwField.getText() == null ? "" : confirmPwField.getText()
+                );
+            }
+            return null;
+        });
+        return dialog.showAndWait();
+    }
+
+    private record ResetPayload(String code, String newPassword, String confirmPassword) {}
 }

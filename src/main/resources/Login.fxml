@@ -2,6 +2,8 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.shape.SVGPath?>
 
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="tn.esprit.controllers.LoginController"
@@ -47,6 +49,8 @@
                            style="-fx-padding: 11 16; -fx-font-size: 13px;
                                   -fx-border-color: #CE93D8; -fx-border-radius: 10;
                                   -fx-background-radius: 10; -fx-background-color: #FAF7FF;"/>
+            <Hyperlink text="Mot de passe oublié ?" onAction="#handleForgotPassword"
+                       style="-fx-text-fill: #7E57C2; -fx-font-size: 11px; -fx-padding: 2 0 0 2;"/>
         </VBox>
 
         <!-- Erreur -->
@@ -65,19 +69,43 @@
 
         <Button text="Continuer avec Google" onAction="#handleGoogleLogin"
                 maxWidth="Infinity"
+                contentDisplay="LEFT"
+                graphicTextGap="10"
                 style="-fx-background-color: white; -fx-text-fill: #444;
                        -fx-font-size: 13px; -fx-font-weight: bold;
                        -fx-padding: 11; -fx-background-radius: 12;
                        -fx-border-color: #DADCE0; -fx-border-radius: 12;
-                       -fx-cursor: hand;"/>
+                       -fx-cursor: hand;">
+            <graphic>
+                <!-- Google "G" (classic 4 colors) -->
+                <Group scaleX="0.92" scaleY="0.92">
+                    <SVGPath content="M21.35 11.1H12v2.98h5.35c-.23 1.29-1.47 3.78-5.35 3.78-3.22 0-5.85-2.66-5.85-5.95S8.78 5.96 12 5.96c1.83 0 3.06.78 3.76 1.45l2.56-2.46C16.67 3.42 14.6 2.3 12 2.3 6.98 2.3 2.9 6.38 2.9 11.9s4.08 9.6 9.1 9.6c5.25 0 8.7-3.69 8.7-8.88 0-.6-.07-1.06-.15-1.52z"
+                             style="-fx-fill: #4285F4;"/>
+                    <SVGPath content="M3.96 7.14l2.45 1.8C7.07 7.3 9.33 5.96 12 5.96c1.83 0 3.06.78 3.76 1.45l2.56-2.46C16.67 3.42 14.6 2.3 12 2.3c-3.5 0-6.52 1.99-8.04 4.84z"
+                             style="-fx-fill: #EA4335;"/>
+                    <SVGPath content="M12 21.5c2.53 0 4.66-.83 6.21-2.25l-2.87-2.23c-.77.54-1.8.92-3.34.92-2.87 0-5.3-1.93-6.16-4.56l-2.52 1.94C4.82 18.78 8.12 21.5 12 21.5z"
+                             style="-fx-fill: #34A853;"/>
+                    <SVGPath content="M5.84 13.38c-.22-.66-.35-1.36-.35-2.08s.13-1.42.34-2.08l-2.5-1.94C2.93 8.08 2.7 9 2.7 11.3c0 2.3.23 3.22.63 4.02l2.51-1.94z"
+                             style="-fx-fill: #FBBC05;"/>
+                </Group>
+            </graphic>
+        </Button>
 
         <Button text="Continuer avec GitHub" onAction="#handleGithubLogin"
                 maxWidth="Infinity"
+                contentDisplay="LEFT"
+                graphicTextGap="10"
                 style="-fx-background-color: #0D1117; -fx-text-fill: white;
                        -fx-font-size: 13px; -fx-font-weight: bold;
                        -fx-padding: 11; -fx-background-radius: 12;
                        -fx-border-color: #30363D; -fx-border-radius: 12;
-                       -fx-cursor: hand;"/>
+                       -fx-cursor: hand;">
+            <graphic>
+                <!-- GitHub mark (monochrome) -->
+                <SVGPath content="M12 2C6.48 2 2 6.58 2 12.26c0 4.5 2.87 8.31 6.84 9.66.5.1.68-.22.68-.49 0-.24-.01-.88-.01-1.73-2.78.63-3.37-1.39-3.37-1.39-.45-1.19-1.1-1.51-1.1-1.51-.9-.64.07-.63.07-.63 1 .07 1.53 1.07 1.53 1.07.89 1.58 2.34 1.12 2.91.86.09-.67.35-1.12.63-1.38-2.22-.26-4.56-1.16-4.56-5.15 0-1.14.39-2.07 1.03-2.8-.1-.26-.45-1.31.1-2.74 0 0 .84-.28 2.75 1.07.8-.23 1.65-.34 2.5-.35.85 0 1.7.12 2.5.35 1.9-1.35 2.74-1.07 2.74-1.07.55 1.43.2 2.48.1 2.74.64.73 1.03 1.66 1.03 2.8 0 4-2.35 4.89-4.59 5.14.36.33.68.97.68 1.96 0 1.41-.01 2.55-.01 2.9 0 .27.18.59.69.49C19.14 20.57 22 16.76 22 12.26 22 6.58 17.52 2 12 2z"
+                         style="-fx-fill: white;"/>
+            </graphic>
+        </Button>
 
         <!-- Lien Register -->
         <HBox alignment="CENTER" spacing="6">

@@ -17,18 +17,36 @@
             </HBox>
 
             <VBox spacing="8" styleClass="sidebar-menu">
-                <Button text="⌂ Dashboard" onAction="#goDashboardAdmin" styleClass="sidebar-item"/>
-                <Button text="◉" onAction="#goUsers" styleClass="sidebar-item sidebar-item--active"/>
-                <Button text="▦ Classes" onAction="#goClasses" styleClass="sidebar-item"/>
-                <Button text="▤ Subjects" onAction="#goMatieres" styleClass="sidebar-item"/>
-                <Button text="◈ Permissions" onAction="#goAccess" styleClass="sidebar-item"/>
-                <Button text="◔ Statistics" onAction="#goStats" styleClass="sidebar-item"/>
-                <Button text="✦ AI Copilot" onAction="#goCopiloteIA" styleClass="sidebar-item"/>
-                <Button text="⚙ Settings" onAction="#goSettings" styleClass="sidebar-item"/>
+                <Button text="Dashboard" onAction="#goDashboardAdmin" styleClass="sidebar-item">
+                    <graphic><Label text="🏠" styleClass="sidebar-icon"/></graphic>
+                </Button>
+                <Button text="Users" onAction="#goUsers" styleClass="sidebar-item sidebar-item--active">
+                    <graphic><Label text="👥" styleClass="sidebar-icon"/></graphic>
+                </Button>
+                <Button text="Classes" onAction="#goClasses" styleClass="sidebar-item">
+                    <graphic><Label text="🏫" styleClass="sidebar-icon"/></graphic>
+                </Button>
+                <Button text="Subjects" onAction="#goMatieres" styleClass="sidebar-item">
+                    <graphic><Label text="📚" styleClass="sidebar-icon"/></graphic>
+                </Button>
+                <Button text="Permissions" onAction="#goAccess" styleClass="sidebar-item">
+                    <graphic><Label text="🔑" styleClass="sidebar-icon"/></graphic>
+                </Button>
+                <Button text="Statistics" onAction="#goStats" styleClass="sidebar-item">
+                    <graphic><Label text="📈" styleClass="sidebar-icon"/></graphic>
+                </Button>
+                <Button text="AI Copilot" onAction="#goCopiloteIA" styleClass="sidebar-item">
+                    <graphic><Label text="✨" styleClass="sidebar-icon"/></graphic>
+                </Button>
+                <Button text="Settings" onAction="#goSettings" styleClass="sidebar-item">
+                    <graphic><Label text="⚙" styleClass="sidebar-icon"/></graphic>
+                </Button>
             </VBox>
 
             <Region VBox.vgrow="ALWAYS"/>
-            <Button text="↩ Logout" onAction="#logoutAdmin" styleClass="sidebar-logout"/>
+            <Button text="Logout" onAction="#logoutAdmin" styleClass="sidebar-logout">
+                <graphic><Label text="↩" styleClass="sidebar-icon"/></graphic>
+            </Button>
         </VBox>
     </left>
 

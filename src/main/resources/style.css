@@ -125,6 +125,7 @@
     -fx-background-radius: 12;
     -fx-alignment: CENTER_LEFT;
     -fx-cursor: hand;
+    -fx-graphic-text-gap: 10;
 }
 
 .sidebar-item:hover {
@@ -135,6 +136,17 @@
     -fx-background-color: rgba(255,255,255,0.28);
 }
 
+.sidebar-icon {
+    -fx-text-fill: rgba(255,255,255,0.96);
+    -fx-font-size: 14px;
+    -fx-min-width: 22px;
+    -fx-alignment: CENTER;
+}
+
+.sidebar-item--active .sidebar-icon {
+    -fx-text-fill: rgba(255,255,255,1);
+}
+
 .sidebar-logout {
     -fx-background-color: rgba(255,255,255,0.16);
     -fx-text-fill: rgba(255,255,255,0.95);
@@ -143,6 +155,7 @@
     -fx-background-radius: 12;
     -fx-alignment: CENTER_LEFT;
     -fx-cursor: hand;
+    -fx-graphic-text-gap: 10;
 }
 
 .sidebar-logout:hover {
