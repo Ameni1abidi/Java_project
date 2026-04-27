@@ -49,6 +49,8 @@
                            style="-fx-padding: 11 16; -fx-font-size: 13px;
                                   -fx-border-color: #CE93D8; -fx-border-radius: 10;
                                   -fx-background-radius: 10; -fx-background-color: #FAF7FF;"/>
+            <Hyperlink text="Mot de passe oublié ?" onAction="#handleForgotPassword"
+                       style="-fx-text-fill: #7E57C2; -fx-font-size: 11px; -fx-padding: 2 0 0 2;"/>
         </VBox>
 
         <!-- Erreur -->

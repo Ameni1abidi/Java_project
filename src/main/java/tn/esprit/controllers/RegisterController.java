@@ -100,6 +100,11 @@ public class RegisterController {
             showError("Veuillez accepter les conditions d'utilisation.");
             return;
         }
+        // Fallback: some JavaFX WebView runs do not always trigger JS->Java callback reliably.
+        String liveToken = readRecaptchaTokenFromWebView();
+        if (liveToken != null && !liveToken.isBlank()) {
+            recaptchaToken = liveToken.trim();
+        }
         if (recaptchaToken == null || recaptchaToken.isBlank()) {
             showError("Veuillez valider le reCAPTCHA.");
             return;
@@ -109,12 +114,14 @@ public class RegisterController {
             RecaptchaService.RecaptchaResult captcha = recaptchaService.verify(recaptchaToken);
             if (!captcha.success()) {
                 showError("Verification reCAPTCHA echouee: " + (captcha.errors().isBlank() ? "token invalide" : captcha.errors()));
+                resetRecaptchaWidget();
                 return;
             }
             boolean ok = userService.register(new User(nom, pw, email, role));
 
             if (!ok) {
                 showError("Cet email est déjà utilisé.");
+                resetRecaptchaWidget();
                 return;
             }
 
@@ -124,10 +131,12 @@ public class RegisterController {
             Optional<String> code = askForVerificationCode(email);
             if (code.isEmpty()) {
                 showError("Confirmation annulée. Votre compte reste en attente.");
+                resetRecaptchaWidget();
                 return;
             }
             if (!emailVerificationService.verifyCode(email, code.get())) {
                 showError("Code invalide ou expiré. Veuillez réessayer.");
+                resetRecaptchaWidget();
                 return;
             }
             emailVerificationService.markConsumed(email);
@@ -143,6 +152,7 @@ public class RegisterController {
 
         } catch (Exception e) {
             showError("Erreur : " + e.getMessage());
+            resetRecaptchaWidget();
             e.printStackTrace();
         }
     }
@@ -234,6 +244,30 @@ public class RegisterController {
     public class RecaptchaBridge {
         public void onToken(String token) {
             Platform.runLater(() -> recaptchaToken = token == null ? "" : token.trim());
+        }
+    }
+
+    private String readRecaptchaTokenFromWebView() {
+        try {
+            if (recaptchaWebView == null) return "";
+            Object value = recaptchaWebView.getEngine().executeScript(
+                    "window.grecaptcha && grecaptcha.getResponse ? grecaptcha.getResponse() : ''"
+            );
+            return value == null ? "" : String.valueOf(value).trim();
+        } catch (Exception ignored) {
+            return "";
+        }
+    }
+
+    private void resetRecaptchaWidget() {
+        recaptchaToken = "";
+        try {
+            if (recaptchaWebView != null) {
+                recaptchaWebView.getEngine().executeScript(
+                        "if (window.grecaptcha && grecaptcha.reset) { grecaptcha.reset(); }"
+                );
+            }
+        } catch (Exception ignored) {
         }
     }
 

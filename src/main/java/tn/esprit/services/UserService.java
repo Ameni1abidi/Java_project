@@ -285,6 +285,20 @@ public class UserService {
         }
     }
 
+    public void resetPasswordByEmail(String email, String newPassword) throws SQLException {
+        if (email == null || email.isBlank()) throw new IllegalArgumentException("Email manquant");
+        if (newPassword == null || newPassword.isBlank()) throw new IllegalArgumentException("Nouveau mot de passe manquant");
+        String sql = "UPDATE utilisateur SET password = ? WHERE LOWER(TRIM(email)) = LOWER(TRIM(?))";
+        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+            ps.setString(1, BCrypt.hashpw(newPassword.trim(), BCrypt.gensalt()));
+            ps.setString(2, email.trim());
+            int updated = ps.executeUpdate();
+            if (updated == 0) {
+                throw new SQLException("Aucun utilisateur trouvé pour cet email");
+            }
+        }
+    }
+
     private void markLastLoginNowIfPossible(int userId) {
         // Optional: only works if column exists.
         // We try both names commonly used in schemas.
