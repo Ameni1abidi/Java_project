@@ -60,7 +60,7 @@
                 <Label text="Categories" style="-fx-font-size: 22; -fx-font-weight: bold;" />
                 <Region HBox.hgrow="ALWAYS" />
                 <Button text="Creer" onAction="#goToAdd"
-                        style="-fx-background-color: #1abc9c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 20;"/>
+                        style="-fx-background-color: #6d4691; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 20;"/>
             </HBox>
 
             <TableView fx:id="tableCategorie" VBox.vgrow="ALWAYS"
