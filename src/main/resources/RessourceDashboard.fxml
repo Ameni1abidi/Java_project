@@ -2,13 +2,13 @@
 
 <?import javafx.scene.chart.BarChart?>
 <?import javafx.scene.chart.CategoryAxis?>
-<?import javafx.scene.chart.LineChart?>
 <?import javafx.scene.chart.NumberAxis?>
 <?import javafx.scene.chart.PieChart?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
 <HBox prefHeight="700" prefWidth="1100" style="-fx-background-color: #f5f6fa;"
@@ -57,34 +57,30 @@
     </VBox>
 
     <VBox spacing="12" style="-fx-padding: 18; -fx-background-color: #f5f6fa;" HBox.hgrow="ALWAYS">
+        <HBox alignment="CENTER_LEFT" spacing="12">
+            <VBox>
+                <Label text="Dashboard ressources" style="-fx-font-size: 22; -fx-font-weight: bold; -fx-text-fill: #1f2937;" />
+                <Label text="Analyse des favoris eleves et repartition des ressources" style="-fx-font-size: 13; -fx-text-fill: #667085;" />
+            </VBox>
+            <Region HBox.hgrow="ALWAYS" />
+            <Button text="Retour aux ressources" onAction="#goRessources"
+                    style="-fx-background-color:#e0f2fe; -fx-text-fill:#075985; -fx-font-weight:bold; -fx-background-radius:10; -fx-padding:9 14;" />
+        </HBox>
+
         <GridPane hgap="12" vgap="12">
-            <VBox prefWidth="315" prefHeight="335" style="-fx-background-color: white; -fx-padding: 18; -fx-background-radius: 8; -fx-border-color: #e5e7eb; -fx-border-radius: 8;">
-                <Label text="Engagement par ressource" style="-fx-font-weight: bold; -fx-font-size: 12;" />
-                <BarChart fx:id="engagementChart" legendVisible="true" prefHeight="285">
-                    <xAxis><CategoryAxis fx:id="engagementXAxis" /></xAxis>
-                    <yAxis><NumberAxis fx:id="engagementYAxis" /></yAxis>
+            <VBox prefWidth="420" prefHeight="380" style="-fx-background-color: white; -fx-padding: 18; -fx-background-radius: 8; -fx-border-color: #e5e7eb; -fx-border-radius: 8;">
+                <Label text="Top ressources par favoris" style="-fx-font-weight: bold; -fx-font-size: 13;" />
+                <Label fx:id="favoriteTotalLabel" text="0 favori eleve enregistre" style="-fx-font-size: 12; -fx-text-fill: #475467;" />
+                <Label fx:id="favoriteLeaderLabel" text="Aucune ressource favorite pour le moment" wrapText="true" style="-fx-font-size: 12; -fx-text-fill: #667085;" />
+                <BarChart fx:id="topFavoritesChart" legendVisible="false" prefHeight="320">
+                    <xAxis><CategoryAxis fx:id="topFavoritesXAxis" /></xAxis>
+                    <yAxis><NumberAxis fx:id="topFavoritesYAxis" /></yAxis>
                 </BarChart>
             </VBox>
 
-            <VBox prefWidth="315" prefHeight="335" GridPane.columnIndex="1" style="-fx-background-color: white; -fx-padding: 18; -fx-background-radius: 8; -fx-border-color: #e5e7eb; -fx-border-radius: 8;">
-                <Label text="Top ressources par score" style="-fx-font-weight: bold; -fx-font-size: 12;" />
-                <BarChart fx:id="topScoreChart" legendVisible="false" prefHeight="285">
-                    <xAxis><CategoryAxis fx:id="topScoreXAxis" /></xAxis>
-                    <yAxis><NumberAxis fx:id="topScoreYAxis" /></yAxis>
-                </BarChart>
-            </VBox>
-
-            <VBox prefWidth="315" prefHeight="335" GridPane.columnIndex="2" style="-fx-background-color: white; -fx-padding: 18; -fx-background-radius: 8; -fx-border-color: #e5e7eb; -fx-border-radius: 8;">
-                <Label text="Repartition des ressources par categorie" style="-fx-font-weight: bold; -fx-font-size: 12;" />
-                <PieChart fx:id="categoryPieChart" prefHeight="285" />
-            </VBox>
-
-            <VBox prefWidth="315" prefHeight="335" GridPane.rowIndex="1" style="-fx-background-color: white; -fx-padding: 18; -fx-background-radius: 8; -fx-border-color: #e5e7eb; -fx-border-radius: 8;">
-                <Label text="Evolution des interactions (30 jours)" style="-fx-font-weight: bold; -fx-font-size: 12;" />
-                <LineChart fx:id="evolutionChart" legendVisible="true" prefHeight="285">
-                    <xAxis><CategoryAxis /></xAxis>
-                    <yAxis><NumberAxis /></yAxis>
-                </LineChart>
+            <VBox prefWidth="420" prefHeight="380" GridPane.columnIndex="1" style="-fx-background-color: white; -fx-padding: 18; -fx-background-radius: 8; -fx-border-color: #e5e7eb; -fx-border-radius: 8;">
+                <Label text="Repartition des ressources par categorie" style="-fx-font-weight: bold; -fx-font-size: 13;" />
+                <PieChart fx:id="categoryPieChart" prefHeight="320" />
             </VBox>
         </GridPane>
     </VBox>

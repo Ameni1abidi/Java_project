@@ -7,7 +7,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -82,16 +81,52 @@ public class RessourceDashboardService {
         return stats;
     }
 
-    public List<ResourceEngagement> getTopResourcesByScore(int limit) {
-        return getEngagementByResource().stream()
-                .sorted((a, b) -> Integer.compare(b.score(), a.score()))
-                .limit(limit)
-                .toList();
+    public List<ResourceEngagement> getTopResourcesByFavorites(int limit) {
+        String sql = """
+                SELECT r.id,
+                       r.titre,
+                       COUNT(*) AS favorites
+                FROM ressource r
+                INNER JOIN ressource_favori f ON f.ressource_id = r.id
+                GROUP BY r.id, r.titre
+                HAVING favorites > 0
+                ORDER BY favorites DESC, r.titre
+                LIMIT ?
+                """;
+        List<ResourceEngagement> stats = new ArrayList<>();
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, Math.max(1, limit));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    stats.add(new ResourceEngagement(
+                            rs.getInt("id"),
+                            rs.getString("titre"),
+                            0,
+                            0,
+                            rs.getInt("favorites")
+                    ));
+                }
+            }
+        } catch (SQLException ignored) {
+        }
+        return stats;
+    }
+
+    public int getTotalFavorites() {
+        String sql = "SELECT COUNT(*) AS total FROM ressource_favori";
+        try (PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        } catch (SQLException ignored) {
+        }
+        return 0;
     }
 
     public Map<String, Integer> getResourcesByCategory() {
         String sql = """
-                SELECT COALESCE(NULLIF(type, ''), NULLIF(categorie_nom, ''), 'Non classe') AS label,
+                SELECT COALESCE(NULLIF(categorie_nom, ''), 'Non classe') AS label,
                        COUNT(*) AS total
                 FROM ressource
                 GROUP BY label
@@ -107,55 +142,6 @@ public class RessourceDashboardService {
             return data;
         }
         return data;
-    }
-
-    public List<DailyInteraction> getEvolutionLast30Days() {
-        String sql = """
-                SELECT day,
-                       SUM(views) AS views,
-                       SUM(likes) AS likes,
-                       SUM(favorites) AS favorites
-                FROM (
-                    SELECT DATE(created_at) AS day,
-                           SUM(CASE WHEN interaction_type = 'VIEW' THEN 1 ELSE 0 END) AS views,
-                           SUM(CASE WHEN interaction_type = 'LIKE' THEN 1 ELSE 0 END) AS likes,
-                           0 AS favorites
-                    FROM ressource_interaction
-                    WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 29 DAY)
-                    GROUP BY DATE(created_at)
-                    UNION ALL
-                    SELECT DATE(created_at) AS day,
-                           0 AS views,
-                           0 AS likes,
-                           COUNT(*) AS favorites
-                    FROM ressource_favori
-                    WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 29 DAY)
-                    GROUP BY DATE(created_at)
-                ) t
-                GROUP BY day
-                ORDER BY day
-                """;
-        Map<LocalDate, DailyInteraction> byDay = new LinkedHashMap<>();
-        LocalDate start = LocalDate.now().minusDays(29);
-        for (int i = 0; i < 30; i++) {
-            LocalDate day = start.plusDays(i);
-            byDay.put(day, new DailyInteraction(day, 0, 0, 0));
-        }
-        try (PreparedStatement ps = connection.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                LocalDate day = rs.getDate("day").toLocalDate();
-                byDay.put(day, new DailyInteraction(
-                        day,
-                        rs.getInt("views"),
-                        rs.getInt("likes"),
-                        rs.getInt("favorites")
-                ));
-            }
-        } catch (SQLException e) {
-            return new ArrayList<>(byDay.values());
-        }
-        return new ArrayList<>(byDay.values());
     }
 
     private void ensureSchemaSafe() {
@@ -222,11 +208,5 @@ public class RessourceDashboardService {
     }
 
     public record ResourceEngagement(int id, String title, int views, int likes, int favorites) {
-        public int score() {
-            return views + (likes * 3) + (favorites * 2);
-        }
-    }
-
-    public record DailyInteraction(LocalDate day, int views, int likes, int favorites) {
     }
 }

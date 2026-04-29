@@ -9,43 +9,37 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
-import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Label;
 import javafx.stage.Stage;
 import tn.esprit.services.RessourceDashboardService;
-import tn.esprit.services.RessourceDashboardService.DailyInteraction;
 import tn.esprit.services.RessourceDashboardService.ResourceEngagement;
 import tn.esprit.utils.ResourceNavigationContext;
 
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
 public class RessourceDashboardController {
-    @FXML private BarChart<String, Number> engagementChart;
-    @FXML private BarChart<String, Number> topScoreChart;
+    @FXML private BarChart<String, Number> topFavoritesChart;
     @FXML private PieChart categoryPieChart;
-    @FXML private LineChart<String, Number> evolutionChart;
-    @FXML private CategoryAxis engagementXAxis;
-    @FXML private NumberAxis engagementYAxis;
-    @FXML private CategoryAxis topScoreXAxis;
-    @FXML private NumberAxis topScoreYAxis;
+    @FXML private CategoryAxis topFavoritesXAxis;
+    @FXML private NumberAxis topFavoritesYAxis;
+    @FXML private Label favoriteTotalLabel;
+    @FXML private Label favoriteLeaderLabel;
 
     private RessourceDashboardService dashboardService;
-    private static final DateTimeFormatter DAY_FORMAT = DateTimeFormatter.ofPattern("dd/MM");
 
     @FXML
     public void initialize() {
         setupAxes();
         try {
             dashboardService = new RessourceDashboardService();
-            loadEngagementChart();
-            loadTopScoreChart();
+            loadTopFavoritesChart();
+            loadFavoriteAnalysis();
             loadCategoryPieChart();
-            loadEvolutionChart();
         } catch (Exception e) {
             e.printStackTrace();
             clearCharts();
@@ -53,49 +47,48 @@ public class RessourceDashboardController {
     }
 
     private void setupAxes() {
-        engagementXAxis.setLabel("");
-        engagementYAxis.setLabel("");
-        topScoreXAxis.setLabel("");
-        topScoreYAxis.setLabel("");
-        engagementChart.setAnimated(false);
-        topScoreChart.setAnimated(false);
-        evolutionChart.setAnimated(false);
-    }
-
-    private void loadEngagementChart() {
-        List<ResourceEngagement> stats = dashboardService.getEngagementByResource();
-
-        XYChart.Series<String, Number> views = new XYChart.Series<>();
-        views.setName("Vues");
-        XYChart.Series<String, Number> likes = new XYChart.Series<>();
-        likes.setName("Likes");
-        XYChart.Series<String, Number> favorites = new XYChart.Series<>();
-        favorites.setName("Favoris");
-
-        for (ResourceEngagement stat : stats) {
-            String title = shortTitle(stat.title());
-            views.getData().add(new XYChart.Data<>(title, stat.views()));
-            likes.getData().add(new XYChart.Data<>(title, stat.likes()));
-            favorites.getData().add(new XYChart.Data<>(title, stat.favorites()));
-        }
-
-        engagementChart.getData().setAll(views, likes, favorites);
+        topFavoritesXAxis.setLabel("");
+        topFavoritesYAxis.setLabel("Favoris");
+        topFavoritesChart.setAnimated(false);
     }
 
     private void clearCharts() {
-        engagementChart.getData().clear();
-        topScoreChart.getData().clear();
+        topFavoritesChart.getData().clear();
         categoryPieChart.getData().clear();
-        evolutionChart.getData().clear();
+        favoriteTotalLabel.setText("0 favori eleve enregistre");
+        favoriteLeaderLabel.setText("Aucune ressource favorite pour le moment");
     }
 
-    private void loadTopScoreChart() {
-        XYChart.Series<String, Number> score = new XYChart.Series<>();
-        score.setName("Score");
-        for (ResourceEngagement stat : dashboardService.getTopResourcesByScore(5)) {
-            score.getData().add(new XYChart.Data<>(shortTitle(stat.title()), stat.score()));
+    private void loadTopFavoritesChart() {
+        topFavoritesChart.setTitle("");
+        XYChart.Series<String, Number> favorites = new XYChart.Series<>();
+        favorites.setName("Favoris");
+        List<ResourceEngagement> topFavorites = dashboardService.getTopResourcesByFavorites(5);
+        if (topFavorites.isEmpty()) {
+            topFavoritesChart.setTitle("Aucun favori eleve pour le moment");
+            topFavoritesChart.getData().clear();
+            return;
         }
-        topScoreChart.getData().setAll(score);
+
+        for (ResourceEngagement stat : topFavorites) {
+            favorites.getData().add(new XYChart.Data<>(shortTitle(stat.title()), stat.favorites()));
+        }
+        topFavoritesChart.getData().setAll(favorites);
+    }
+
+    private void loadFavoriteAnalysis() {
+        int totalFavorites = dashboardService.getTotalFavorites();
+        favoriteTotalLabel.setText(totalFavorites + " favori(s) eleve(s) enregistre(s)");
+
+        List<ResourceEngagement> topFavorites = dashboardService.getTopResourcesByFavorites(1);
+        if (topFavorites.isEmpty()) {
+            favoriteLeaderLabel.setText("Aucune ressource favorite pour le moment");
+            return;
+        }
+
+        ResourceEngagement leader = topFavorites.get(0);
+        favoriteLeaderLabel.setText("Ressource la plus favorite: " + leader.title()
+                + " (" + leader.favorites() + " favori(s))");
     }
 
     private void loadCategoryPieChart() {
@@ -105,26 +98,6 @@ public class RessourceDashboardController {
                         .map(entry -> new PieChart.Data(entry.getKey(), entry.getValue()))
                         .toList()
         ));
-    }
-
-    private void loadEvolutionChart() {
-        List<DailyInteraction> evolution = dashboardService.getEvolutionLast30Days();
-
-        XYChart.Series<String, Number> views = new XYChart.Series<>();
-        views.setName("Vues");
-        XYChart.Series<String, Number> likes = new XYChart.Series<>();
-        likes.setName("Likes");
-        XYChart.Series<String, Number> favorites = new XYChart.Series<>();
-        favorites.setName("Favoris");
-
-        for (DailyInteraction day : evolution) {
-            String label = day.day().format(DAY_FORMAT);
-            views.getData().add(new XYChart.Data<>(label, day.views()));
-            likes.getData().add(new XYChart.Data<>(label, day.likes()));
-            favorites.getData().add(new XYChart.Data<>(label, day.favorites()));
-        }
-
-        evolutionChart.getData().setAll(views, likes, favorites);
     }
 
     private String shortTitle(String value) {
