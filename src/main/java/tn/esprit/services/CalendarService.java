@@ -89,7 +89,7 @@ public class CalendarService {
                         "Durée: " + examen.getDuree() + " min"
         );
 
-        event.setLocation("Salle non définie");
+        event.setLocation("Esprit");
 
         LocalDateTime start = convertDate(examen.getDateExamen());
         LocalDateTime end = start.plusMinutes(examen.getDuree());
