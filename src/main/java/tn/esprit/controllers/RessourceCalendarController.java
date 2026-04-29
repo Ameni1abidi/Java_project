@@ -18,10 +18,11 @@ import tn.esprit.utils.ResourceNavigationContext;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 public class RessourceCalendarController {
     @FXML
@@ -44,16 +45,19 @@ public class RessourceCalendarController {
     private void loadCalendar() {
         calendarContainer.getChildren().clear();
 
-        List<resources> resourceList = resourceService.getAll().stream()
-                .sorted(Comparator.comparing(this::sortDate).thenComparing(resources::getTitre, String.CASE_INSENSITIVE_ORDER))
-                .toList();
+        List<resources> resourceList = new ArrayList<>(resourceService.getAll());
+        resourceList.sort(
+                Comparator.comparing(this::sortDate, Comparator.reverseOrder())
+                        .thenComparing(r -> safe(r.getTitre()).toLowerCase())
+                        .thenComparing(Comparator.comparingInt(resources::getId).reversed())
+        );
 
         if (resourceList.isEmpty()) {
             showEmptyState("Aucune ressource ajoutee.");
             return;
         }
 
-        Map<String, VBox> sections = new TreeMap<>(this::compareDateLabels);
+        Map<String, VBox> sections = new LinkedHashMap<>();
         for (resources resource : resourceList) {
             String dateLabel = formatDateLabel(resource.getDisponibleLe());
             VBox section = sections.computeIfAbsent(dateLabel, this::createDateSection);
@@ -149,13 +153,7 @@ public class RessourceCalendarController {
     }
 
     private LocalDate sortDate(resources resource) {
-        return parseDate(resource.getDisponibleLe(), LocalDate.MAX);
-    }
-
-    private int compareDateLabels(String left, String right) {
-        LocalDate leftDate = parseDisplayDate(left, LocalDate.MAX);
-        LocalDate rightDate = parseDisplayDate(right, LocalDate.MAX);
-        return leftDate.compareTo(rightDate);
+        return parseDate(resource.getDisponibleLe(), LocalDate.MIN);
     }
 
     private String formatDateLabel(String rawDate) {
