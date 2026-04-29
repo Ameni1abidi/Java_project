@@ -111,6 +111,7 @@ public class RessourceDashboardController {
     @FXML private void goForum(ActionEvent event) { loadPage(event, "/forum.fxml"); }
     @FXML private void goCours(ActionEvent event) { loadPage(event, "/CoursList.fxml"); }
     @FXML private void goRessources(ActionEvent event) { loadPage(event, "/listeRessources.fxml"); }
+    @FXML private void goRessourceCalendar(ActionEvent event) { loadPage(event, "/RessourceCalendar.fxml"); }
     @FXML private void goCategories(ActionEvent event) { loadPage(event, "/CategorieList.fxml"); }
     @FXML private void goExamens(ActionEvent event) { loadPage(event, "/ExamenView.fxml"); }
     @FXML private void goEvaluations(ActionEvent event) { loadPage(event, "/EvaluationView.fxml"); }

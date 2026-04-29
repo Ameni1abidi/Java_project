@@ -158,8 +158,8 @@ public class ResourceListController {
             private final HBox pane = new HBox(8, editBtn, deleteBtn);
 
             {
-                editBtn.setStyle("-fx-background-color: #2196F3; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 12;");
-                deleteBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-padding: 6 12;");
+                editBtn.setStyle("-fx-background-color:#ede9fe; -fx-text-fill:#5b21b6; -fx-font-weight:bold; -fx-background-radius:8; -fx-padding:7 12;");
+                deleteBtn.setStyle("-fx-background-color:#fee2e2; -fx-text-fill:#991b1b; -fx-font-weight:bold; -fx-background-radius:8; -fx-padding:7 12;");
                 pane.setAlignment(Pos.CENTER);
                 editBtn.setOnAction(event -> {
                     resources res = getTableView().getItems().get(getIndex());

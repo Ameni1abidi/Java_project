@@ -72,10 +72,14 @@ public class RessourceCalendarController {
 
     private VBox createDateSection(String dateLabel) {
         VBox section = new VBox(8);
-        section.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-border-color: #e5e7eb; -fx-border-radius: 10; -fx-padding: 14;");
+        boolean today = isTodayLabel(dateLabel);
+        boolean past = isPastLabel(dateLabel);
+        String border = today ? "#7c3aed" : past ? "#cbd5e1" : "#c4b5fd";
+        String background = today ? "#faf5ff" : past ? "#f8fafc" : "white";
+        section.setStyle("-fx-background-color:" + background + "; -fx-background-radius: 12; -fx-border-color:" + border + "; -fx-border-width: 1.3; -fx-border-radius: 12; -fx-padding: 14;");
 
-        Label title = new Label(dateLabel);
-        title.setStyle("-fx-font-size: 16; -fx-font-weight: bold; -fx-text-fill: #4c1d95;");
+        Label title = new Label(buildDateTitle(dateLabel));
+        title.setStyle("-fx-font-size: 16; -fx-font-weight: bold; -fx-text-fill:" + (today ? "#6d28d9" : past ? "#64748b" : "#4c1d95") + ";");
         section.getChildren().add(title);
         return section;
     }
@@ -83,23 +87,65 @@ public class RessourceCalendarController {
     private HBox createEventCard(resources resource) {
         HBox card = new HBox(12);
         card.setPadding(new Insets(10));
-        card.setStyle("-fx-background-color: #f8fafc; -fx-background-radius: 8; -fx-border-color: #eef2f7; -fx-border-radius: 8;");
+        boolean available = resourceService.isDisponible(resource);
+        String accent = colorForType(resource.getType());
+        String cardBackground = available ? "#f8fafc" : "#fff7ed";
+        String border = available ? "#e9d5ff" : "#fed7aa";
+        card.setStyle("-fx-background-color:" + cardBackground + "; -fx-background-radius: 10; -fx-border-color:" + border + "; -fx-border-radius: 10; -fx-border-width: 1.2;");
 
         Label type = new Label(safeType(resource.getType()));
         type.setMinWidth(70);
-        type.setStyle("-fx-background-color: #dbeafe; -fx-text-fill: #1d4ed8; -fx-font-weight: bold; -fx-padding: 5 9; -fx-background-radius: 8;");
+        type.setStyle("-fx-background-color:" + accent + "; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 5 9; -fx-background-radius: 8;");
 
         VBox details = new VBox(4);
         Label title = new Label(safe(resource.getTitre()));
         title.setStyle("-fx-font-size: 14; -fx-font-weight: bold; -fx-text-fill: #111827;");
 
+        Label status = new Label(available ? "Disponible" : "Programme");
+        status.setStyle(available
+                ? "-fx-text-fill:#166534; -fx-font-size:12; -fx-font-weight:bold;"
+                : "-fx-text-fill:#9a3412; -fx-font-size:12; -fx-font-weight:bold;");
+
         Label content = new Label(shortText(resource.getContenu()));
         content.setWrapText(true);
         content.setStyle("-fx-text-fill: #64748b; -fx-font-size: 12;");
 
-        details.getChildren().addAll(title, content);
+        details.getChildren().addAll(title, status, content);
         card.getChildren().addAll(type, details);
         return card;
+    }
+
+    private String colorForType(String type) {
+        if (type == null) {
+            return "#7c3aed";
+        }
+        return switch (type.toLowerCase()) {
+            case "image" -> "#8b5cf6";
+            case "video" -> "#ec4899";
+            case "pdf" -> "#ef4444";
+            case "lien" -> "#0ea5e9";
+            default -> "#6366f1";
+        };
+    }
+
+    private String buildDateTitle(String dateLabel) {
+        if (isTodayLabel(dateLabel)) {
+            return dateLabel + " - Aujourd'hui";
+        }
+        if (isPastLabel(dateLabel)) {
+            return dateLabel + " - Passe";
+        }
+        return dateLabel;
+    }
+
+    private boolean isTodayLabel(String dateLabel) {
+        LocalDate date = parseDisplayDate(dateLabel, null);
+        return date != null && date.isEqual(LocalDate.now());
+    }
+
+    private boolean isPastLabel(String dateLabel) {
+        LocalDate date = parseDisplayDate(dateLabel, null);
+        return date != null && date.isBefore(LocalDate.now());
     }
 
     private LocalDate sortDate(resources resource) {
@@ -160,6 +206,16 @@ public class RessourceCalendarController {
     @FXML
     private void goRessources(ActionEvent event) {
         loadPage(event, "/listeRessources.fxml");
+    }
+
+    @FXML
+    private void goRessourceDashboard(ActionEvent event) {
+        loadPage(event, "/RessourceDashboard.fxml");
+    }
+
+    @FXML
+    private void goCategories(ActionEvent event) {
+        loadPage(event, "/CategorieList.fxml");
     }
 
     private void loadPage(ActionEvent event, String fxmlPath) {

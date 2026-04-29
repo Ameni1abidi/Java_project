@@ -8,6 +8,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -78,6 +79,16 @@ public class CategorieListController {
     }
 
     @FXML
+    private void goRessourceDashboard(ActionEvent event) {
+        loadPage(event, "/RessourceDashboard.fxml");
+    }
+
+    @FXML
+    private void goRessourceCalendar(ActionEvent event) {
+        loadPage(event, "/RessourceCalendar.fxml");
+    }
+
+    @FXML
     private void goExamens(ActionEvent event) {
         loadPage(event, "/ExamenView.fxml");
     }
@@ -132,15 +143,23 @@ public class CategorieListController {
 
     private class EditButtonCell extends TableCell<categorie, Void> {
         private final Button editButton = new Button("Modifier");
-        private final HBox container = new HBox(editButton);
+        private final Button deleteButton = new Button("Supprimer");
+        private final HBox container = new HBox(8, editButton, deleteButton);
 
         public EditButtonCell() {
-            editButton.setStyle("-fx-background-color: #1abc9c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6;");
+            editButton.setStyle("-fx-background-color:#ede9fe; -fx-text-fill:#5b21b6; -fx-font-weight:bold; -fx-background-radius:8; -fx-padding:7 12;");
+            deleteButton.setStyle("-fx-background-color:#fee2e2; -fx-text-fill:#991b1b; -fx-font-weight:bold; -fx-background-radius:8; -fx-padding:7 12;");
             container.setAlignment(Pos.CENTER);
             editButton.setOnAction(event -> {
                 categorie item = getTableRow().getItem();
                 if (item != null) {
                     showCategorieForm(item);
+                }
+            });
+            deleteButton.setOnAction(event -> {
+                categorie item = getTableRow().getItem();
+                if (item != null) {
+                    deleteCategorie(item);
                 }
             });
         }
@@ -153,6 +172,29 @@ public class CategorieListController {
             } else {
                 setGraphic(container);
             }
+        }
+    }
+
+    private void deleteCategorie(categorie item) {
+        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmation.setTitle("Confirmation");
+        confirmation.setHeaderText("Supprimer la categorie");
+        confirmation.setContentText("Etes-vous sur de vouloir supprimer la categorie \"" + item.getNom() + "\" ?");
+
+        if (confirmation.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) {
+            return;
+        }
+
+        try {
+            service.delete(item.getNom());
+            tableCategorie.setItems(FXCollections.observableArrayList(service.getAll()));
+            tableCategorie.refresh();
+        } catch (Exception e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Erreur");
+            alert.setHeaderText("Impossible de supprimer la categorie");
+            alert.setContentText("Verifiez qu'aucune ressource n'utilise encore cette categorie.\n" + e.getMessage());
+            alert.showAndWait();
         }
     }
 }

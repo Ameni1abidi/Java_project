@@ -494,6 +494,11 @@ public class ajouterRessource {
     }
 
     @FXML
+    private void goRessourceCalendar(ActionEvent event) {
+        loadPage(event, "/RessourceCalendar.fxml");
+    }
+
+    @FXML
     private void goExamens(ActionEvent event) {
         loadPage(event, "/ExamenView.fxml");
     }
