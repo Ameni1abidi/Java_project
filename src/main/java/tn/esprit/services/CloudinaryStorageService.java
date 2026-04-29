@@ -81,6 +81,32 @@ public class CloudinaryStorageService {
         return uploadByType(filePath, "video");
     }
 
+    public String uploadRaw(Path filePath) throws IOException {
+        if (!enabled || cloudinary == null) {
+            throw new IllegalStateException("Cloudinary n'est pas configure");
+        }
+        if (filePath == null || !filePath.toFile().exists()) {
+            throw new IOException("Fichier introuvable pour l'upload Cloudinary");
+        }
+
+        Map<?, ?> result = cloudinary.uploader().upload(
+                filePath.toFile(),
+                ObjectUtils.asMap(
+                        "resource_type", "raw",
+                        "folder", "eduflex/ocr-pages",
+                        "use_filename", true,
+                        "unique_filename", false,
+                        "overwrite", true
+                )
+        );
+
+        Object secureUrl = result.get("secure_url");
+        if (secureUrl == null) {
+            throw new IOException("Cloudinary n'a pas retourne d'URL securisee");
+        }
+        return secureUrl.toString();
+    }
+
     private String uploadByType(Path filePath, String type) throws IOException {
         if (!enabled || cloudinary == null) {
             throw new IllegalStateException("Cloudinary n'est pas configure");

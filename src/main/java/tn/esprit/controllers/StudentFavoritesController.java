@@ -22,6 +22,7 @@ import javafx.stage.Stage;
 import tn.esprit.entities.User;
 import tn.esprit.entities.resources;
 import tn.esprit.services.CloudinaryStorageService;
+import tn.esprit.services.OcrViewerPageService;
 import tn.esprit.services.QrCodeService;
 import tn.esprit.services.ResourceService;
 import tn.esprit.services.SensitiveResourceAccessService;
@@ -44,6 +45,7 @@ public class StudentFavoritesController {
     private final QrCodeService qrCodeService = new QrCodeService();
     private final SensitiveResourceAccessService sensitiveAccessService = new SensitiveResourceAccessService();
     private final CloudinaryStorageService cloudinaryStorageService = new CloudinaryStorageService();
+    private final OcrViewerPageService ocrViewerPageService = new OcrViewerPageService(cloudinaryStorageService);
     private int currentUserId = -1;
 
     @FXML
@@ -187,7 +189,7 @@ public class StudentFavoritesController {
         qrView.setFitHeight(138);
         qrView.setPreserveRatio(true);
 
-        Label hint = new Label("Scanner pour ouvrir");
+        Label hint = new Label("Scanner OCR");
         hint.setStyle("-fx-text-fill:#334155; -fx-font-size:12; -fx-font-weight:bold;");
         box.getChildren().addAll(qrView, hint);
         return box;
@@ -261,6 +263,9 @@ public class StudentFavoritesController {
 
     private String resolveAccessUrl(resources resource) {
         String content = resource.getContenu();
+        if ("image".equalsIgnoreCase(resource.getType())) {
+            return resolveImageOcrViewerUrl(resource);
+        }
         if (isRemoteUrl(content)) {
             return content;
         }
@@ -285,6 +290,29 @@ public class StudentFavoritesController {
         } catch (Exception e) {
             Path source = resolveLocalPath(content);
             return source == null ? null : source.toUri().toString();
+        }
+    }
+
+    private String resolveImageOcrViewerUrl(resources resource) {
+        String content = resource.getContenu();
+        try {
+            String imageUrl = content;
+            if (!isRemoteUrl(imageUrl)) {
+                Path source = resolveLocalPath(content);
+                if (source == null) {
+                    return null;
+                }
+                if (cloudinaryStorageService.isEnabled()) {
+                    imageUrl = cloudinaryStorageService.uploadImage(source);
+                    resource.setContenu(imageUrl);
+                    resourceService.update(resource);
+                } else {
+                    imageUrl = source.toUri().toString();
+                }
+            }
+            return ocrViewerPageService.createViewerUrl(resource.getTitre(), imageUrl);
+        } catch (Exception e) {
+            return isRemoteUrl(content) ? content : null;
         }
     }
 

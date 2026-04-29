@@ -4,11 +4,16 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.concurrent.Task;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.effect.BoxBlur;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.Image;
@@ -26,11 +31,14 @@ import tn.esprit.entities.User;
 import tn.esprit.entities.resources;
 import tn.esprit.services.ChapitreService;
 import tn.esprit.services.CloudinaryStorageService;
+import tn.esprit.services.OcrService;
+import tn.esprit.services.OcrViewerPageService;
 import tn.esprit.services.CoursService;
 import tn.esprit.services.QrCodeService;
 import tn.esprit.services.ResourceService;
 import tn.esprit.services.RessourceDashboardService;
 import tn.esprit.services.SensitiveResourceAccessService;
+import tn.esprit.services.TranslationService;
 import tn.esprit.services.UserService;
 import tn.esprit.services.YouTubeLinkService;
 import tn.esprit.utils.ResourceNavigationContext;
@@ -82,6 +90,9 @@ public class StudentChapterResourcesController {
     private RessourceDashboardService ressourceDashboardService;
     private QrCodeService qrCodeService;
     private CloudinaryStorageService cloudinaryStorageService;
+    private OcrService ocrService;
+    private OcrViewerPageService ocrViewerPageService;
+    private TranslationService translationService;
 
     private int chapitreId = -1;
     private int currentUserId = -1;
@@ -101,6 +112,9 @@ public class StudentChapterResourcesController {
         ressourceDashboardService = new RessourceDashboardService();
         qrCodeService = new QrCodeService();
         cloudinaryStorageService = new CloudinaryStorageService();
+        ocrService = new OcrService();
+        ocrViewerPageService = new OcrViewerPageService(cloudinaryStorageService);
+        translationService = new TranslationService();
 
         setupStudentIdentity();
         loadContext();
@@ -257,7 +271,8 @@ public class StudentChapterResourcesController {
         }
 
         if ("image".equalsIgnoreCase(resource.getType())) {
-            card.getChildren().addAll(topRow, chips, buildProtectedMediaPreview(resource), buildActionButtons(resource, true));
+            TextArea extractedTextArea = buildOcrTextArea();
+            card.getChildren().addAll(topRow, chips, buildProtectedMediaPreview(resource), buildActionButtons(resource, true), buildOcrBox(resource, extractedTextArea));
         } else if ("video".equalsIgnoreCase(resource.getType())) {
             card.getChildren().addAll(topRow, chips, buildProtectedMediaPreview(resource), buildActionButtons(resource, true));
         } else if ("lien".equalsIgnoreCase(resource.getType())) {
@@ -354,7 +369,7 @@ public class StudentChapterResourcesController {
         qrView.setFitHeight(138);
         qrView.setPreserveRatio(true);
 
-        Label hint = new Label("Scanner pour ouvrir");
+        Label hint = new Label("Scanner OCR");
         hint.setStyle(darkMode
                 ? "-fx-text-fill:#e5e7eb; -fx-font-size:12; -fx-font-weight:bold;"
                 : "-fx-text-fill:#334155; -fx-font-size:12; -fx-font-weight:bold;");
@@ -408,6 +423,9 @@ public class StudentChapterResourcesController {
 
     private String resolveAccessUrl(resources resource) {
         String content = resource.getContenu();
+        if ("image".equalsIgnoreCase(resource.getType())) {
+            return resolveImageOcrViewerUrl(resource);
+        }
         if (isRemoteUrl(content)) {
             return content;
         }
@@ -437,6 +455,29 @@ public class StudentChapterResourcesController {
         }
     }
 
+    private String resolveImageOcrViewerUrl(resources resource) {
+        String content = resource.getContenu();
+        try {
+            String imageUrl = content;
+            if (!isRemoteUrl(imageUrl)) {
+                Path source = resolveLocalPath(content);
+                if (source == null) {
+                    return null;
+                }
+                if (cloudinaryStorageService.isEnabled()) {
+                    imageUrl = cloudinaryStorageService.uploadImage(source);
+                    resource.setContenu(imageUrl);
+                    resourceService.update(resource);
+                } else {
+                    imageUrl = source.toUri().toString();
+                }
+            }
+            return ocrViewerPageService.createViewerUrl(resource.getTitre(), imageUrl);
+        } catch (Exception e) {
+            return isRemoteUrl(content) ? content : null;
+        }
+    }
+
     private HBox buildActionButtons(resources resource, boolean disponible) {
         HBox actions = new HBox(10);
         Button open = new Button("Voir / Telecharger");
@@ -461,6 +502,179 @@ public class StudentChapterResourcesController {
 
         actions.getChildren().addAll(open, favori);
         return actions;
+    }
+
+    private VBox buildOcrBox(resources resource, TextArea extractedTextArea) {
+        VBox box = new VBox(8);
+        box.setPadding(new Insets(10));
+        box.setStyle(darkMode
+                ? "-fx-background-color:#111827; -fx-background-radius:12; -fx-border-color:#334155; -fx-border-radius:12;"
+                : "-fx-background-color:#f8fafc; -fx-background-radius:12; -fx-border-color:#e2e8f0; -fx-border-radius:12;");
+
+        Label title = new Label("OCR intelligent");
+        title.setStyle(darkMode
+                ? "-fx-text-fill:#e5e7eb; -fx-font-weight:bold; -fx-font-size:14;"
+                : "-fx-text-fill:#1f2937; -fx-font-weight:bold; -fx-font-size:14;");
+
+        Label status = new Label("Image -> texte extrait -> copier, traduire ou rechercher.");
+        status.setWrapText(true);
+        status.setStyle(darkMode ? "-fx-text-fill:#9ca3af;" : "-fx-text-fill:#64748b;");
+
+        Button scanButton = new Button("Scanner l'image");
+        scanButton.setStyle("-fx-background-color:#4f46e5; -fx-text-fill:white; -fx-font-weight:bold; -fx-background-radius:10;");
+        scanButton.setOnAction(e -> runOcr(resource, extractedTextArea, status, scanButton));
+
+        Button copyButton = new Button("Copy");
+        copyButton.setStyle("-fx-background-color:#dcfce7; -fx-text-fill:#166534; -fx-font-weight:bold; -fx-background-radius:10;");
+        copyButton.setOnAction(e -> copyExtractedText(extractedTextArea, status));
+
+        ComboBox<String> languageBox = new ComboBox<>();
+        languageBox.getItems().addAll("Francais", "Arabe", "Anglais");
+        languageBox.setValue("Francais");
+        languageBox.setPrefWidth(112);
+
+        Button translateButton = new Button("Traduire");
+        translateButton.setStyle("-fx-background-color:#fef3c7; -fx-text-fill:#92400e; -fx-font-weight:bold; -fx-background-radius:10;");
+        translateButton.setOnAction(e -> translateExtractedText(extractedTextArea, languageBox, status, translateButton));
+
+        Button searchButton = new Button("Rechercher");
+        searchButton.setStyle("-fx-background-color:#e0f2fe; -fx-text-fill:#075985; -fx-font-weight:bold; -fx-background-radius:10;");
+        searchButton.setOnAction(e -> searchExtractedText(extractedTextArea, status));
+
+        HBox firstRow = new HBox(8, scanButton, copyButton);
+        firstRow.setAlignment(Pos.CENTER_LEFT);
+        HBox secondRow = new HBox(8, languageBox, translateButton, searchButton);
+        secondRow.setAlignment(Pos.CENTER_LEFT);
+        box.getChildren().addAll(title, status, extractedTextArea, firstRow, secondRow);
+        return box;
+    }
+
+    private TextArea buildOcrTextArea() {
+        TextArea area = new TextArea();
+        area.setPromptText("Le texte extrait de l'image apparait ici.");
+        area.setWrapText(true);
+        area.setPrefRowCount(5);
+        area.setMinHeight(96);
+        area.setVisible(false);
+        area.setManaged(false);
+        area.setStyle(darkMode
+                ? "-fx-control-inner-background:#0f172a; -fx-text-fill:#e5e7eb; -fx-prompt-text-fill:#94a3b8;"
+                : "-fx-control-inner-background:white; -fx-text-fill:#1f2937; -fx-prompt-text-fill:#94a3b8;");
+        return area;
+    }
+
+    private void runOcr(resources resource, TextArea target, Label status, Button scanButton) {
+        if (!sensitiveAccessService.canAccess(currentUser, resource)) {
+            showError("Acces refuse a cette ressource sensible.");
+            return;
+        }
+
+        Task<String> task = new Task<>() {
+            @Override
+            protected String call() throws Exception {
+                String content = resource.getContenu();
+                if (isRemoteUrl(content)) {
+                    return ocrService.extractTextFromUrl(content);
+                }
+                Path source = resolveLocalPath(content);
+                if (source == null) {
+                    throw new IOException("Image introuvable.");
+                }
+                if (cloudinaryStorageService.isEnabled()) {
+                    String cloudinaryUrl = cloudinaryStorageService.uploadImage(source);
+                    resource.setContenu(cloudinaryUrl);
+                    resourceService.update(resource);
+                    return ocrService.extractTextFromUrl(cloudinaryUrl);
+                }
+                return ocrService.extractTextFromFile(source);
+            }
+        };
+
+        scanButton.setDisable(true);
+        status.setText("Analyse OCR en cours...");
+        task.setOnSucceeded(e -> {
+            String text = task.getValue();
+            target.setText(text == null || text.isBlank() ? "Aucun texte detecte dans cette image." : text);
+            target.setVisible(true);
+            target.setManaged(true);
+            status.setText(text == null || text.isBlank() ? "OCR termine: aucun texte detecte." : "OCR termine: texte extrait.");
+            scanButton.setDisable(false);
+        });
+        task.setOnFailed(e -> {
+            status.setText("OCR indisponible: " + task.getException().getMessage());
+            scanButton.setDisable(false);
+        });
+        Thread thread = new Thread(task, "resource-ocr-" + resource.getId());
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    private void copyExtractedText(TextArea area, Label status) {
+        String text = area.getText();
+        if (text == null || text.isBlank()) {
+            status.setText("Aucun texte a copier.");
+            return;
+        }
+        ClipboardContent content = new ClipboardContent();
+        content.putString(text);
+        Clipboard.getSystemClipboard().setContent(content);
+        status.setText("Texte copie.");
+    }
+
+    private void translateExtractedText(TextArea area, ComboBox<String> languageBox, Label status, Button translateButton) {
+        String text = area.getText();
+        if (text == null || text.isBlank()) {
+            status.setText("Aucun texte a traduire.");
+            return;
+        }
+
+        String targetLang = switch (languageBox.getValue()) {
+            case "Arabe" -> "ar";
+            case "Anglais" -> "en";
+            default -> "fr";
+        };
+
+        Task<String> task = new Task<>() {
+            @Override
+            protected String call() {
+                return translationService.traduire(text, targetLang);
+            }
+        };
+
+        translateButton.setDisable(true);
+        status.setText("Traduction en cours...");
+        task.setOnSucceeded(e -> {
+            area.setText(task.getValue());
+            status.setText("Traduction terminee.");
+            translateButton.setDisable(false);
+        });
+        task.setOnFailed(e -> {
+            status.setText("Traduction indisponible: " + task.getException().getMessage());
+            translateButton.setDisable(false);
+        });
+        Thread thread = new Thread(task, "resource-translation-" + targetLang);
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    private void searchExtractedText(TextArea area, Label status) {
+        String text = area.getText();
+        if (text == null || text.isBlank()) {
+            status.setText("Aucun texte a rechercher.");
+            return;
+        }
+        try {
+            String query = text.length() > 220 ? text.substring(0, 220) : text;
+            URI uri = URI.create("https://www.google.com/search?q=" + java.net.URLEncoder.encode(query, java.nio.charset.StandardCharsets.UTF_8));
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().browse(uri);
+                status.setText("Recherche ouverte.");
+            } else {
+                status.setText("Navigateur indisponible sur cet appareil.");
+            }
+        } catch (Exception e) {
+            status.setText("Recherche impossible: " + e.getMessage());
+        }
     }
 
     @FXML
