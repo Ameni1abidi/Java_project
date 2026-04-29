@@ -18,14 +18,15 @@ public class CloudinaryStorageService {
         String apiKey = LocalSecrets.get("CLOUDINARY_API_KEY");
         String apiSecret = LocalSecrets.get("CLOUDINARY_API_SECRET");
 
-        if (cloudinaryUrl != null && !cloudinaryUrl.isBlank()) {
+        if (!isBlank(cloudinaryUrl) && !isPlaceholder(cloudinaryUrl)) {
             this.cloudinary = new Cloudinary(cloudinaryUrl);
             this.cloudinary.config.secure = true;
             this.enabled = true;
             return;
         }
 
-        if (isBlank(cloudName) || isBlank(apiKey) || isBlank(apiSecret)) {
+        if (isBlank(cloudName) || isBlank(apiKey) || isBlank(apiSecret)
+                || isPlaceholder(cloudName) || isPlaceholder(apiKey) || isPlaceholder(apiSecret)) {
             this.cloudinary = null;
             this.enabled = false;
             return;
@@ -80,6 +81,32 @@ public class CloudinaryStorageService {
         return uploadByType(filePath, "video");
     }
 
+    public String uploadRaw(Path filePath) throws IOException {
+        if (!enabled || cloudinary == null) {
+            throw new IllegalStateException("Cloudinary n'est pas configure");
+        }
+        if (filePath == null || !filePath.toFile().exists()) {
+            throw new IOException("Fichier introuvable pour l'upload Cloudinary");
+        }
+
+        Map<?, ?> result = cloudinary.uploader().upload(
+                filePath.toFile(),
+                ObjectUtils.asMap(
+                        "resource_type", "raw",
+                        "folder", "eduflex/ocr-pages",
+                        "use_filename", true,
+                        "unique_filename", false,
+                        "overwrite", true
+                )
+        );
+
+        Object secureUrl = result.get("secure_url");
+        if (secureUrl == null) {
+            throw new IOException("Cloudinary n'a pas retourne d'URL securisee");
+        }
+        return secureUrl.toString();
+    }
+
     private String uploadByType(Path filePath, String type) throws IOException {
         if (!enabled || cloudinary == null) {
             throw new IllegalStateException("Cloudinary n'est pas configure");
@@ -122,6 +149,18 @@ public class CloudinaryStorageService {
 
     private boolean isBlank(String value) {
         return value == null || value.isBlank();
+    }
+
+    private boolean isPlaceholder(String value) {
+        if (value == null) {
+            return false;
+        }
+        String normalized = value.trim().toLowerCase();
+        return normalized.contains("your-cloud")
+                || normalized.contains("your-cloudinary")
+                || normalized.contains("<api_key>")
+                || normalized.contains("<api_secret>")
+                || normalized.contains("<cloud_name>");
     }
 
 }

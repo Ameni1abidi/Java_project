@@ -15,6 +15,7 @@ public class SidebarController {
     @FXML private Button btnForum;
     @FXML private Button btnCours;
     @FXML private Button btnRessources;
+    @FXML private Button btnRessourceDashboard;
     @FXML private Button btnCategories;
     @FXML private Button btnExamens;
     @FXML private Button btnEvaluations;
@@ -45,6 +46,11 @@ public class SidebarController {
     @FXML
     void goRessources(ActionEvent e) {
         load(e, "/listeRessources.fxml");
+    }
+
+    @FXML
+    void goRessourceDashboard(ActionEvent e) {
+        load(e, "/RessourceDashboard.fxml");
     }
 
     @FXML
@@ -95,6 +101,7 @@ public class SidebarController {
             case "forum" -> active(btnForum);
             case "cours" -> active(btnCours);
             case "ressources" -> active(btnRessources);
+            case "ressourceDashboard" -> active(btnRessourceDashboard);
             case "categories" -> active(btnCategories);
             case "examens" -> active(btnExamens);
             case "evaluations" -> active(btnEvaluations);
@@ -125,6 +132,7 @@ public class SidebarController {
         if (btnForum != null) btnForum.setStyle(base);
         if (btnCours != null) btnCours.setStyle(base);
         if (btnRessources != null) btnRessources.setStyle(base);
+        if (btnRessourceDashboard != null) btnRessourceDashboard.setStyle(base);
         if (btnCategories != null) btnCategories.setStyle(base);
         if (btnExamens != null) btnExamens.setStyle(base);
         if (btnEvaluations != null) btnEvaluations.setStyle(base);

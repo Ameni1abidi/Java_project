@@ -24,3 +24,16 @@ CREATE TABLE IF NOT EXISTS ressource_favori (
     PRIMARY KEY (user_id, ressource_id),
     CONSTRAINT fk_fav_ressource FOREIGN KEY (ressource_id) REFERENCES ressource(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS ressource_interaction (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ressource_id INT NOT NULL,
+    user_id INT NULL,
+    interaction_type VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_ressource_interaction_resource (ressource_id),
+    INDEX idx_ressource_interaction_type (interaction_type),
+    CONSTRAINT fk_interaction_ressource
+        FOREIGN KEY (ressource_id) REFERENCES ressource(id)
+        ON DELETE CASCADE
+);
