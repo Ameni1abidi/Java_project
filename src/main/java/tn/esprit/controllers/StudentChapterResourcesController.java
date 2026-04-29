@@ -227,8 +227,8 @@ public class StudentChapterResourcesController {
         card.setPrefWidth(360);
         card.setPadding(new Insets(12));
         card.setStyle(darkMode
-                ? "-fx-background-color:#1f2937; -fx-background-radius:14;"
-                : "-fx-background-color:white; -fx-background-radius:14;");
+                ? "-fx-background-color:#1f2937; -fx-background-radius:14; -fx-border-color:#334155; -fx-border-radius:14;"
+                : "-fx-background-color:#fffaff; -fx-background-radius:14; -fx-border-color:#dfd4f2; -fx-border-radius:14;");
 
         HBox topRow = new HBox(8);
         Label titre = new Label(safe(resource.getTitre()));
@@ -238,7 +238,7 @@ public class StudentChapterResourcesController {
         Label typeBadge = new Label(safeType(resource.getType()));
         typeBadge.setStyle(darkMode
                 ? "-fx-background-color:#374151; -fx-text-fill:#e5e7eb; -fx-padding:3 8; -fx-background-radius:8; -fx-font-weight:bold;"
-                : "-fx-background-color:#eef2ff; -fx-text-fill:#3f3f46; -fx-padding:3 8; -fx-background-radius:8; -fx-font-weight:bold;");
+                : "-fx-background-color:#f1eaff; -fx-text-fill:#4b3b78; -fx-padding:3 8; -fx-background-radius:8; -fx-font-weight:bold;");
         Region spacer = new Region();
         HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
         topRow.getChildren().addAll(titre, spacer, typeBadge);
@@ -301,7 +301,7 @@ public class StudentChapterResourcesController {
         preview.setAlignment(Pos.CENTER);
         preview.setStyle(darkMode
                 ? "-fx-background-color:#111827; -fx-background-radius:12;"
-                : "-fx-background-color:#e5e7eb; -fx-background-radius:12;");
+                : "-fx-background-color:#ede7f7; -fx-background-radius:12;");
 
         if ("image".equalsIgnoreCase(resource.getType())) {
             Image image = buildImage(resource.getContenu());
@@ -345,8 +345,8 @@ public class StudentChapterResourcesController {
         box.setPadding(new Insets(10));
         box.setMaxWidth(190);
         box.setStyle(darkMode
-                ? "-fx-background-color:rgba(15,23,42,0.88); -fx-background-radius:14;"
-                : "-fx-background-color:rgba(255,255,255,0.92); -fx-background-radius:14;");
+                ? "-fx-background-color:rgba(15,23,42,0.88); -fx-background-radius:14; -fx-border-color:#475569; -fx-border-radius:14;"
+                : "-fx-background-color:rgba(255,250,255,0.94); -fx-background-radius:14; -fx-border-color:#dfd4f2; -fx-border-radius:14;");
 
         String accessUrl = resolveAccessUrl(resource);
         if (accessUrl == null || accessUrl.isBlank()) {
@@ -372,7 +372,7 @@ public class StudentChapterResourcesController {
         Label hint = new Label("Scanner OCR");
         hint.setStyle(darkMode
                 ? "-fx-text-fill:#e5e7eb; -fx-font-size:12; -fx-font-weight:bold;"
-                : "-fx-text-fill:#334155; -fx-font-size:12; -fx-font-weight:bold;");
+                : "-fx-text-fill:#2f2855; -fx-font-size:12; -fx-font-weight:bold;");
         box.getChildren().addAll(qrView, hint);
         return box;
     }
@@ -480,27 +480,33 @@ public class StudentChapterResourcesController {
 
     private HBox buildActionButtons(resources resource, boolean disponible) {
         HBox actions = new HBox(10);
-        Button open = new Button("Voir / Telecharger");
-        open.setDisable(!disponible);
-        open.setStyle(darkMode
-                ? "-fx-background-color:#1e3a8a; -fx-text-fill:#dbeafe; -fx-font-weight:bold; -fx-background-radius:10;"
-                : "-fx-background-color:#e0f2fe; -fx-text-fill:#075985; -fx-font-weight:bold; -fx-background-radius:10;");
-        open.setOnAction(e -> openResource(resource));
+        boolean hasQrPreview = resource != null
+                && ("image".equalsIgnoreCase(resource.getType()) || "video".equalsIgnoreCase(resource.getType()));
+
+        if (!hasQrPreview) {
+            Button open = new Button("Voir / Telecharger");
+            open.setDisable(!disponible);
+            open.setStyle(darkMode
+                    ? "-fx-background-color:#1e3a8a; -fx-text-fill:#dbeafe; -fx-font-weight:bold; -fx-background-radius:10;"
+                    : "-fx-background-color:#e9e2fb; -fx-text-fill:#493286; -fx-font-weight:bold; -fx-background-radius:10;");
+            open.setOnAction(e -> openResource(resource));
+            actions.getChildren().add(open);
+        }
 
         Button favori = new Button(resource.isFavori() ? "Retire" : "Favori");
         favori.setStyle(resource.isFavori()
                 ? (darkMode
                     ? "-fx-background-color:#14532d; -fx-text-fill:#dcfce7; -fx-font-weight:bold; -fx-background-radius:10;"
-                    : "-fx-background-color:#dcfce7; -fx-text-fill:#166534; -fx-font-weight:bold; -fx-background-radius:10;")
+                    : "-fx-background-color:#e4f8ec; -fx-text-fill:#17643a; -fx-font-weight:bold; -fx-background-radius:10;")
                 : (darkMode
                     ? "-fx-background-color:#334155; -fx-text-fill:#e2e8f0; -fx-font-weight:bold; -fx-background-radius:10;"
-                    : "-fx-background-color:#e2e8f0; -fx-text-fill:#334155; -fx-font-weight:bold; -fx-background-radius:10;"));
+                    : "-fx-background-color:#eee8f8; -fx-text-fill:#4b3b78; -fx-font-weight:bold; -fx-background-radius:10;"));
         favori.setOnAction(e -> {
             toggleFavorite(resource);
             loadResources();
         });
 
-        actions.getChildren().addAll(open, favori);
+        actions.getChildren().add(favori);
         return actions;
     }
 
@@ -509,23 +515,23 @@ public class StudentChapterResourcesController {
         box.setPadding(new Insets(10));
         box.setStyle(darkMode
                 ? "-fx-background-color:#111827; -fx-background-radius:12; -fx-border-color:#334155; -fx-border-radius:12;"
-                : "-fx-background-color:#f8fafc; -fx-background-radius:12; -fx-border-color:#e2e8f0; -fx-border-radius:12;");
+                : "-fx-background-color:#fbf8ff; -fx-background-radius:12; -fx-border-color:#d9cdee; -fx-border-radius:12;");
 
         Label title = new Label("OCR intelligent");
         title.setStyle(darkMode
                 ? "-fx-text-fill:#e5e7eb; -fx-font-weight:bold; -fx-font-size:14;"
-                : "-fx-text-fill:#1f2937; -fx-font-weight:bold; -fx-font-size:14;");
+                : "-fx-text-fill:#251a45; -fx-font-weight:bold; -fx-font-size:14;");
 
         Label status = new Label("Image -> texte extrait -> copier, traduire ou rechercher.");
         status.setWrapText(true);
-        status.setStyle(darkMode ? "-fx-text-fill:#9ca3af;" : "-fx-text-fill:#64748b;");
+        status.setStyle(darkMode ? "-fx-text-fill:#9ca3af;" : "-fx-text-fill:#756b8e;");
 
         Button scanButton = new Button("Scanner l'image");
-        scanButton.setStyle("-fx-background-color:#4f46e5; -fx-text-fill:white; -fx-font-weight:bold; -fx-background-radius:10;");
+        scanButton.setStyle("-fx-background-color:#6f5cc2; -fx-text-fill:white; -fx-font-weight:bold; -fx-background-radius:10;");
         scanButton.setOnAction(e -> runOcr(resource, extractedTextArea, status, scanButton));
 
         Button copyButton = new Button("Copy");
-        copyButton.setStyle("-fx-background-color:#dcfce7; -fx-text-fill:#166534; -fx-font-weight:bold; -fx-background-radius:10;");
+        copyButton.setStyle("-fx-background-color:#e4f8ec; -fx-text-fill:#17643a; -fx-font-weight:bold; -fx-background-radius:10;");
         copyButton.setOnAction(e -> copyExtractedText(extractedTextArea, status));
 
         ComboBox<String> languageBox = new ComboBox<>();
@@ -534,11 +540,11 @@ public class StudentChapterResourcesController {
         languageBox.setPrefWidth(112);
 
         Button translateButton = new Button("Traduire");
-        translateButton.setStyle("-fx-background-color:#fef3c7; -fx-text-fill:#92400e; -fx-font-weight:bold; -fx-background-radius:10;");
+        translateButton.setStyle("-fx-background-color:#fff0c9; -fx-text-fill:#855b00; -fx-font-weight:bold; -fx-background-radius:10;");
         translateButton.setOnAction(e -> translateExtractedText(extractedTextArea, languageBox, status, translateButton));
 
         Button searchButton = new Button("Rechercher");
-        searchButton.setStyle("-fx-background-color:#e0f2fe; -fx-text-fill:#075985; -fx-font-weight:bold; -fx-background-radius:10;");
+        searchButton.setStyle("-fx-background-color:#e9e2fb; -fx-text-fill:#493286; -fx-font-weight:bold; -fx-background-radius:10;");
         searchButton.setOnAction(e -> searchExtractedText(extractedTextArea, status));
 
         HBox firstRow = new HBox(8, scanButton, copyButton);
@@ -559,7 +565,7 @@ public class StudentChapterResourcesController {
         area.setManaged(false);
         area.setStyle(darkMode
                 ? "-fx-control-inner-background:#0f172a; -fx-text-fill:#e5e7eb; -fx-prompt-text-fill:#94a3b8;"
-                : "-fx-control-inner-background:white; -fx-text-fill:#1f2937; -fx-prompt-text-fill:#94a3b8;");
+                : "-fx-control-inner-background:#fffaff; -fx-text-fill:#251a45; -fx-prompt-text-fill:#9b8cb8;");
         return area;
     }
 

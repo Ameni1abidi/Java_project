@@ -84,13 +84,13 @@ public class StudentFavoritesController {
         VBox card = new VBox(10);
         card.setPrefWidth(360);
         card.setPadding(new Insets(12));
-        card.setStyle("-fx-background-color:white; -fx-background-radius:14; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08),8,0,0,3);");
+        card.setStyle("-fx-background-color:#fffaff; -fx-background-radius:14; -fx-border-color:#dfd4f2; -fx-border-radius:14;");
 
         HBox topRow = new HBox(8);
         Label titre = new Label(safe(resource.getTitre()));
         titre.setStyle("-fx-font-size:18; -fx-font-weight:bold; -fx-text-fill:#1d2939;");
         Label typeBadge = new Label(safeType(resource.getType()));
-        typeBadge.setStyle("-fx-background-color:#eef2ff; -fx-text-fill:#3f3f46; -fx-padding:3 8; -fx-background-radius:8; -fx-font-weight:bold;");
+        typeBadge.setStyle("-fx-background-color:#f1eaff; -fx-text-fill:#4b3b78; -fx-padding:3 8; -fx-background-radius:8; -fx-font-weight:bold;");
         Region spacer = new Region();
         HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
         topRow.getChildren().addAll(titre, spacer, typeBadge);
@@ -100,9 +100,12 @@ public class StudentFavoritesController {
         contenu.setStyle("-fx-text-fill:#667085;");
 
         HBox actions = new HBox(10);
-        Button openBtn = new Button("Ouvrir");
-        openBtn.setStyle("-fx-background-color:#e0f2fe; -fx-text-fill:#075985; -fx-font-weight:bold; -fx-background-radius:10;");
-        openBtn.setOnAction(e -> openResource(resource));
+        if (!isMultimedia(resource)) {
+            Button openBtn = new Button("Ouvrir");
+            openBtn.setStyle("-fx-background-color:#e9e2fb; -fx-text-fill:#493286; -fx-font-weight:bold; -fx-background-radius:10;");
+            openBtn.setOnAction(e -> openResource(resource));
+            actions.getChildren().add(openBtn);
+        }
 
         Button removeBtn = new Button("Retirer des favoris");
         removeBtn.setStyle("-fx-background-color:#fee2e2; -fx-text-fill:#991b1b; -fx-font-weight:bold; -fx-background-radius:10;");
@@ -111,7 +114,7 @@ public class StudentFavoritesController {
             loadFavorites();
         });
 
-        actions.getChildren().addAll(openBtn, removeBtn);
+        actions.getChildren().add(removeBtn);
         if (isMultimedia(resource)) {
             card.getChildren().addAll(topRow, buildProtectedMediaPreview(resource));
         } else {
@@ -127,7 +130,7 @@ public class StudentFavoritesController {
         preview.setMinSize(334, 210);
         preview.setMaxSize(334, 210);
         preview.setAlignment(Pos.CENTER);
-        preview.setStyle("-fx-background-color:#e5e7eb; -fx-background-radius:12;");
+        preview.setStyle("-fx-background-color:#ede7f7; -fx-background-radius:12;");
 
         if ("image".equalsIgnoreCase(resource.getType())) {
             Image image = buildImage(resource.getContenu());
@@ -166,7 +169,7 @@ public class StudentFavoritesController {
         box.setAlignment(Pos.CENTER);
         box.setPadding(new Insets(10));
         box.setMaxWidth(190);
-        box.setStyle("-fx-background-color:rgba(255,255,255,0.92); -fx-background-radius:14;");
+        box.setStyle("-fx-background-color:rgba(255,250,255,0.94); -fx-background-radius:14; -fx-border-color:#dfd4f2; -fx-border-radius:14;");
 
         String accessUrl = resolveAccessUrl(resource);
         if (accessUrl == null || accessUrl.isBlank()) {
@@ -190,7 +193,7 @@ public class StudentFavoritesController {
         qrView.setPreserveRatio(true);
 
         Label hint = new Label("Scanner OCR");
-        hint.setStyle("-fx-text-fill:#334155; -fx-font-size:12; -fx-font-weight:bold;");
+        hint.setStyle("-fx-text-fill:#2f2855; -fx-font-size:12; -fx-font-weight:bold;");
         box.getChildren().addAll(qrView, hint);
         return box;
     }
