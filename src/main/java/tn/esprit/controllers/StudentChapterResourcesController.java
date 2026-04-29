@@ -3,16 +3,20 @@ package tn.esprit.controllers;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.effect.BoxBlur;
+import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -252,33 +256,10 @@ public class StudentChapterResourcesController {
             return card;
         }
 
-        if ("image".equalsIgnoreCase(resource.getType()) && !resource.isSensitive()) {
-            ImageView imageView = new ImageView();
-            imageView.setFitHeight(170);
-            imageView.setFitWidth(334);
-            imageView.setPreserveRatio(false);
-            imageView.setStyle("-fx-background-radius: 12;");
-            Image image = buildImage(resource.getContenu());
-            VBox qrBox = buildQrBox(resource);
-            if (image != null) {
-                imageView.setImage(image);
-                card.getChildren().addAll(topRow, chips, imageView, qrBox, buildActionButtons(resource, true));
-            } else {
-                Label fallback = new Label("Image securisee via QR code.");
-                fallback.setWrapText(true);
-                fallback.setStyle(darkMode ? "-fx-text-fill:#cbd5e1;" : "-fx-text-fill:#667085;");
-                card.getChildren().addAll(topRow, chips, fallback, qrBox, buildActionButtons(resource, true));
-            }
-        } else if ("image".equalsIgnoreCase(resource.getType()) && resource.isSensitive()) {
-            Label masked = new Label("Apercu masque (ressource sensible)");
-            masked.setWrapText(true);
-            masked.setStyle(darkMode ? "-fx-text-fill:#fca5a5; -fx-font-weight:bold;" : "-fx-text-fill:#b91c1c; -fx-font-weight:bold;");
-            card.getChildren().addAll(topRow, chips, masked, buildQrBox(resource), buildActionButtons(resource, true));
+        if ("image".equalsIgnoreCase(resource.getType())) {
+            card.getChildren().addAll(topRow, chips, buildProtectedMediaPreview(resource), buildActionButtons(resource, true));
         } else if ("video".equalsIgnoreCase(resource.getType())) {
-            Label videoInfo = new Label("Video securisee. Scannez le QR code pour l'ouvrir sur Cloudinary.");
-            videoInfo.setWrapText(true);
-            videoInfo.setStyle(darkMode ? "-fx-text-fill:#cbd5e1;" : "-fx-text-fill:#667085;");
-            card.getChildren().addAll(topRow, chips, videoInfo, buildQrBox(resource), buildActionButtons(resource, true));
+            card.getChildren().addAll(topRow, chips, buildProtectedMediaPreview(resource), buildActionButtons(resource, true));
         } else if ("lien".equalsIgnoreCase(resource.getType())) {
             Button openLink = new Button("Ouvrir le lien");
             openLink.setStyle("-fx-background-color:#bbf7d0; -fx-text-fill:#166534; -fx-font-size:14; -fx-font-weight:bold; -fx-background-radius:10;");
@@ -295,6 +276,90 @@ public class StudentChapterResourcesController {
         }
 
         return card;
+    }
+
+    private StackPane buildProtectedMediaPreview(resources resource) {
+        StackPane preview = new StackPane();
+        preview.setPrefSize(334, 210);
+        preview.setMinSize(334, 210);
+        preview.setMaxSize(334, 210);
+        preview.setAlignment(Pos.CENTER);
+        preview.setStyle(darkMode
+                ? "-fx-background-color:#111827; -fx-background-radius:12;"
+                : "-fx-background-color:#e5e7eb; -fx-background-radius:12;");
+
+        if ("image".equalsIgnoreCase(resource.getType())) {
+            Image image = buildImage(resource.getContenu());
+            if (image != null) {
+                ImageView imageView = new ImageView(image);
+                imageView.setFitWidth(334);
+                imageView.setFitHeight(210);
+                imageView.setPreserveRatio(false);
+
+                ColorAdjust dim = new ColorAdjust();
+                dim.setBrightness(-0.28);
+                dim.setSaturation(-0.35);
+                BoxBlur blur = new BoxBlur(8, 8, 3);
+                dim.setInput(blur);
+                imageView.setEffect(dim);
+                preview.getChildren().add(imageView);
+            } else {
+                Label fallback = new Label("Image protegee");
+                fallback.setStyle(darkMode
+                        ? "-fx-text-fill:#cbd5e1; -fx-font-size:18; -fx-font-weight:bold;"
+                        : "-fx-text-fill:#475467; -fx-font-size:18; -fx-font-weight:bold;");
+                preview.getChildren().add(fallback);
+            }
+        } else {
+            Label videoPlaceholder = new Label("VIDEO");
+            videoPlaceholder.setStyle(darkMode
+                    ? "-fx-text-fill:#e5e7eb; -fx-font-size:34; -fx-font-weight:bold;"
+                    : "-fx-text-fill:#475467; -fx-font-size:34; -fx-font-weight:bold;");
+            preview.getChildren().add(videoPlaceholder);
+        }
+
+        VBox overlay = buildCenteredQrOverlay(resource);
+        preview.getChildren().add(overlay);
+        StackPane.setAlignment(overlay, Pos.CENTER);
+        return preview;
+    }
+
+    private VBox buildCenteredQrOverlay(resources resource) {
+        VBox box = new VBox(6);
+        box.setAlignment(Pos.CENTER);
+        box.setPadding(new Insets(10));
+        box.setMaxWidth(190);
+        box.setStyle(darkMode
+                ? "-fx-background-color:rgba(15,23,42,0.88); -fx-background-radius:14;"
+                : "-fx-background-color:rgba(255,255,255,0.92); -fx-background-radius:14;");
+
+        String accessUrl = resolveAccessUrl(resource);
+        if (accessUrl == null || accessUrl.isBlank()) {
+            Label unavailable = new Label("QR indisponible");
+            unavailable.setStyle("-fx-text-fill:#dc2626; -fx-font-weight:bold;");
+            box.getChildren().add(unavailable);
+            return box;
+        }
+
+        Image qrImage = qrCodeService.generateImage(accessUrl, 138);
+        if (qrImage == null) {
+            Label unavailable = new Label("QR indisponible");
+            unavailable.setStyle("-fx-text-fill:#dc2626; -fx-font-weight:bold;");
+            box.getChildren().add(unavailable);
+            return box;
+        }
+
+        ImageView qrView = new ImageView(qrImage);
+        qrView.setFitWidth(138);
+        qrView.setFitHeight(138);
+        qrView.setPreserveRatio(true);
+
+        Label hint = new Label("Scanner pour ouvrir");
+        hint.setStyle(darkMode
+                ? "-fx-text-fill:#e5e7eb; -fx-font-size:12; -fx-font-weight:bold;"
+                : "-fx-text-fill:#334155; -fx-font-size:12; -fx-font-weight:bold;");
+        box.getChildren().addAll(qrView, hint);
+        return box;
     }
 
     private VBox buildQrBox(resources resource) {

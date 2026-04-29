@@ -3,16 +3,20 @@ package tn.esprit.controllers;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.effect.BoxBlur;
+import javafx.scene.effect.ColorAdjust;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import tn.esprit.entities.User;
@@ -89,9 +93,7 @@ public class StudentFavoritesController {
         HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
         topRow.getChildren().addAll(titre, spacer, typeBadge);
 
-        Label contenu = new Label(isMultimedia(resource)
-                ? "Ressource Cloudinary protegee par QR code."
-                : safe(resource.getContenu()));
+        Label contenu = new Label(safe(resource.getContenu()));
         contenu.setWrapText(true);
         contenu.setStyle("-fx-text-fill:#667085;");
 
@@ -108,12 +110,87 @@ public class StudentFavoritesController {
         });
 
         actions.getChildren().addAll(openBtn, removeBtn);
-        card.getChildren().addAll(topRow, contenu);
         if (isMultimedia(resource)) {
-            card.getChildren().add(buildQrBox(resource));
+            card.getChildren().addAll(topRow, buildProtectedMediaPreview(resource));
+        } else {
+            card.getChildren().addAll(topRow, contenu);
         }
         card.getChildren().add(actions);
         return card;
+    }
+
+    private StackPane buildProtectedMediaPreview(resources resource) {
+        StackPane preview = new StackPane();
+        preview.setPrefSize(334, 210);
+        preview.setMinSize(334, 210);
+        preview.setMaxSize(334, 210);
+        preview.setAlignment(Pos.CENTER);
+        preview.setStyle("-fx-background-color:#e5e7eb; -fx-background-radius:12;");
+
+        if ("image".equalsIgnoreCase(resource.getType())) {
+            Image image = buildImage(resource.getContenu());
+            if (image != null) {
+                ImageView imageView = new ImageView(image);
+                imageView.setFitWidth(334);
+                imageView.setFitHeight(210);
+                imageView.setPreserveRatio(false);
+
+                ColorAdjust dim = new ColorAdjust();
+                dim.setBrightness(-0.28);
+                dim.setSaturation(-0.35);
+                BoxBlur blur = new BoxBlur(8, 8, 3);
+                dim.setInput(blur);
+                imageView.setEffect(dim);
+                preview.getChildren().add(imageView);
+            } else {
+                Label fallback = new Label("Image protegee");
+                fallback.setStyle("-fx-text-fill:#475467; -fx-font-size:18; -fx-font-weight:bold;");
+                preview.getChildren().add(fallback);
+            }
+        } else {
+            Label videoPlaceholder = new Label("VIDEO");
+            videoPlaceholder.setStyle("-fx-text-fill:#475467; -fx-font-size:34; -fx-font-weight:bold;");
+            preview.getChildren().add(videoPlaceholder);
+        }
+
+        VBox overlay = buildCenteredQrOverlay(resource);
+        preview.getChildren().add(overlay);
+        StackPane.setAlignment(overlay, Pos.CENTER);
+        return preview;
+    }
+
+    private VBox buildCenteredQrOverlay(resources resource) {
+        VBox box = new VBox(6);
+        box.setAlignment(Pos.CENTER);
+        box.setPadding(new Insets(10));
+        box.setMaxWidth(190);
+        box.setStyle("-fx-background-color:rgba(255,255,255,0.92); -fx-background-radius:14;");
+
+        String accessUrl = resolveAccessUrl(resource);
+        if (accessUrl == null || accessUrl.isBlank()) {
+            Label unavailable = new Label("QR indisponible");
+            unavailable.setStyle("-fx-text-fill:#dc2626; -fx-font-weight:bold;");
+            box.getChildren().add(unavailable);
+            return box;
+        }
+
+        Image qrImage = qrCodeService.generateImage(accessUrl, 138);
+        if (qrImage == null) {
+            Label unavailable = new Label("QR indisponible");
+            unavailable.setStyle("-fx-text-fill:#dc2626; -fx-font-weight:bold;");
+            box.getChildren().add(unavailable);
+            return box;
+        }
+
+        ImageView qrView = new ImageView(qrImage);
+        qrView.setFitWidth(138);
+        qrView.setFitHeight(138);
+        qrView.setPreserveRatio(true);
+
+        Label hint = new Label("Scanner pour ouvrir");
+        hint.setStyle("-fx-text-fill:#334155; -fx-font-size:12; -fx-font-weight:bold;");
+        box.getChildren().addAll(qrView, hint);
+        return box;
     }
 
     private VBox buildQrBox(resources resource) {
@@ -163,6 +240,23 @@ public class StudentFavoritesController {
 
     private boolean isRemoteUrl(String value) {
         return value != null && (value.startsWith("http://") || value.startsWith("https://"));
+    }
+
+    private Image buildImage(String contenu) {
+        if (contenu == null || contenu.isBlank()) {
+            return null;
+        }
+        try {
+            if (isRemoteUrl(contenu)) {
+                return new Image(contenu, true);
+            }
+            Path path = resolveLocalPath(contenu);
+            if (path != null) {
+                return new Image(path.toUri().toString(), true);
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
     }
 
     private String resolveAccessUrl(resources resource) {

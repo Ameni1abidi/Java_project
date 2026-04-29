@@ -394,8 +394,8 @@ public class ajouterRessource {
                             : cloudinaryStorageService.uploadVideo(source);
                     qrCodeService.generateAndSave(cloudinaryUrl);
                     return cloudinaryUrl;
-                } catch (Exception ignored) {
-                    // Fallback local si Cloudinary est indisponible au moment de l'ajout.
+                } catch (Exception e) {
+                    throw new IOException("Upload Cloudinary impossible. Verifiez la configuration Cloudinary.", e);
                 }
             }
 
