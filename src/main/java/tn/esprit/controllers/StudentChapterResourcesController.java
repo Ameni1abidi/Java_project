@@ -381,8 +381,7 @@ public class StudentChapterResourcesController {
                 : "-fx-background-color:#e0f2fe; -fx-text-fill:#075985; -fx-font-weight:bold; -fx-background-radius:10;");
         open.setOnAction(e -> openResource(resource));
 
-        Button favori = new Button(resource.isFavori() ? "Ajoutee aux favoris" : "Favori");
-        favori.setDisable(resource.isFavori());
+        Button favori = new Button(resource.isFavori() ? "Retire" : "Favori");
         favori.setStyle(resource.isFavori()
                 ? (darkMode
                     ? "-fx-background-color:#14532d; -fx-text-fill:#dcfce7; -fx-font-weight:bold; -fx-background-radius:10;"
@@ -391,7 +390,7 @@ public class StudentChapterResourcesController {
                     ? "-fx-background-color:#334155; -fx-text-fill:#e2e8f0; -fx-font-weight:bold; -fx-background-radius:10;"
                     : "-fx-background-color:#e2e8f0; -fx-text-fill:#334155; -fx-font-weight:bold; -fx-background-radius:10;"));
         favori.setOnAction(e -> {
-            addToFavorites(resource);
+            toggleFavorite(resource);
             loadResources();
         });
 
@@ -413,17 +412,26 @@ public class StudentChapterResourcesController {
         loadResources();
     }
 
-    private void addToFavorites(resources resource) {
+    private void toggleFavorite(resources resource) {
         if (currentUserId <= 0) {
             showError("Session utilisateur invalide.");
             return;
         }
-        if (resource.isFavori()) {
+        if (resource == null || resource.getId() <= 0) {
+            showError("Ressource invalide.");
             return;
         }
-        resourceService.setFavorite(currentUserId, resource.getId(), true);
-        resource.setFavori(true);
-        favoriteCount += 1;
+
+        boolean newFavoriteState = !resource.isFavori();
+        if (!resourceService.setFavorite(currentUserId, resource.getId(), newFavoriteState)) {
+            showError("Impossible de mettre a jour les favoris.");
+            return;
+        }
+        resource.setFavori(newFavoriteState);
+        favoriteCount += newFavoriteState ? 1 : -1;
+        if (favoriteCount < 0) {
+            favoriteCount = 0;
+        }
         updateFavoritesButtonLabel();
     }
 
