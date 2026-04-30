@@ -7,6 +7,9 @@ public class resources {
     private String categorieNom;
     private String type;
     private String disponibleLe;
+    private int chapitreId;
+    private boolean favori;
+    private boolean sensitive;
 
     public resources() {
     }
@@ -17,6 +20,8 @@ public class resources {
         this.categorieNom = categorieNom;
         this.type = type;
         this.disponibleLe = disponibleLe;
+        this.chapitreId = 0;
+        this.sensitive = false;
     }
 
     public resources(int id, String titre, String contenu, String categorieNom, String type, String disponibleLe) {
@@ -26,6 +31,40 @@ public class resources {
         this.categorieNom = categorieNom;
         this.type = type;
         this.disponibleLe = disponibleLe;
+        this.chapitreId = 0;
+        this.sensitive = false;
+    }
+
+    public resources(String titre, String contenu, String categorieNom, String type, String disponibleLe, int chapitreId) {
+        this.titre = titre;
+        this.contenu = contenu;
+        this.categorieNom = categorieNom;
+        this.type = type;
+        this.disponibleLe = disponibleLe;
+        this.chapitreId = chapitreId;
+        this.sensitive = false;
+    }
+
+    public resources(int id, String titre, String contenu, String categorieNom, String type, String disponibleLe, int chapitreId) {
+        this.id = id;
+        this.titre = titre;
+        this.contenu = contenu;
+        this.categorieNom = categorieNom;
+        this.type = type;
+        this.disponibleLe = disponibleLe;
+        this.chapitreId = chapitreId;
+        this.sensitive = false;
+    }
+
+    public resources(int id, String titre, String contenu, String categorieNom, String type, String disponibleLe, int chapitreId, boolean sensitive) {
+        this.id = id;
+        this.titre = titre;
+        this.contenu = contenu;
+        this.categorieNom = categorieNom;
+        this.type = type;
+        this.disponibleLe = disponibleLe;
+        this.chapitreId = chapitreId;
+        this.sensitive = sensitive;
     }
 
     public resources(String ressourceTest, String contenuTest, int id) {
@@ -79,9 +118,33 @@ public class resources {
         this.disponibleLe = disponibleLe;
     }
 
+    public int getChapitreId() {
+        return chapitreId;
+    }
+
+    public void setChapitreId(int chapitreId) {
+        this.chapitreId = chapitreId;
+    }
+
+    public boolean isFavori() {
+        return favori;
+    }
+
+    public void setFavori(boolean favori) {
+        this.favori = favori;
+    }
+
+    public boolean isSensitive() {
+        return sensitive;
+    }
+
+    public void setSensitive(boolean sensitive) {
+        this.sensitive = sensitive;
+    }
+
     @Override
     public String toString() {
-        return "resources{id=" + id + ", titre='" + titre + "', contenu='" + contenu + "', type='" + type + "', categorieNom='" + categorieNom + "', disponibleLe='" + disponibleLe + "'}";
+        return "resources{id=" + id + ", titre='" + titre + "', contenu='" + contenu + "', type='" + type + "', categorieNom='" + categorieNom + "', disponibleLe='" + disponibleLe + "', chapitreId=" + chapitreId + ", favori=" + favori + ", sensitive=" + sensitive + "}";
     }
 }
 

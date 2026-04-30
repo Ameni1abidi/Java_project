@@ -1,0 +1,35 @@
+/* EduFlex Theme - Violet & Pastel Green */
+
+.root {
+    -fx-font-family: "Segoe UI";
+    -fx-background-color: #f5f3ff;
+}
+
+/* Labels */
+.label {
+    -fx-text-fill: #4c1d95;
+}
+
+/* KPI cards feel */
+.vbox {
+    -fx-background-color: #ede9fe;
+    -fx-background-radius: 12;
+}
+
+/* Charts background */
+.chart {
+    -fx-background-color: transparent;
+}
+
+.chart-plot-background {
+    -fx-background-color: #ecfdf5;
+}
+
+/* Pie colors (optional styling hint) */
+.default-color0.chart-pie { -fx-pie-color: #a78bfa; } /* violet */
+.default-color1.chart-pie { -fx-pie-color: #86efac; } /* pastel green */
+
+/* BarChart styling */
+.chart-bar {
+    -fx-bar-fill: #a78bfa;
+}

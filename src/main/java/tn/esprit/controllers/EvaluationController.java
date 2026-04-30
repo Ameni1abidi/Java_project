@@ -9,15 +9,20 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import tn.esprit.entities.Evaluation;
 import tn.esprit.entities.Examen;
 import tn.esprit.entities.User;
+import tn.esprit.services.BulletinService;
 import tn.esprit.services.EvaluationService;
 import tn.esprit.services.ExamenService;
 import tn.esprit.services.UserService;
 
+import java.awt.*;
+import java.io.File;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -33,6 +38,7 @@ public class EvaluationController {
     @FXML private TableColumn<Evaluation, String> colExamen;
     @FXML private TableColumn<Evaluation, String> colEleve;
     @FXML private TableColumn<Evaluation, Void> colActions;
+
 
     @FXML private TextField searchField;
 
@@ -110,8 +116,9 @@ public class EvaluationController {
             private final Button btnVoir = new Button("Voir");
             private final Button btnEdit = new Button("Edit");
             private final Button btnDelete = new Button("Delete");
+            private final Button btnPdf = new Button("PDF");
 
-            private final HBox pane = new HBox(10, btnVoir, btnEdit, btnDelete);
+            private final HBox pane = new HBox(10, btnVoir, btnEdit, btnDelete, btnPdf);
 
             {
                 pane.setStyle("-fx-alignment: CENTER;");
@@ -141,6 +148,39 @@ public class EvaluationController {
                                 "-fx-padding: 6 16;" +
                                 "-fx-min-width: 90;"
                 );
+                btnPdf.setStyle(
+                        "-fx-background-color: #2c3e50;" +
+                                "-fx-text-fill: white;" +
+                                "-fx-background-radius: 6;" +
+                                "-fx-padding: 6 16;" +
+                                "-fx-min-width: 70;"
+                );
+
+                btnPdf.setOnAction(event -> {
+
+                    Evaluation e = getTableView().getItems().get(getIndex());
+
+                    int eleveId = e.getEleveId();
+
+                    BulletinService bulletinService = new BulletinService();
+                    bulletinService.exportBulletin(eleveId);
+
+                    try {
+                        File file = new File("C:/EduFlex/bulletin_" + eleveId + ".pdf");
+
+                        if (file.exists()) {
+                            Desktop.getDesktop().open(file);
+                        } else {
+                            Alert alert = new Alert(Alert.AlertType.ERROR);
+                            alert.setTitle("Erreur");
+                            alert.setContentText("PDF introuvable !");
+                            alert.show();
+                        }
+
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                });
 
                 // ===== VIEW =====
                 btnVoir.setOnAction(event -> {

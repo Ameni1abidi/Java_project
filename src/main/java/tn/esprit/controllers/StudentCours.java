@@ -2,36 +2,43 @@ package tn.esprit.controllers;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import tn.esprit.entities.Cours;
 import tn.esprit.entities.Chapitre;
+import tn.esprit.entities.Cours;
 import tn.esprit.services.ChapitreService;
 import tn.esprit.services.CoursService;
-import tn.esprit.services.StudentChapitreProgressService;
+import tn.esprit.utils.ResourceNavigationContext;
 
-import java.awt.*;
-import java.io.File;
 import java.util.List;
 
 public class StudentCours {
 
     @FXML
     private FlowPane courseContainer;
+    @FXML
+    private Label weatherIcon;
+    @FXML
+    private Label weatherTemp;
+    @FXML
+    private Label weatherDesc;
 
     private final CoursService coursService = new CoursService();
     private final ChapitreService chapitreService = new ChapitreService();
+    private Timeline refreshTimeline;
 
-    // ================= INIT =================
     @FXML
     public void initialize() {
         loadCourses();
@@ -39,29 +46,21 @@ public class StudentCours {
         setWeather("Ciel degage", 28);
     }
 
-    // ================= AUTO REFRESH =================
     private void startAutoRefresh() {
-        Timeline timeline = new Timeline(
-                new KeyFrame(Duration.seconds(5), e -> loadCourses())
-        );
-        timeline.setCycleCount(Timeline.INDEFINITE);
-        timeline.play();
+        refreshTimeline = new Timeline(new KeyFrame(Duration.seconds(5), e -> loadCourses()));
+        refreshTimeline.setCycleCount(Timeline.INDEFINITE);
+        refreshTimeline.play();
     }
 
-    // ================= LOAD COURSES =================
     private void loadCourses() {
         courseContainer.getChildren().clear();
-
         List<Cours> coursList = coursService.getAll();
-
         for (Cours c : coursList) {
             courseContainer.getChildren().add(createCourseCard(c));
         }
     }
 
-    // ================= COURSE CARD =================
     private VBox createCourseCard(Cours c) {
-
         VBox card = new VBox(10);
         card.setStyle("""
             -fx-background-color: white;
@@ -71,11 +70,9 @@ public class StudentCours {
             -fx-pref-width: 330;
         """);
 
-        // ===== TITLE =====
         Label title = new Label(c.getTitre());
         title.setStyle("-fx-font-size:20px; -fx-font-weight:bold; -fx-text-fill:#111;");
 
-        // ===== DESCRIPTION =====
         Label desc = new Label(
                 c.getDescription() != null
                         ? c.getDescription().substring(0, Math.min(100, c.getDescription().length())) + "..."
@@ -83,14 +80,11 @@ public class StudentCours {
         );
         desc.setStyle("-fx-text-fill:#666; -fx-font-size:12px;");
 
-        // ===== DATE =====
-        Label date = new Label("📅 " + c.getDateCreation());
+        Label date = new Label("Date: " + c.getDateCreation());
         date.setStyle("-fx-text-fill:#999; -fx-font-size:11px;");
 
-        // ===== CHAPTER COUNT =====
         int totalChaps = chapitreService.countByCoursId(c.getId());
-
-        Label chapLabel = new Label("📚 Nombre de chapitres: " + totalChaps);
+        Label chapLabel = new Label("Nombre de chapitres: " + totalChaps);
         chapLabel.setStyle("""
             -fx-background-color:#ede9fe;
             -fx-text-fill:#5b21b6;
@@ -99,228 +93,107 @@ public class StudentCours {
             -fx-font-weight:bold;
         """);
 
-
-
-        // ===== PROGRESS =====
-        int progress = chapitreService.getCourseProgress(3, c.getId()); // userId = 3
-
-        double percent = progress / 100.0;
-
+        int done = (int) (totalChaps * 0.6);
+        double percent = totalChaps == 0 ? 0 : (double) done / totalChaps;
         Label progressTitle = new Label("Progression");
         progressTitle.setStyle("-fx-font-size:12px; -fx-text-fill:#444;");
-
-        int done = (int) Math.round((progress / 100.0) * totalChaps);
-
-        Label progressValue = new Label(done + "/" + totalChaps + " (" + progress + "%)");
-
+        Label progressValue = new Label(done + "/" + totalChaps + " (" + (int) (percent * 100) + "%)");
+        progressValue.setStyle("-fx-font-size:11px; -fx-text-fill:#555;");
         ProgressBar progressBar = new ProgressBar(percent);
         progressBar.setPrefWidth(280);
         progressBar.setStyle("-fx-accent:#2d89ef;");
 
-        // ===== CERTIFICATE =====
-        Button certBtn = new Button("🏆 Certificat");
+        Button certBtn = new Button(percent >= 0.8 ? "Voir Certificat" : "Certificat bloque");
+        certBtn.setDisable(percent < 0.8);
+        certBtn.setStyle(percent >= 0.8
+                ? "-fx-background-color:#7c3aed; -fx-text-fill:white; -fx-background-radius:25; -fx-padding:8 14; -fx-font-weight:bold;"
+                : "-fx-background-color:#d1d5db; -fx-text-fill:#666; -fx-background-radius:25; -fx-padding:8 14;");
 
-        StudentChapitreProgressService progressService = new StudentChapitreProgressService();
-
-        boolean eligible = progressService.getCourseProgress(3, c.getId()) >= 100;
-
-        if (!eligible) {
-            certBtn.setDisable(true);
-            certBtn.setText("Certificat bloqué");
-            certBtn.setStyle("""
-        -fx-background-color:#d1d5db;
-        -fx-text-fill:#666;
-        -fx-background-radius:25;
-        -fx-padding:8 14;
-    """);
-        } else {
-            certBtn.setText("Voir Certificat");
-            certBtn.setStyle("""
-                -fx-background-color:#7c3aed;
-                -fx-text-fill:white;
-                -fx-background-radius:25;
-                -fx-padding:8 14;
-                -fx-font-weight:bold;
-            """);
-
-            certBtn.setOnAction(e -> {
-                try {
-                    FXMLLoader loader = new FXMLLoader(
-                            getClass().getResource("/Certificat.fxml")
-                    );
-
-                    Parent root = loader.load();
-
-                    CertificatController controller = loader.getController();
-
-                    Cours cours = coursService.getById(c.getId());
-
-                    controller.setData(
-                            "Student",
-                            cours,
-                            true,
-                            0,
-                            0
-                    );
-
-                    Stage stage = new Stage();
-                    stage.setScene(new Scene(root));
-                    stage.setTitle("Certificat");
-                    stage.show();
-
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
-            });
-        }
-
-        // ===== CHAPTERS =====
         VBox chaptersBox = new VBox(8);
-
         List<Chapitre> chapitres = chapitreService.getByCoursId(c.getId());
-
         if (chapitres.isEmpty()) {
-
             Label empty = new Label("Aucun chapitre pour ce cours.");
             empty.setStyle("-fx-text-fill:#aaa;");
             chaptersBox.getChildren().add(empty);
-
         } else {
-
             for (Chapitre chap : chapitres) {
+                VBox chapCard = new VBox(4);
+                chapCard.setStyle("-fx-background-color:#f6f8ff; -fx-padding:10; -fx-background-radius:12;");
 
-                VBox chapCard = new VBox(6);
-                chapCard.setStyle("""
-    -fx-background-color:#f6f8ff;
-    -fx-padding:12;
-    -fx-background-radius:12;
-""");
+                Label t = new Label(chap.getOrdre() + ". " + chap.getTitre());
+                t.setStyle("-fx-font-weight:bold; -fx-text-fill:#333;");
 
-// ===== TITLE =====
-                Label titre = new Label(chap.getOrdre() + ". " + chap.getTitre());
-                title.setStyle("-fx-font-weight:bold; -fx-text-fill:#333;");
+                Label info = new Label("Duree: " + chap.getDureeEstimee() + " min | Type: " + chap.getTypeContenu());
+                info.setStyle("-fx-text-fill:#666; -fx-font-size:11px;");
 
-// ===== DUREE =====
-                Label duree = new Label("📘 Durée : " + chap.getDureeEstimee() + " min");
-                duree.setStyle("-fx-text-fill:#555; -fx-font-size:11px;");
+                Label status = new Label("Temps: 0 min | En cours");
+                status.setStyle("-fx-text-fill:#f39c12; -fx-font-size:11px;");
 
-// ===== TEMPS PASSE =====
-                int tempsPasse = 0;
-                Label temps = new Label("⏱ Temps passé : " + tempsPasse + " min");
-                temps.setStyle("-fx-text-fill:#555; -fx-font-size:11px;");
+                Button openChap = new Button("Voir Resume");
+                openChap.setStyle("-fx-background-color:#ff416c; -fx-text-fill:white; -fx-background-radius:20; -fx-padding:5 10;");
 
-// ===== BADGE =====
-                Label badge = new Label("🏷 Badge temps : En cours");
-                badge.setStyle("""
-                    -fx-text-fill:white;
-                    -fx-background-color:#8b5cf6;
-                    -fx-padding:4 10;
-                    -fx-background-radius:12;
-                """);
+                Button ressourcesBtn = new Button("Ressources");
+                ressourcesBtn.setStyle("-fx-background-color:#5b7cfa; -fx-text-fill:white; -fx-background-radius:20; -fx-padding:5 12; -fx-font-weight:bold;");
+                ressourcesBtn.setOnAction(e -> openChapterResources(e, chap));
 
-
-                Label type = new Label("📄 Type : " + chap.getTypeContenu().toUpperCase());
-                type.setStyle("-fx-text-fill:#555; -fx-font-size:11px;");
-
-                Button resumeBtn = new Button("👁 Voir Résumé");
-                resumeBtn.setStyle("""
-    -fx-background-color:#ff416c;
-    -fx-text-fill:white;
-    -fx-background-radius:20;
-    -fx-padding:5 12;
-    -fx-font-weight:bold;
-""");
-
-
-                resumeBtn.setOnAction(e -> {
-
-                    try {
-                        // ===== 1. فتح صفحة résumé =====
-                        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ChapitreDetail.fxml"));
-                        Parent root = loader.load();
-
-                        StudentChapitreDetail controller = loader.getController();
-                        controller.setChapitre(chap);
-
-                        Stage stage = (Stage) courseContainer.getScene().getWindow();
-                        stage.setScene(new Scene(root));
-
-
-                        String path = chap.getContenuFichier();
-
-                        System.out.println("PATH = " + path);
-
-                        File file = new File(path);
-
-                        if (file.exists()) {
-                            System.out.println("✅ FILE FOUND");
-                            Desktop.getDesktop().browse(file.toURI());
-                        } else {
-                            System.out.println("❌ FILE NOT FOUND");
-                        }
-
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
-                });
-
-// ===== ADD ALL =====
-                chapCard.getChildren().addAll(
-                        title,
-                        duree,
-                        temps,
-                        badge,
-                        type,
-                        resumeBtn
-                );
-
+                chapCard.getChildren().addAll(t, info, status, openChap, ressourcesBtn);
                 chaptersBox.getChildren().add(chapCard);
             }
         }
 
-        // ===== BUILD CARD =====
-        card.getChildren().addAll(
-                title,
-                desc,
-                date,
-                chapLabel,
-                progressTitle,
-                progressValue,
-                progressBar,
-                certBtn,
-                chaptersBox
-        );
-
+        card.getChildren().addAll(title, desc, date, chapLabel, progressTitle, progressValue, progressBar, certBtn, chaptersBox);
         return card;
     }
 
-    // ================= NAVIGATION =================
+    private void openChapterResources(ActionEvent event, Chapitre chapitre) {
+        if (chapitre == null || chapitre.getId() <= 0) {
+            showNavigationError("Chapitre invalide. Impossible d'ouvrir les ressources.");
+            return;
+        }
+
+        try {
+            if (refreshTimeline != null) {
+                refreshTimeline.stop();
+            }
+            ResourceNavigationContext.openForChapitre(chapitre.getId(), chapitre.getTitre(), true);
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            Parent root = FXMLLoader.load(getClass().getResource("/StudentChapterResources.fxml"));
+            stage.setScene(new Scene(root));
+            stage.setTitle("Ressources du chapitre");
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            showNavigationError("Ouverture des ressources echouee: " + e.getMessage());
+        }
+    }
+
+    private void showNavigationError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Navigation");
+        alert.setHeaderText("Le bouton Ressources a rencontre une erreur");
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
     public void goDashboard() {}
     public void goForum() {}
     public void goExams() {}
     public void goLogout() {}
 
-    @FXML private Label weatherIcon;
-    @FXML private Label weatherTemp;
-    @FXML private Label weatherDesc;
     private void setWeather(String desc, double temp) {
-
-        String icon = "☁";
-
+        String icon = "?";
         if (desc.equalsIgnoreCase("Ciel degage")) {
-            icon = "☀";
+            icon = "Sun";
         } else if (desc.equalsIgnoreCase("Pluie") || desc.equalsIgnoreCase("Averses")) {
-            icon = "☂";
+            icon = "Rain";
         } else if (desc.equalsIgnoreCase("Orage")) {
-            icon = "⚡";
+            icon = "Storm";
         } else if (desc.equalsIgnoreCase("Neige")) {
-            icon = "❄";
+            icon = "Snow";
         }
 
         weatherIcon.setText(icon);
-        weatherTemp.setText((int) temp + "°C");
+        weatherTemp.setText((int) temp + "C");
         weatherDesc.setText(desc);
     }
-
-
 }

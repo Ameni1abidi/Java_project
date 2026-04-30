@@ -12,7 +12,7 @@
       xmlns="http://javafx.com/javafx/17.0.12"
       fx:controller="tn.esprit.controllers.CategorieController">
 
-    <VBox prefWidth="220" style="-fx-background-color: #c4b5e8; -fx-padding: 20; -fx-spacing: 10;">
+    <VBox prefWidth="230" minWidth="230" maxWidth="230" style="-fx-background-color: #c4b5e8; -fx-padding: 20; -fx-spacing: 10;">
         <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 20 0;">
             <Label text="EF"
                    style="-fx-background-color: #7c5cbf; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16; -fx-background-radius: 10; -fx-padding: 8 10;" />
@@ -38,6 +38,10 @@
             <Button text="C   Cours" maxWidth="Infinity" onAction="#goCours"
                     style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
             <Button text="RS  Ressources" maxWidth="Infinity" onAction="#goRessources"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="RD  Dashboard ressources" maxWidth="Infinity" onAction="#goRessourceDashboard"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="CA  Calendrier" maxWidth="Infinity" onAction="#goRessourceCalendar"
                     style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
             <Button text="CT  Categories" maxWidth="Infinity"
                     style="-fx-background-color: #b39ddb; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
@@ -69,7 +73,7 @@
 
             <HBox spacing="10">
                 <Button fx:id="saveButton" text="Creer" onAction="#saveCategorie"
-                        style="-fx-background-color: #1abc9c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 22;" />
+                        style="-fx-background-color: #855ba1; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 22;" />
                 <Button fx:id="deleteButton" text="Supprimer" onAction="#deleteCategorie"
                         style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 22;" />
             </HBox>

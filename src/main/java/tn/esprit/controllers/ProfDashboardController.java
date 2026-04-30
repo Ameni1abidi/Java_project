@@ -52,6 +52,11 @@ public class ProfDashboardController {
     }
 
     @FXML
+    private void goRessourceDashboard(ActionEvent event) {
+        loadPage(event, "/RessourceDashboard.fxml");
+    }
+
+    @FXML
     private void goCategories(ActionEvent event) {
         loadPage(event, "/CategorieList.fxml");
     }

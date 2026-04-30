@@ -144,4 +144,36 @@ public class ExamenService implements IService<Examen> {
 
         return list;
     }
+    public Examen getById(int id) {
+
+        String sql = "SELECT * FROM examen WHERE id = ?";
+
+        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+
+                Examen e = new Examen();
+
+                e.setId(rs.getInt("id"));
+                e.setTitre(rs.getString("titre"));
+                e.setContenu(rs.getString("contenu"));
+                e.setType(rs.getString("type"));
+                e.setDateExamen(rs.getDate("date_examen").toLocalDate());
+                e.setDuree(rs.getInt("duree"));
+                e.setCoursId(rs.getInt("cours_id"));
+                e.setEnseignantId(rs.getInt("enseignant_id"));
+
+                return e;
+            }
+
+        } catch (Exception ex) {
+            System.out.println("Error GET BY ID: " + ex.getMessage());
+        }
+
+        return null;
+    }
 }

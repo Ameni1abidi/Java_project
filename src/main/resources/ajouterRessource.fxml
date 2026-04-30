@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
@@ -14,7 +15,7 @@
       xmlns="http://javafx.com/javafx/17.0.12"
       fx:controller="tn.esprit.controllers.ajouterRessource">
 
-    <VBox prefWidth="220" style="-fx-background-color: #c4b5e8; -fx-padding: 20; -fx-spacing: 10;">
+    <VBox prefWidth="230" minWidth="230" maxWidth="230" style="-fx-background-color: #c4b5e8; -fx-padding: 20; -fx-spacing: 10;">
         <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 20 0;">
             <Label text="EF"
                    style="-fx-background-color: #7c5cbf; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16; -fx-background-radius: 10; -fx-padding: 8 10;" />
@@ -41,6 +42,10 @@
                     style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
             <Button text="RS  Ressources" maxWidth="Infinity"
                     style="-fx-background-color: #b39ddb; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="RD  Dashboard ressources" maxWidth="Infinity" onAction="#goRessourceDashboard"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="CA  Calendrier" maxWidth="Infinity" onAction="#goRessourceCalendar"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
             <Button text="CT  Categories" maxWidth="Infinity" onAction="#goCategories"
                     style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
             <Button text="EX  Examens" maxWidth="Infinity" onAction="#goExamens"
@@ -80,6 +85,14 @@
                 <Label text="CATEGORIE" style="-fx-text-fill: #666666; -fx-font-size: 12;" />
                 <ComboBox fx:id="categorieCombo" prefHeight="40.0" promptText="Selectionnez une categorie" />
             </VBox>
+
+            <VBox spacing="5.0">
+                <Label text="CHAPITRE" style="-fx-text-fill: #666666; -fx-font-size: 12;" />
+                <ComboBox fx:id="chapitreCombo" prefHeight="40.0" promptText="Selectionnez un chapitre" />
+            </VBox>
+
+            <CheckBox fx:id="sensitiveCheckBox" text="Ressource sensible (acces securise)"
+                      style="-fx-text-fill: #374151; -fx-font-size: 13; -fx-font-weight: bold;" />
 
             <HBox fx:id="fileChooserContainer" spacing="10.0" visible="false" managed="false" alignment="CENTER_LEFT">
                 <Button fx:id="browseButton" mnemonicParsing="false" onAction="#browseFile" prefHeight="40.0" prefWidth="160.0"

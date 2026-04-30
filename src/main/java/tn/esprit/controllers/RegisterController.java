@@ -13,6 +13,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
@@ -23,11 +24,13 @@ import tn.esprit.entities.User.Role;
 import tn.esprit.config.LocalSecrets;
 import tn.esprit.services.security.RecaptchaService;
 import tn.esprit.services.UserService;
+import tn.esprit.services.EmailVerificationService;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 public class RegisterController {
     @FXML private TextField      nomField;
@@ -45,6 +48,7 @@ public class RegisterController {
 
     private final UserService userService = new UserService();
     private final RecaptchaService recaptchaService = new RecaptchaService();
+    private final EmailVerificationService emailVerificationService = new EmailVerificationService();
     private volatile String recaptchaToken = "";
     private HttpServer recaptchaLocalServer;
 
@@ -96,6 +100,11 @@ public class RegisterController {
             showError("Veuillez accepter les conditions d'utilisation.");
             return;
         }
+        // Fallback: some JavaFX WebView runs do not always trigger JS->Java callback reliably.
+        String liveToken = readRecaptchaTokenFromWebView();
+        if (liveToken != null && !liveToken.isBlank()) {
+            recaptchaToken = liveToken.trim();
+        }
         if (recaptchaToken == null || recaptchaToken.isBlank()) {
             showError("Veuillez valider le reCAPTCHA.");
             return;
@@ -105,19 +114,37 @@ public class RegisterController {
             RecaptchaService.RecaptchaResult captcha = recaptchaService.verify(recaptchaToken);
             if (!captcha.success()) {
                 showError("Verification reCAPTCHA echouee: " + (captcha.errors().isBlank() ? "token invalide" : captcha.errors()));
+                resetRecaptchaWidget();
                 return;
             }
             boolean ok = userService.register(new User(nom, pw, email, role));
 
             if (!ok) {
                 showError("Cet email est déjà utilisé.");
+                resetRecaptchaWidget();
                 return;
             }
 
-            showSuccess("Compte créé avec succès ! Redirection...");
+            showSuccess("Compte créé. Envoi du code de confirmation...");
+            emailVerificationService.sendVerificationCode(email);
 
+            Optional<String> code = askForVerificationCode(email);
+            if (code.isEmpty()) {
+                showError("Confirmation annulée. Votre compte reste en attente.");
+                resetRecaptchaWidget();
+                return;
+            }
+            if (!emailVerificationService.verifyCode(email, code.get())) {
+                showError("Code invalide ou expiré. Veuillez réessayer.");
+                resetRecaptchaWidget();
+                return;
+            }
+            emailVerificationService.markConsumed(email);
+            userService.markUserVerified(email);
+
+            showSuccess("Email confirmé. Vous pouvez vous connecter.");
             new Thread(() -> {
-                try { Thread.sleep(1200); } catch (InterruptedException ignored) {}
+                try { Thread.sleep(900); } catch (InterruptedException ignored) {}
                 Platform.runLater(() -> {
                     try { handleGoLogin(); } catch (Exception ex) { ex.printStackTrace(); }
                 });
@@ -125,8 +152,18 @@ public class RegisterController {
 
         } catch (Exception e) {
             showError("Erreur : " + e.getMessage());
+            resetRecaptchaWidget();
             e.printStackTrace();
         }
+    }
+
+    private Optional<String> askForVerificationCode(String email) {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Confirmation email");
+        dialog.setHeaderText("Un code a été envoyé à " + email);
+        dialog.setContentText("Code (6 chiffres):");
+        dialog.getEditor().setPromptText("123456");
+        return dialog.showAndWait().map(String::trim).filter(s -> !s.isBlank());
     }
 
     private void initRecaptchaWidget() {
@@ -207,6 +244,30 @@ public class RegisterController {
     public class RecaptchaBridge {
         public void onToken(String token) {
             Platform.runLater(() -> recaptchaToken = token == null ? "" : token.trim());
+        }
+    }
+
+    private String readRecaptchaTokenFromWebView() {
+        try {
+            if (recaptchaWebView == null) return "";
+            Object value = recaptchaWebView.getEngine().executeScript(
+                    "window.grecaptcha && grecaptcha.getResponse ? grecaptcha.getResponse() : ''"
+            );
+            return value == null ? "" : String.valueOf(value).trim();
+        } catch (Exception ignored) {
+            return "";
+        }
+    }
+
+    private void resetRecaptchaWidget() {
+        recaptchaToken = "";
+        try {
+            if (recaptchaWebView != null) {
+                recaptchaWebView.getEngine().executeScript(
+                        "if (window.grecaptcha && grecaptcha.reset) { grecaptcha.reset(); }"
+                );
+            }
+        } catch (Exception ignored) {
         }
     }
 
