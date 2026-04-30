@@ -11,13 +11,17 @@ import javafx.scene.control.*;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import tn.esprit.entities.forum;
 import tn.esprit.services.ForumService;
 import tn.esprit.services.OllamaService;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.sql.Timestamp;
+import java.util.List;
 
 public class AjoutForum {
 
@@ -32,7 +36,7 @@ public class AjoutForum {
     private final OllamaService ollama = new OllamaService();
 
     private int currentPage = 1;
-    private final int pageSize = 3;   // ← 3 forums par page
+    private final int pageSize = 3;
     private int totalPages;
 
     @FXML
@@ -64,6 +68,138 @@ public class AjoutForum {
         loadForums();
     }
 
+    // ── EXPORT EXCEL ──────────────────────────────────────────────────────
+    @FXML
+    private void exporterExcel() {
+        System.out.println("=== exporterExcel() appelé ===");
+
+        List<forum> forums = fs.getAll();
+        System.out.println("Nombre de forums : " + forums.size());
+
+        try (org.apache.poi.xssf.usermodel.XSSFWorkbook workbook =
+                     new org.apache.poi.xssf.usermodel.XSSFWorkbook()) {
+
+            org.apache.poi.ss.usermodel.Sheet sheet = workbook.createSheet("Forums");
+
+            // ── Style en-tête ──
+            org.apache.poi.ss.usermodel.CellStyle headerStyle = workbook.createCellStyle();
+            org.apache.poi.ss.usermodel.Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerFont.setColor(org.apache.poi.ss.usermodel.IndexedColors.WHITE.getIndex());
+            headerStyle.setFont(headerFont);
+            headerStyle.setFillForegroundColor(
+                    org.apache.poi.ss.usermodel.IndexedColors.VIOLET.getIndex());
+            headerStyle.setFillPattern(
+                    org.apache.poi.ss.usermodel.FillPatternType.SOLID_FOREGROUND);
+            headerStyle.setAlignment(
+                    org.apache.poi.ss.usermodel.HorizontalAlignment.CENTER);
+            headerStyle.setBorderBottom(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+            headerStyle.setBorderTop(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+            headerStyle.setBorderLeft(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+            headerStyle.setBorderRight(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+
+            // ── Style lignes paires ──
+            org.apache.poi.ss.usermodel.CellStyle evenStyle = workbook.createCellStyle();
+            evenStyle.setFillForegroundColor(
+                    org.apache.poi.ss.usermodel.IndexedColors.LAVENDER.getIndex());
+            evenStyle.setFillPattern(
+                    org.apache.poi.ss.usermodel.FillPatternType.SOLID_FOREGROUND);
+            evenStyle.setBorderBottom(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+            evenStyle.setBorderTop(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+            evenStyle.setBorderLeft(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+            evenStyle.setBorderRight(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+            evenStyle.setWrapText(true);
+
+            // ── Style lignes impaires ──
+            org.apache.poi.ss.usermodel.CellStyle oddStyle = workbook.createCellStyle();
+            oddStyle.setFillForegroundColor(
+                    org.apache.poi.ss.usermodel.IndexedColors.WHITE.getIndex());
+            oddStyle.setFillPattern(
+                    org.apache.poi.ss.usermodel.FillPatternType.SOLID_FOREGROUND);
+            oddStyle.setBorderBottom(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+            oddStyle.setBorderTop(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+            oddStyle.setBorderLeft(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+            oddStyle.setBorderRight(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+            oddStyle.setWrapText(true);
+
+            // ── En-têtes ──
+            String[] colonnes = {"ID", "Titre", "Type", "Contenu", "Date de creation"};
+            org.apache.poi.ss.usermodel.Row header = sheet.createRow(0);
+            header.setHeight((short) 500);
+            for (int i = 0; i < colonnes.length; i++) {
+                org.apache.poi.ss.usermodel.Cell cell = header.createCell(i);
+                cell.setCellValue(colonnes[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            // ── Données ──
+            int rowIndex = 1;
+            for (forum f : forums) {
+                org.apache.poi.ss.usermodel.Row row = sheet.createRow(rowIndex);
+                row.setHeight((short) 600);
+                org.apache.poi.ss.usermodel.CellStyle style =
+                        (rowIndex % 2 == 0) ? evenStyle : oddStyle;
+
+                org.apache.poi.ss.usermodel.Cell c0 = row.createCell(0);
+                c0.setCellValue(f.getId());
+                c0.setCellStyle(style);
+
+                org.apache.poi.ss.usermodel.Cell c1 = row.createCell(1);
+                c1.setCellValue(f.getTitre());
+                c1.setCellStyle(style);
+
+                org.apache.poi.ss.usermodel.Cell c2 = row.createCell(2);
+                c2.setCellValue(f.getType());
+                c2.setCellStyle(style);
+
+                org.apache.poi.ss.usermodel.Cell c3 = row.createCell(3);
+                c3.setCellValue(f.getContenu());
+                c3.setCellStyle(style);
+
+                org.apache.poi.ss.usermodel.Cell c4 = row.createCell(4);
+                c4.setCellValue(f.getDateCreation() != null
+                        ? f.getDateCreation().toString() : "");
+                c4.setCellStyle(style);
+
+                rowIndex++;
+            }
+
+            // ── Largeur automatique ──
+            for (int i = 0; i < colonnes.length; i++) {
+                sheet.autoSizeColumn(i);
+                sheet.setColumnWidth(i, sheet.getColumnWidth(i) + 1024);
+            }
+
+            // ── FileChooser au premier plan ──
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Enregistrer le fichier Excel");
+            fileChooser.setInitialFileName("forums_export.xlsx");
+            fileChooser.getExtensionFilters().add(
+                    new FileChooser.ExtensionFilter("Fichier Excel (*.xlsx)", "*.xlsx")
+            );
+
+            Stage owner = (Stage) forumContainer.getScene().getWindow();
+            owner.toFront();
+            File fichier = fileChooser.showSaveDialog(owner);
+
+            if (fichier != null) {
+                try (FileOutputStream out = new FileOutputStream(fichier)) {
+                    workbook.write(out);
+                    System.out.println("Fichier sauvegardé : " + fichier.getAbsolutePath());
+                    new Alert(Alert.AlertType.INFORMATION,
+                            "Export reussi !\n" + fichier.getAbsolutePath()).showAndWait();
+                }
+            } else {
+                System.out.println("Sauvegarde annulée par l'utilisateur.");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            new Alert(Alert.AlertType.ERROR,
+                    "Erreur lors de l'export : " + e.getMessage()).showAndWait();
+        }
+    }
+
     // ── READ + PAGINATION ─────────────────────────────────────────────────
     private void loadForums() {
         forumContainer.getChildren().clear();
@@ -76,35 +212,35 @@ public class AjoutForum {
             try {
                 // ── Card ─────────────────────────────────────────────────
                 VBox card = new VBox(10);
-                card.setPrefWidth(260);
-                card.setMaxWidth(260);
+                card.setPrefWidth(420);   // ← agrandi
+                card.setMaxWidth(420);    // ← agrandi
                 card.setStyle(
                         "-fx-background-color:white;" +
-                                "-fx-padding:15;" +
-                                "-fx-background-radius:12;" +
+                                "-fx-padding:20;" +
+                                "-fx-background-radius:14;" +
                                 "-fx-border-color:#ebebeb;" +
-                                "-fx-border-radius:12;" +
+                                "-fx-border-radius:14;" +
                                 "-fx-border-width:1;" +
-                                "-fx-effect: dropshadow(gaussian,#e0e0e0,6,0,0,2);"
+                                "-fx-effect: dropshadow(gaussian,#e0e0e0,8,0,0,3);"
                 );
 
                 Label titre = new Label(f.getTitre());
-                titre.setStyle("-fx-font-size:16px; -fx-font-weight:bold;");
+                titre.setStyle("-fx-font-size:18px; -fx-font-weight:bold;");
 
                 Label info = new Label("Type: " + f.getType() + " | " + f.getDateCreation());
-                info.setStyle("-fx-text-fill:gray; -fx-font-size:11px;");
+                info.setStyle("-fx-text-fill:gray; -fx-font-size:12px;");
 
                 Label contenu = new Label(f.getContenu());
                 contenu.setWrapText(true);
-                contenu.setStyle("-fx-font-size:12px;");
+                contenu.setStyle("-fx-font-size:13px;");
 
-                String btnGreen  = "-fx-background-color:#2ecc71; -fx-text-fill:white; -fx-background-radius:15; -fx-font-size:11px;";
-                String btnViolet = "-fx-background-color:#7c3aed; -fx-text-fill:white; -fx-background-radius:15; -fx-font-size:11px;";
-                String btnRed    = "-fx-background-color:#e74c3c; -fx-text-fill:white; -fx-background-radius:15; -fx-font-size:11px;";
+                String btnGreen  = "-fx-background-color:#2ecc71; -fx-text-fill:white; -fx-background-radius:15; -fx-font-size:12px;";
+                String btnViolet = "-fx-background-color:#7c3aed; -fx-text-fill:white; -fx-background-radius:15; -fx-font-size:12px;";
+                String btnRed    = "-fx-background-color:#e74c3c; -fx-text-fill:white; -fx-background-radius:15; -fx-font-size:12px;";
 
                 Button edit   = new Button("Modifier");
                 Button delete = new Button("Supprimer");
-                edit  .setStyle(btnGreen);
+                edit.setStyle(btnGreen);
                 delete.setStyle(btnRed);
 
                 delete.setOnAction(e -> { fs.supprimer(f.getId()); loadForums(); });
@@ -125,7 +261,7 @@ public class AjoutForum {
                 Label iaLoading = new Label("L'IA reflechit...");
                 iaLoading.setVisible(false);
                 iaLoading.setManaged(false);
-                iaLoading.setStyle("-fx-font-size:11px; -fx-text-fill:#7c3aed; -fx-font-style:italic;");
+                iaLoading.setStyle("-fx-font-size:12px; -fx-text-fill:#7c3aed; -fx-font-style:italic;");
 
                 Label iaResponse = new Label();
                 iaResponse.setWrapText(true);
@@ -208,7 +344,8 @@ public class AjoutForum {
     @FXML private void goEvaluations(ActionEvent event){ loadPage(event, "/EvaluationView.fxml"); }
 
     @FXML private void goResultats(ActionEvent event) {
-        new Alert(Alert.AlertType.INFORMATION, "La page resultats sera bientot disponible.").showAndWait();
+        new Alert(Alert.AlertType.INFORMATION,
+                "La page resultats sera bientot disponible.").showAndWait();
     }
 
     @FXML private void goLogout(ActionEvent event) { loadPage(event, "/Login.fxml"); }

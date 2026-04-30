@@ -63,19 +63,26 @@
               style="-fx-background-color: white; -fx-padding: 30; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, #ddd, 8, 0, 0, 2);"
               StackPane.alignment="CENTER">
 
-            <HBox alignment="CENTER_LEFT" spacing="20">
+            <!-- ── Header avec boutons ── -->
+            <HBox alignment="CENTER_LEFT" spacing="12">
                 <VBox>
                     <Label text="Forum" style="-fx-font-size: 22px; -fx-font-weight:bold;"/>
                     <Label text="Discussions de la communaute" style="-fx-text-fill:#888;"/>
                 </VBox>
                 <Region HBox.hgrow="ALWAYS"/>
+
+                <!-- Bouton Export Excel -->
+                <Button text="Telecharger Excel"
+                        onAction="#exporterExcel"
+                        style="-fx-background-color:#1d7a3a; -fx-text-fill:white; -fx-background-radius:20; -fx-font-weight:bold; -fx-padding:8 16;"/>
+
+                <!-- Bouton Créer -->
                 <Button text="Creer un sujet"
                         onAction="#showCreateForm"
-                        style="-fx-background-color:#2ecc71; -fx-text-fill:white; -fx-background-radius:20;"/>
+                        style="-fx-background-color:#2ecc71; -fx-text-fill:white; -fx-background-radius:20; -fx-padding:8 16;"/>
             </HBox>
 
             <ScrollPane fitToWidth="true" style="-fx-background-color:transparent; -fx-border-color:transparent;" VBox.vgrow="ALWAYS">
-                <!-- alignment CENTER centre les cards horizontalement -->
                 <FlowPane fx:id="forumContainer"
                           hgap="24" vgap="24"
                           alignment="CENTER"
@@ -84,11 +91,11 @@
 
             <!-- Pagination -->
             <HBox spacing="10" alignment="CENTER">
-                <Button text="◀ Precedent" onAction="#previousPage"
+                <Button text="Precedent" onAction="#previousPage"
                         style="-fx-background-color:#7c3aed; -fx-text-fill:white; -fx-background-radius:20; -fx-padding:6 16;"/>
                 <Label fx:id="pageLabel"
                        style="-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#555;"/>
-                <Button text="Suivant ▶" onAction="#nextPage"
+                <Button text="Suivant" onAction="#nextPage"
                         style="-fx-background-color:#7c3aed; -fx-text-fill:white; -fx-background-radius:20; -fx-padding:6 16;"/>
             </HBox>
         </VBox>

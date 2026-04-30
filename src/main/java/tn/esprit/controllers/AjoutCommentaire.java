@@ -7,6 +7,7 @@ import javafx.scene.layout.*;
 
 import tn.esprit.entities.commentaire;
 import tn.esprit.services.CommentaireService;
+import tn.esprit.services.SentimentService;
 import tn.esprit.services.TranslationService;
 
 import java.sql.Timestamp;
@@ -18,13 +19,12 @@ public class AjoutCommentaire {
     @FXML private VBox commentContainer;
     @FXML private TextArea contenuField;
 
-    private final CommentaireService cs = new CommentaireService();
-    private final TranslationService ts = new TranslationService();
+    private final CommentaireService cs        = new CommentaireService();
+    private final TranslationService ts        = new TranslationService();
+    private final SentimentService   sentiment = new SentimentService();
 
     private int forumId;
 
-    // ── Réactions : texte + couleur du pill ──────────────────────────────
-    // Format : { label affiché, couleur fond actif, couleur texte actif }
     private static final String[][] DEFAULT_REACTIONS = {
             { "👍 J'aime",  "#FFF9C4", "#F57F17" },
             { "❤ Amour",    "#FCE4EC", "#C62828" },
@@ -54,9 +54,14 @@ public class AjoutCommentaire {
 
     @FXML
     public void ajouterCommentaire() {
+        String texte = contenuField.getText();
+        if (texte == null || texte.isBlank()) {
+            new Alert(Alert.AlertType.ERROR, "Le commentaire ne peut pas etre vide.").showAndWait();
+            return;
+        }
         commentaire c = new commentaire(
                 0,
-                contenuField.getText(),
+                texte,
                 forumId,
                 new Timestamp(System.currentTimeMillis())
         );
@@ -67,7 +72,7 @@ public class AjoutCommentaire {
         }
         cs.ajouter(c);
         contenuField.clear();
-        loadCommentaires();
+        loadCommentaires(); // affiche immédiatement, l'analyse se lance dans buildCommentCard
     }
 
     private void loadCommentaires() {
@@ -87,16 +92,43 @@ public class AjoutCommentaire {
         Label date = new Label(c.getDateEnvoi().toString());
         date.setStyle("-fx-text-fill:#aaa; -fx-font-size:11px;");
 
+        // ── Badge sentiment (analyse automatique) ────────────────────────
+        Label sentimentBadge = new Label("⏳ Analyse...");
+        sentimentBadge.setStyle(
+                "-fx-background-color:#e2e3e5; -fx-text-fill:#383d41;" +
+                        "-fx-background-radius:20; -fx-padding:4 14;" +
+                        "-fx-font-size:12px; -fx-font-weight:bold;"
+        );
+
+        // Lancement automatique de l'analyse en arrière-plan
+        new Thread(() -> {
+            String result = sentiment.analyserSentiment(c.getContenu());
+            Platform.runLater(() -> {
+                String bg, fg, emoji;
+                switch (result) {
+                    case "😊 POSITIF" -> { bg = "#d4edda"; fg = "#155724"; emoji = "😊 POSITIF"; }
+                    case "😞 NÉGATIF" -> { bg = "#f8d7da"; fg = "#721c24"; emoji = "😞 NÉGATIF"; }
+                    case "😐 NEUTRE"  -> { bg = "#fff3cd"; fg = "#856404"; emoji = "😐 NEUTRE";  }
+                    default           -> { bg = "#e2e3e5"; fg = "#383d41"; emoji = "❓ " + result; }
+                }
+                sentimentBadge.setText(emoji);
+                sentimentBadge.setStyle(
+                        "-fx-background-color:" + bg + ";" +
+                                "-fx-text-fill:" + fg + ";" +
+                                "-fx-background-radius:20; -fx-padding:4 14;" +
+                                "-fx-font-size:12px; -fx-font-weight:bold;" +
+                                "-fx-border-color:" + fg + "; -fx-border-radius:20; -fx-border-width:1;"
+                );
+            });
+        }).start();
+
         // ── Modifier / Supprimer ─────────────────────────────────────────
         Button edit   = new Button("Modifier");
         Button delete = new Button("Supprimer");
         edit  .setStyle("-fx-background-color:#2ecc71; -fx-text-fill:white; -fx-background-radius:15; -fx-font-size:11px;");
         delete.setStyle("-fx-background-color:#e74c3c; -fx-text-fill:white; -fx-background-radius:15; -fx-font-size:11px;");
 
-        delete.setOnAction(e -> {
-            cs.supprimer(c.getId());
-            loadCommentaires();
-        });
+        delete.setOnAction(e -> { cs.supprimer(c.getId()); loadCommentaires(); });
         edit.setOnAction(e -> {
             TextInputDialog dialog = new TextInputDialog(c.getContenu());
             dialog.setTitle("Modifier commentaire");
@@ -128,7 +160,7 @@ public class AjoutCommentaire {
         langueBox.getItems().add("-- Langue --");
         langueBox.getItems().addAll("fr", "en", "ar", "es", "de", "it", "pt", "zh");
         langueBox.setValue("-- Langue --");
-        langueBox.setPrefWidth(110);
+        langueBox.setPrefWidth(120);
         langueBox.setStyle(
                 "-fx-background-color:white; -fx-border-color:#ccc;" +
                         "-fx-border-radius:15; -fx-background-radius:15; -fx-font-size:12px;"
@@ -145,9 +177,8 @@ public class AjoutCommentaire {
             translatedLabel.setVisible(false);
             translatedLabel.setManaged(false);
             langueBox.setDisable(true);
-            String original = c.getContenu();
             new Thread(() -> {
-                String result = ts.traduire(original, lang);
+                String result = ts.traduire(c.getContenu(), lang);
                 Platform.runLater(() -> {
                     langueBox.setDisable(false);
                     loadingLabel.setVisible(false);
@@ -164,22 +195,19 @@ public class AjoutCommentaire {
         });
 
         // ── Réactions ────────────────────────────────────────────────────
-        // Map : label -> int[]{count, actif, index dans DEFAULT ou EXTRA}
         Map<String, int[]> reactionData = new LinkedHashMap<>();
-        for (String[] r : DEFAULT_REACTIONS) {
-            reactionData.put(r[0], new int[]{0, 0});
-        }
+        for (String[] r : DEFAULT_REACTIONS) reactionData.put(r[0], new int[]{0, 0});
 
         FlowPane reactionsBar = new FlowPane();
         reactionsBar.setHgap(6);
         reactionsBar.setVgap(6);
-        reactionsBar.setPrefWrapLength(280);
+        reactionsBar.setPrefWrapLength(400);
         reactionsBar.setStyle("-fx-padding:4 0 2 0;");
 
         FlowPane pickerPane = new FlowPane();
         pickerPane.setHgap(6);
         pickerPane.setVgap(6);
-        pickerPane.setPrefWrapLength(280);
+        pickerPane.setPrefWrapLength(400);
         pickerPane.setVisible(false);
         pickerPane.setManaged(false);
         pickerPane.setStyle(
@@ -203,14 +231,12 @@ public class AjoutCommentaire {
             pickerPane.setManaged(show);
         });
 
-        // Pills par défaut
         for (String[] reaction : DEFAULT_REACTIONS) {
-            String label = reaction[0];
+            String label    = reaction[0];
             String bgActive = reaction[1];
             String fgActive = reaction[2];
-            int[] data = reactionData.get(label);
-
-            Button pill = createPill(label, data, bgActive, fgActive);
+            int[]  data     = reactionData.get(label);
+            Button pill     = createPill(label, data, bgActive, fgActive);
             pill.setOnAction(ev -> {
                 if (data[1] == 0) { data[0]++; data[1] = 1; }
                 else              { data[0] = Math.max(0, data[0] - 1); data[1] = 0; }
@@ -221,13 +247,11 @@ public class AjoutCommentaire {
         }
         reactionsBar.getChildren().add(addBtn);
 
-        // Picker
         for (String[] reaction : EXTRA_REACTIONS) {
-            String em      = reaction[0];
+            String em       = reaction[0];
             String bgActive = reaction[1];
             String fgActive = reaction[2];
-
-            Button opt = new Button(em);
+            Button opt      = new Button(em);
             opt.setStyle(
                     "-fx-background-color:#ececec;" +
                             "-fx-border-color:#ddd; -fx-border-width:1;" +
@@ -237,9 +261,7 @@ public class AjoutCommentaire {
             opt.setOnAction(ev -> {
                 pickerPane.setVisible(false);
                 pickerPane.setManaged(false);
-
                 if (reactionData.containsKey(em)) {
-                    // Déjà présent : toggler
                     int[] data = reactionData.get(em);
                     if (data[1] == 0) { data[0]++; data[1] = 1; }
                     else              { data[0] = Math.max(0, data[0] - 1); data[1] = 0; }
@@ -251,9 +273,8 @@ public class AjoutCommentaire {
                         }
                     }
                 } else {
-                    // Nouveau pill
                     reactionData.put(em, new int[]{1, 1});
-                    int[] data = reactionData.get(em);
+                    int[]  data = reactionData.get(em);
                     Button pill = createPill(em, data, bgActive, fgActive);
                     pill.setOnAction(pev -> {
                         if (data[1] == 0) { data[0]++; data[1] = 1; }
@@ -261,24 +282,27 @@ public class AjoutCommentaire {
                         pill.setText(em + "  " + data[0]);
                         applyPillStyle(pill, data[1] == 1, bgActive, fgActive);
                     });
-                    int addIdx = reactionsBar.getChildren().indexOf(addBtn);
-                    reactionsBar.getChildren().add(addIdx, pill);
+                    reactionsBar.getChildren().add(
+                            reactionsBar.getChildren().indexOf(addBtn), pill);
                 }
             });
             pickerPane.getChildren().add(opt);
         }
 
-        // ── Assemblage ───────────────────────────────────────────────────
-        HBox row1 = new HBox(8, edit, delete);
+        // ── Assemblage final ─────────────────────────────────────────────
+        HBox row1 = new HBox(8, edit, delete); // ← bouton Analyser supprimé
         HBox row2 = new HBox(8, langueBox);
 
         VBox card = new VBox(6,
-                contenu, date, row1, row2,
+                contenu, date,
+                row1,
+                sentimentBadge,   // ← s'affiche automatiquement
+                row2,
                 reactionsBar, pickerPane,
                 loadingLabel, translatedLabel
         );
         card.setStyle(
-                "-fx-background-color:white; -fx-padding:12;" +
+                "-fx-background-color:white; -fx-padding:14;" +
                         "-fx-background-radius:12; -fx-border-color:#eee; -fx-border-radius:12;"
         );
         return card;
