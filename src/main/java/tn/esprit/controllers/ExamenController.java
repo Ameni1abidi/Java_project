@@ -14,6 +14,7 @@ import javafx.stage.Stage;
 import tn.esprit.entities.Examen;
 import tn.esprit.entities.Cours;
 import tn.esprit.entities.User;
+import tn.esprit.services.CalendarService;
 import tn.esprit.services.ExamenService;
 import tn.esprit.services.CoursService;
 import tn.esprit.services.UserService;
@@ -404,5 +405,38 @@ public class ExamenController {
         }
 
         return true;
+    }
+
+    @FXML
+    private void handleAddToCalendar() {
+
+        Examen selected = tableExamens.getSelectionModel().getSelectedItem();
+
+        if (selected == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Attention");
+            alert.setContentText("Veuillez sélectionner un examen !");
+            alert.show();
+            return;
+        }
+
+        try {
+            CalendarService calendarService = new CalendarService();
+
+            String eventId = calendarService.createExamEvent(selected);
+
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Google Calendar");
+            alert.setContentText("Examen ajouté au Calendar ! ID: " + eventId);
+            alert.show();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Erreur");
+            alert.setContentText(e.getMessage());
+            alert.show();
+        }
     }
 }
