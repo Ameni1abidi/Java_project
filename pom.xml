@@ -178,19 +178,6 @@
         </dependency>
 
 
-        <!-- Pour les appels HTTP vers l'API Claude -->
-        <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>okhttp</artifactId>
-            <version>4.12.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.10.1</version>
-        </dependency>
-
 
         <dependency>
             <groupId>edu.stanford.nlp</groupId>
