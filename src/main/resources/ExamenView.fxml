@@ -95,6 +95,11 @@
                 <TextField fx:id="searchField" promptText="🔍 Rechercher un examen..." />
                 <Button text="Rechercher" onAction="#rechercherExamen"
                         style="-fx-background-color: #7c5cbf; -fx-text-fill: white;" />
+
+                <Button
+                        text="Ajouter au Calendar"
+                        onAction="#handleAddToCalendar"
+                        style="-fx-background-color: #4CAF50; -fx-text-fill: white;" />
             </HBox>
             <!-- TABLE -->
             <TableView fx:id="tableExamens" VBox.vgrow="ALWAYS"
