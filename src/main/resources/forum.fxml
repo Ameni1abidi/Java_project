@@ -59,37 +59,30 @@
 
     <!-- ── Contenu principal ── -->
     <StackPane style="-fx-padding: 40; -fx-background-color: #f5f3fb;" HBox.hgrow="ALWAYS">
+
+        <!-- ── Liste forums ── -->
         <VBox spacing="20"
-              style="-fx-background-color: white; -fx-padding: 30; -fx-background-radius: 12; -fx-effect: dropshadow(gaussian, #ddd, 8, 0, 0, 2);"
+              style="-fx-background-color: white; -fx-padding: 30; -fx-background-radius: 12;
+                     -fx-effect: dropshadow(gaussian, #ddd, 8, 0, 0, 2);"
               StackPane.alignment="CENTER">
 
-            <!-- ── Header avec boutons ── -->
             <HBox alignment="CENTER_LEFT" spacing="12">
                 <VBox>
                     <Label text="Forum" style="-fx-font-size: 22px; -fx-font-weight:bold;"/>
                     <Label text="Discussions de la communaute" style="-fx-text-fill:#888;"/>
                 </VBox>
                 <Region HBox.hgrow="ALWAYS"/>
-
-                <!-- Bouton Export Excel -->
-                <Button text="Telecharger Excel"
-                        onAction="#exporterExcel"
+                <Button text="Telecharger Excel" onAction="#exporterExcel"
                         style="-fx-background-color:#1d7a3a; -fx-text-fill:white; -fx-background-radius:20; -fx-font-weight:bold; -fx-padding:8 16;"/>
-
-                <!-- Bouton Créer -->
-                <Button text="Creer un sujet"
-                        onAction="#showCreateForm"
-                        style="-fx-background-color:#2ecc71; -fx-text-fill:white; -fx-background-radius:20; -fx-padding:8 16;"/>
+                <Button text="+ Creer un sujet" onAction="#showCreateForm"
+                        style="-fx-background-color:#7c3aed; -fx-text-fill:white; -fx-background-radius:20; -fx-font-weight:bold; -fx-padding:8 16;"/>
             </HBox>
 
             <ScrollPane fitToWidth="true" style="-fx-background-color:transparent; -fx-border-color:transparent;" VBox.vgrow="ALWAYS">
-                <FlowPane fx:id="forumContainer"
-                          hgap="24" vgap="24"
-                          alignment="CENTER"
+                <FlowPane fx:id="forumContainer" hgap="24" vgap="24" alignment="CENTER"
                           style="-fx-padding: 10;"/>
             </ScrollPane>
 
-            <!-- Pagination -->
             <HBox spacing="10" alignment="CENTER">
                 <Button text="Precedent" onAction="#previousPage"
                         style="-fx-background-color:#7c3aed; -fx-text-fill:white; -fx-background-radius:20; -fx-padding:6 16;"/>
@@ -100,26 +93,80 @@
             </HBox>
         </VBox>
 
-        <!-- Formulaire création -->
-        <VBox fx:id="formPane"
-              spacing="15"
-              visible="false"
-              maxWidth="520"
-              style="-fx-padding:30; -fx-background-color:white; -fx-background-radius:10;
-                     -fx-effect: dropshadow(gaussian, #ccc, 10, 0, 0, 3);">
+        <!-- ── Formulaire création (overlay plein écran) ── -->
+        <StackPane fx:id="formOverlay"
+                   visible="false"
+                   style="-fx-background-color: rgba(0,0,0,0.45);">
 
-            <Label text="Creer un nouveau sujet" style="-fx-font-size:20px; -fx-font-weight:bold;"/>
+            <VBox spacing="0"
+                  maxWidth="580"
+                  style="-fx-background-color:white; -fx-background-radius:18;
+                         -fx-effect: dropshadow(gaussian, #7c3aed, 20, 0.2, 0, 4);"
+                  StackPane.alignment="CENTER">
 
-            <TextField fx:id="titreField" promptText="Titre"/>
-            <TextField fx:id="typeField" promptText="Type"/>
-            <TextArea fx:id="contenuField" promptText="Contenu" prefHeight="100"/>
+                <!-- Header violet -->
+                <VBox spacing="6"
+                      style="-fx-background-color: linear-gradient(to bottom, #c4b5fd, #a78bfa);                             -fx-padding: 28 32 24 32;
+                             -fx-background-radius: 18 18 0 0;">
+                    <Label text="✏  Creer un nouveau sujet"
+                           style="-fx-font-size:20px; -fx-font-weight:bold; -fx-text-fill:white;"/>
+                    <Label text="Remplissez les informations ci-dessous"
+                           style="-fx-font-size:12px; -fx-text-fill:#e9d5ff;"/>
+                </VBox>
 
-            <HBox spacing="10">
-                <Button text="Creer" onAction="#ajouterForum"
-                        style="-fx-background-color:#2ecc71; -fx-text-fill:white; -fx-background-radius:15;"/>
-                <Button text="Retour" onAction="#showList"
-                        style="-fx-background-color:#e74c3c; -fx-text-fill:white; -fx-background-radius:15;"/>
-            </HBox>
-        </VBox>
+                <!-- Corps du formulaire -->
+                <VBox spacing="18" style="-fx-padding: 30 32 28 32;">
+
+                    <!-- Titre -->
+                    <VBox spacing="6">
+                        <Label text="Titre du sujet"
+                               style="-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#4b5563;"/>
+                        <TextField fx:id="titreField"
+                                   promptText="Ex: Comment résoudre ce problème ?"
+                                   style="-fx-background-color:#f9fafb; -fx-border-color:#d1d5db;
+                                          -fx-border-radius:10; -fx-background-radius:10;
+                                          -fx-padding:10 14; -fx-font-size:13px;"/>
+                    </VBox>
+
+                    <!-- Type -->
+                    <VBox spacing="6">
+                        <Label text="Type / Catégorie"
+                               style="-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#4b5563;"/>
+                        <TextField fx:id="typeField"
+                                   promptText="Ex: Question, Discussion, Annonce..."
+                                   style="-fx-background-color:#f9fafb; -fx-border-color:#d1d5db;
+                                          -fx-border-radius:10; -fx-background-radius:10;
+                                          -fx-padding:10 14; -fx-font-size:13px;"/>
+                    </VBox>
+
+                    <!-- Contenu -->
+                    <VBox spacing="6">
+                        <Label text="Contenu"
+                               style="-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#4b5563;"/>
+                        <TextArea fx:id="contenuField"
+                                  promptText="Décrivez votre sujet en détail..."
+                                  prefHeight="120"
+                                  wrapText="true"
+                                  style="-fx-background-color:#f9fafb; -fx-border-color:#d1d5db;
+                                         -fx-border-radius:10; -fx-background-radius:10;
+                                         -fx-padding:10 14; -fx-font-size:13px;"/>
+                    </VBox>
+
+                    <!-- Boutons -->
+                    <HBox spacing="12" alignment="CENTER_RIGHT" style="-fx-padding:8 0 0 0;">
+                        <Button text="Annuler" onAction="#showList"
+                                style="-fx-background-color:#f3f4f6; -fx-text-fill:#374151;
+                                       -fx-background-radius:10; -fx-padding:10 24;
+                                       -fx-font-size:13px; -fx-font-weight:bold;
+                                       -fx-border-color:#d1d5db; -fx-border-radius:10; -fx-border-width:1;"/>
+                        <Button text="✔  Publier le sujet" onAction="#ajouterForum"
+                                style="-fx-background-color: linear-gradient(to right, #7c3aed, #a78bfa);
+                                       -fx-text-fill:white; -fx-background-radius:10;
+                                       -fx-padding:10 24; -fx-font-size:13px; -fx-font-weight:bold;"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+        </StackPane>
+
     </StackPane>
 </HBox>
