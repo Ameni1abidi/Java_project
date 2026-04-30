@@ -6,6 +6,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 
 import tn.esprit.entities.commentaire;
+import tn.esprit.services.BadWordsService;
 import tn.esprit.services.CommentaireService;
 import tn.esprit.services.SentimentService;
 import tn.esprit.services.TranslationService;
@@ -22,6 +23,7 @@ public class AjoutCommentaire {
     private final CommentaireService cs        = new CommentaireService();
     private final TranslationService ts        = new TranslationService();
     private final SentimentService   sentiment = new SentimentService();
+    private final BadWordsService    badWords  = new BadWordsService();
 
     private int forumId;
 
@@ -55,10 +57,24 @@ public class AjoutCommentaire {
     @FXML
     public void ajouterCommentaire() {
         String texte = contenuField.getText();
+
+        // ── Vérification vide ────────────────────────────────────────────
         if (texte == null || texte.isBlank()) {
             new Alert(Alert.AlertType.ERROR, "Le commentaire ne peut pas etre vide.").showAndWait();
             return;
         }
+
+        // ── Vérification bad words ───────────────────────────────────────
+        if (badWords.contientBadWord(texte)) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Commentaire inapproprié");
+            alert.setHeaderText("⚠️ Langage inapproprié détecté !");
+            alert.setContentText("Votre commentaire contient des mots interdits.\nVeuillez modifier votre message.");
+            alert.showAndWait();
+            return;
+        }
+
+        // ── Validation entité ────────────────────────────────────────────
         commentaire c = new commentaire(
                 0,
                 texte,
@@ -70,9 +86,10 @@ public class AjoutCommentaire {
             new Alert(Alert.AlertType.ERROR, erreur).showAndWait();
             return;
         }
+
         cs.ajouter(c);
         contenuField.clear();
-        loadCommentaires(); // affiche immédiatement, l'analyse se lance dans buildCommentCard
+        loadCommentaires();
     }
 
     private void loadCommentaires() {
@@ -133,6 +150,17 @@ public class AjoutCommentaire {
             TextInputDialog dialog = new TextInputDialog(c.getContenu());
             dialog.setTitle("Modifier commentaire");
             dialog.showAndWait().ifPresent(newText -> {
+
+                // ── Vérification bad words aussi sur modification ────────
+                if (badWords.contientBadWord(newText)) {
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setTitle("Modification inappropriée");
+                    alert.setHeaderText("⚠️ Langage inapproprié détecté !");
+                    alert.setContentText("Votre commentaire contient des mots interdits.");
+                    alert.showAndWait();
+                    return;
+                }
+
                 c.setContenu(newText);
                 cs.modifier(c);
                 loadCommentaires();
@@ -290,13 +318,13 @@ public class AjoutCommentaire {
         }
 
         // ── Assemblage final ─────────────────────────────────────────────
-        HBox row1 = new HBox(8, edit, delete); // ← bouton Analyser supprimé
+        HBox row1 = new HBox(8, edit, delete);
         HBox row2 = new HBox(8, langueBox);
 
         VBox card = new VBox(6,
                 contenu, date,
                 row1,
-                sentimentBadge,   // ← s'affiche automatiquement
+                sentimentBadge,
                 row2,
                 reactionsBar, pickerPane,
                 loadingLabel, translatedLabel
