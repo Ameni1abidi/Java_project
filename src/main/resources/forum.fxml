@@ -79,7 +79,9 @@
             </HBox>
 
             <ScrollPane fitToWidth="true" style="-fx-background-color:transparent; -fx-border-color:transparent;" VBox.vgrow="ALWAYS">
-                <FlowPane fx:id="forumContainer" hgap="24" vgap="24" alignment="CENTER"
+                <FlowPane fx:id="forumContainer"
+                          hgap="24" vgap="24"
+                          alignment="CENTER"
                           style="-fx-padding: 10;"/>
             </ScrollPane>
 
@@ -92,7 +94,6 @@
                         style="-fx-background-color:#7c3aed; -fx-text-fill:white; -fx-background-radius:20; -fx-padding:6 16;"/>
             </HBox>
         </VBox>
-
         <!-- ── Formulaire création (overlay plein écran) ── -->
         <StackPane fx:id="formOverlay"
                    visible="false"
@@ -103,7 +104,6 @@
                   style="-fx-background-color:white; -fx-background-radius:18;
                          -fx-effect: dropshadow(gaussian, #7c3aed, 20, 0.2, 0, 4);"
                   StackPane.alignment="CENTER">
-
                 <!-- Header violet -->
                 <VBox spacing="6"
                       style="-fx-background-color: linear-gradient(to bottom, #c4b5fd, #a78bfa);                             -fx-padding: 28 32 24 32;
@@ -167,6 +167,5 @@
                 </VBox>
             </VBox>
         </StackPane>
-
     </StackPane>
 </HBox>

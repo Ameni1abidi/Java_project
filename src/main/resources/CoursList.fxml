@@ -41,35 +41,24 @@
         </VBox>
 
         <VBox spacing="4" style="-fx-padding: 10 0 0 0;">
-            <Button text="DB Tableau de bord" maxWidth="Infinity" onAction="#goDashboard"
-                    style="-fx-background-color: transparent; -fx-text-fill: #333;
-                           -fx-alignment: CENTER_LEFT; -fx-padding: 8 12;" />
-
-            <Button text="FO Forum" maxWidth="Infinity" onAction="#goForum"
-                    style="-fx-background-color: transparent; -fx-text-fill: #333;
-                           -fx-alignment: CENTER_LEFT; -fx-padding: 8 12;" />
-
-            <Button text="C Cours" maxWidth="Infinity"
-                    style="-fx-background-color: #b39ddb; -fx-text-fill: #333;
-                           -fx-alignment: CENTER_LEFT; -fx-padding: 8 12;" />
-
-            <Button text="RS Ressources" maxWidth="Infinity" onAction="#goRessources"
-                    style="-fx-background-color: transparent; -fx-text-fill: #333;" />
-
-            <Button text="CT Categories" maxWidth="Infinity" onAction="#goCategories"
-                    style="-fx-background-color: transparent; -fx-text-fill: #333;" />
-
-            <Button text="EX Examens" maxWidth="Infinity" onAction="#goExamens"
-                    style="-fx-background-color: transparent; -fx-text-fill: #333;" />
-
-            <Button text="EV Evaluations" maxWidth="Infinity" onAction="#goEvaluations"
-                    style="-fx-background-color: transparent; -fx-text-fill: #333;" />
-
-            <Button text="RS Resultats" maxWidth="Infinity" onAction="#goResultats"
-                    style="-fx-background-color: transparent; -fx-text-fill: #333;" />
-
-            <Button text="LO Logout" maxWidth="Infinity" onAction="#goLogout"
-                    style="-fx-background-color: transparent; -fx-text-fill: #333;" />
+            <Button text="DB  Tableau de bord" maxWidth="Infinity" onAction="#goDashboard"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="FO  Forum" maxWidth="Infinity" onAction="#goForum"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="C   Cours" maxWidth="Infinity"
+                    style="-fx-background-color: #b39ddb; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="RS  Ressources" maxWidth="Infinity" onAction="#goRessources"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="CT  Categories" maxWidth="Infinity" onAction="#goCategories"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="EX  Examens" maxWidth="Infinity" onAction="#goExamens"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="EV  Evaluations" maxWidth="Infinity" onAction="#goEvaluations"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="RS  Resultats" maxWidth="Infinity" onAction="#goResultats"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="LO  Logout" maxWidth="Infinity" onAction="#goLogout"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
         </VBox>
     </VBox>
 
@@ -78,25 +67,46 @@
           spacing="15"
           HBox.hgrow="ALWAYS">
 
-        <!-- ================= WELCOME CARD ================= -->
-        <VBox spacing="5"
+        <!-- ================= WELCOME + IMAGE ================= -->
+        <HBox spacing="20"
               style="-fx-background-color: white;
-                     -fx-padding: 10;
-                     -fx-background-radius: 12;
-                     -fx-effect: dropshadow(gaussian, #ddd, 8, 0, 0, 2);">
+             -fx-padding: 15;
+             -fx-background-radius: 12;
+             -fx-effect: dropshadow(gaussian, #ddd, 8, 0, 0, 2);">
 
-            <ImageView fitWidth="60" fitHeight="60">
+            <!-- LEFT TEXT -->
+            <VBox spacing="5" HBox.hgrow="ALWAYS">
+                <ImageView fitWidth="60" fitHeight="60">
+                    <image>
+                        <Image url="@/images/cours.jpg"/>
+                    </image>
+                </ImageView>
+
+                <Label text="Bienvenue dans votre espace enseignant"
+                       style="-fx-font-size:16px; -fx-font-weight:bold;" />
+
+                <Label text="Suivez vos cours, chapitres et statistiques en temps réel"
+                       style="-fx-font-size:12px; -fx-text-fill:#666;" />
+
+                <!-- 🔥 bouton statistiques -->
+
+            </VBox>
+
+            <!-- RIGHT IMAGE -->
+            <ImageView fitWidth="140" preserveRatio="true">
                 <image>
-                    <Image url="@/images/cours.jpg"/>
+                    <Image url="@/images/stat.png"/>
                 </image>
             </ImageView>
+            <Button text="📊 Statistiques"
+                    onAction="#goStats"
+                    style="-fx-background-color:#9400d3;
+                       -fx-text-fill:white;
+                       -fx-background-radius:10;
+                       -fx-padding:6 12;" />
 
-            <Label text="Bienvenue dans votre espace enseignant"
-                   style="-fx-font-size:16px; -fx-font-weight:bold;" />
+        </HBox>
 
-            <Label text="Suivez vos cours, chapitres et statistiques en temps réel"
-                   style="-fx-font-size:12px; -fx-text-fill:#666;" />
-        </VBox>
 
         <!-- ================= FLASH NOTIFICATION (Symfony style) ================= -->
         <Label fx:id="notificationLabel"
@@ -130,19 +140,43 @@
                     style="-fx-background-color:#007bff;
                            -fx-text-fill:white;
                            -fx-background-radius:8;" />
-
-            <Button text="Ajouter Cour"
-                    onAction="#goToAdd"
-                    style="-fx-background-color:#4CAF50;
-                           -fx-text-fill:white;
-                           -fx-font-weight:bold;
-                           -fx-background-radius:20;
-                           -fx-padding:8 16;" />
         </HBox>
 
         <!-- ================= COURSES LIST ================= -->
+        <VBox spacing="8" alignment="CENTER_RIGHT">
+
+            <Button text="Ajouter Cour"
+                    onAction="#goToAdd"
+                    maxWidth="150"
+                    style="-fx-background-color:#7c5cbf;
+               -fx-text-fill:white;
+               -fx-background-radius:20;
+               -fx-padding:6 14;
+               -fx-font-weight:bold;" />
+
+            <Button fx:id="btnArchives"
+                    text="📦 Voir Archives"
+                    onAction="#showArchived"
+                    maxWidth="150"
+                    style="-fx-background-color:#7c5cbf;
+               -fx-text-fill:white;
+               -fx-background-radius:20;
+               -fx-padding:6 14;
+               -fx-font-weight:bold;" />
+            <Button fx:id="btnVoirCours"
+                    text="📦 Voir Cours"
+                    onAction="#showAll"
+                    maxWidth="150"
+                    style="-fx-background-color:#7c5cbf;
+               -fx-text-fill:white;
+               -fx-background-radius:20;
+               -fx-padding:6 14;
+               -fx-font-weight:bold;" />
+
+        </VBox>
         <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
                     style="-fx-background-color: transparent;">
+
 
             <FlowPane fx:id="coursContainer"
                       hgap="20"
@@ -151,6 +185,5 @@
                       style="-fx-padding:10;" />
 
         </ScrollPane>
-
     </VBox>
 </HBox>

@@ -53,6 +53,7 @@ public class ExamenController {
     private final UserService userService = new UserService();
 
 
+
     private Map<Integer, String> coursMap;
     private Map<Integer, String> enseignantMap;
 
@@ -427,6 +428,7 @@ public class ExamenController {
         return true;
     }
 
+
     @FXML
     private void handleAddToCalendar() {
 
@@ -459,6 +461,5 @@ public class ExamenController {
             alert.show();
         }
     }
-
 
 }

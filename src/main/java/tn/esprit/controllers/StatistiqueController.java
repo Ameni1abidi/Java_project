@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 public class StatistiqueController {
 
+
     // ================= KPI =================
     @FXML private Label lblMoyenneGlobale;
     @FXML private Label lblTauxReussite;
@@ -33,7 +34,6 @@ public class StatistiqueController {
     // ================= CHARTS =================
     @FXML private PieChart pieChart;
     @FXML private BarChart<String, Number> barChart;
-
     private final StatistiqueService stat = new StatistiqueService();
     private final ExamenService examenService = new ExamenService();
 
@@ -45,7 +45,6 @@ public class StatistiqueController {
         loadBarChart();
         loadInsights();
     }
-
     // ================= KPI =================
     private void loadKPIs() {
 
@@ -71,7 +70,6 @@ public class StatistiqueController {
     private void loadPieChart() {
 
         pieChart.getData().clear();
-
         Map<String, Long> distribution = stat.distributionNiveaux();
 
         distribution.forEach((niveau, count) -> {

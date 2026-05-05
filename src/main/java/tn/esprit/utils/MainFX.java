@@ -9,12 +9,9 @@ public class MainFX extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/ProfDashboard.fxml"));
         //FXMLLoader loader = new FXMLLoader(getClass().getResource("/ProfDashboard.fxml"));
         //FXMLLoader loader = new FXMLLoader(getClass().getResource("/EtudiantDashboard.fxml"));
-
-
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/Home.fxml"));
 
         Scene scene = new Scene(loader.load());
         PopupStyleInstaller.install();

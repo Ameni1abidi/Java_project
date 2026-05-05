@@ -126,6 +126,7 @@ public class StatistiqueService {
         return (fail * 100.0) / total;
     }
 
+
     public double noteMaxGlobale() {
         return getAll().stream()
                 .mapToDouble(Evaluation::getNote)
@@ -195,6 +196,7 @@ public class StatistiqueService {
     }
 
     public Map<String, Long> distributionNotes() {
+
         return getAll().stream()
                 .collect(Collectors.groupingBy(e -> {
                     double n = e.getNote();
@@ -206,6 +208,7 @@ public class StatistiqueService {
                     if (n < 16) return "14-16";
                     return "16-20";
                 }, Collectors.counting()));
+
     }
 
     // ================= TOP / INSIGHTS =================
@@ -283,4 +286,5 @@ public class StatistiqueService {
         if (m >= 9) return "Risque moyen";
         return "Risque élevé";
     }
+
 }

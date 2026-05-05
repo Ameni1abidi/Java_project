@@ -146,6 +146,7 @@ public class ResourceListController {
                 } else {
                     setStyle("-fx-text-fill: #f59e0b; -fx-font-weight: bold;");
                 }
+
             }
         });
 
@@ -181,6 +182,9 @@ public class ResourceListController {
                 setGraphic(empty ? null : pane);
             }
         });
+
+        contenuColumn.setCellValueFactory(cellData ->
+                new SimpleStringProperty(formatContenu(cellData.getValue().getContenu())));
     }
 
     private String toDisplayType(String type) {

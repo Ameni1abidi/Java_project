@@ -131,6 +131,7 @@ public class CategorieController {
     }
 
     @FXML
+
     private void goRessourceDashboard(ActionEvent event) {
         loadPage(event, "/RessourceDashboard.fxml");
     }
@@ -141,6 +142,7 @@ public class CategorieController {
     }
 
     @FXML
+
     private void goExamens(ActionEvent event) {
         loadPage(event, "/ExamenView.fxml");
     }

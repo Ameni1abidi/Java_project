@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS ressource_favori (
     CONSTRAINT fk_fav_ressource FOREIGN KEY (ressource_id) REFERENCES ressource(id) ON DELETE CASCADE
 );
 
+
 CREATE TABLE IF NOT EXISTS ressource_interaction (
     id INT AUTO_INCREMENT PRIMARY KEY,
     ressource_id INT NOT NULL,
@@ -37,3 +38,4 @@ CREATE TABLE IF NOT EXISTS ressource_interaction (
         FOREIGN KEY (ressource_id) REFERENCES ressource(id)
         ON DELETE CASCADE
 );
+

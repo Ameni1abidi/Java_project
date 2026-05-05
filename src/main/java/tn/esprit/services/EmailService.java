@@ -1,12 +1,13 @@
 package tn.esprit.services;
-
 import jakarta.mail.Authenticator;
 import jakarta.mail.Message;
 import jakarta.mail.PasswordAuthentication;
 import jakarta.mail.Session;
 import jakarta.mail.Transport;
 import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
 import tn.esprit.config.LocalSecrets;
 
 import java.util.List;
@@ -30,6 +31,7 @@ public final class EmailService {
             System.out.println("✅ Email sent to " + to);
 
         } catch (Exception e) {
+            System.out.println("⚠️ Email not sent (SMTP issue)");
             e.printStackTrace();
         }
     }

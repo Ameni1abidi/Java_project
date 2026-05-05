@@ -138,4 +138,7 @@ public class SidebarController {
         if (btnEvaluations != null) btnEvaluations.setStyle(base);
         if (btnLogout != null) btnLogout.setStyle(base);
     }
+
 }
+
+

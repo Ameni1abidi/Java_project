@@ -156,6 +156,7 @@ public class CategorieListController {
                     showCategorieForm(item);
                 }
             });
+
             deleteButton.setOnAction(event -> {
                 categorie item = getTableRow().getItem();
                 if (item != null) {
@@ -174,6 +175,7 @@ public class CategorieListController {
             }
         }
     }
+
 
     private void deleteCategorie(categorie item) {
         Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);

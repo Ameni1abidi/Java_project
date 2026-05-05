@@ -26,6 +26,7 @@ import tn.esprit.entities.resources;
 import tn.esprit.services.ChapitreService;
 import tn.esprit.services.CategoryService;
 import tn.esprit.services.CloudinaryStorageService;
+
 import tn.esprit.services.QrCodeService;
 import tn.esprit.services.ResourceService;
 import tn.esprit.services.YouTubeLinkService;
@@ -83,7 +84,9 @@ public class ajouterRessource {
     private final CategoryService categoryService = new CategoryService();
     private final ChapitreService chapitreService = new ChapitreService();
     private final CloudinaryStorageService cloudinaryStorageService = new CloudinaryStorageService();
+
     private final QrCodeService qrCodeService = new QrCodeService();
+
     private final YouTubeLinkService youTubeLinkService = new YouTubeLinkService();
     private resources currentResource;
     private String selectedFilePath = "";
@@ -375,15 +378,24 @@ public class ajouterRessource {
 
     private String prepareStoredFilePath(String sourcePath, String type) throws IOException {
         if (isRemoteUrl(sourcePath)) {
+
             if ("image".equals(type) || "video".equals(type)) {
                 qrCodeService.generateAndSave(sourcePath);
             }
+
             return sourcePath;
         }
 
         Path source = Path.of(sourcePath);
         if (!Files.exists(source)) {
             throw new IOException("fichier introuvable");
+        }
+
+        if (cloudinaryStorageService.isEnabled() && ("image".equals(type) || "video".equals(type))) {
+            if ("image".equals(type)) {
+                return cloudinaryStorageService.uploadImage(source);
+            }
+            return cloudinaryStorageService.uploadVideo(source);
         }
 
         if ("image".equals(type) || "video".equals(type)) {

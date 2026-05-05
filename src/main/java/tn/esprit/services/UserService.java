@@ -308,6 +308,25 @@ public class UserService {
             ps.executeUpdate();
         }
     }
+    public List<String> getStudentEmails() throws SQLException {
+
+        List<String> emails = new ArrayList<>();
+
+        String sql = "SELECT email FROM utilisateur WHERE role = ?";
+
+        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+
+            ps.setString(1, Role.ROLE_ETUDIANT.name());
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                emails.add(rs.getString("email"));
+            }
+        }
+
+        return emails;
+    }
 
     public void setBlocked(int userId, boolean blocked) throws SQLException {
         String sql = "UPDATE utilisateur SET is_blocked = ? WHERE id = ?";
@@ -445,3 +464,4 @@ public class UserService {
         return exists;
     }
 }
+

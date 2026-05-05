@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 
+
 public class CloudinaryStorageService {
     private final Cloudinary cloudinary;
     private final boolean enabled;

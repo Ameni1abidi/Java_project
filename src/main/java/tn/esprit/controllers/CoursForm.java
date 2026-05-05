@@ -9,6 +9,11 @@ import tn.esprit.services.CoursService;
 
 import javafx.event.ActionEvent;
 import tn.esprit.services.EmailService;
+import tn.esprit.services.UserService;
+import tn.esprit.utils.FlashSession;
+
+import java.sql.Date;
+import java.util.ArrayList;
 import tn.esprit.utils.FlashSession;
 
 import java.sql.Date;
@@ -20,13 +25,15 @@ public class CoursForm {
     @FXML private TextArea descriptionField;
     @FXML private TextField niveauField;
     @FXML private DatePicker dateField;
-    @FXML private TextField badgeField;
+    @FXML
+    private ComboBox<String> badgeCombo;
 
     @FXML private Label titreError;
     @FXML private Label descriptionError;
     @FXML private Label niveauError;
     @FXML private Label dateError;
     @FXML private Label badgeError;
+
 
     private CoursService service = new CoursService();
     private Cours currentCours;
@@ -38,7 +45,7 @@ public class CoursForm {
             titreField.setText(c.getTitre());
             descriptionField.setText(c.getDescription());
             niveauField.setText(c.getNiveau());
-            badgeField.setText(c.getBadge());
+            badgeCombo.setValue(c.getBadge());
             dateField.setValue(c.getDateCreation().toLocalDate());
         }
     }
@@ -58,8 +65,9 @@ public class CoursForm {
         String titre = titreField.getText();
         String description = descriptionField.getText();
         String niveau = niveauField.getText();
-        String badge = badgeField.getText();
+        String badge = badgeCombo.getValue();
         var date = dateField.getValue();
+
 
         if (titre == null || titre.trim().isEmpty()) {
             titreError.setText("Titre obligatoire");
@@ -87,8 +95,9 @@ public class CoursForm {
             valid = false;
         }
 
-        if (badge != null && badge.length() > 20) {
-            badgeError.setText("Badge trop long");
+
+        if (badge == null || badge.isEmpty()) {
+            badgeError.setText("Veuillez choisir un badge");
             valid = false;
         }
 
@@ -120,13 +129,19 @@ public class CoursForm {
 
             savedCours = currentCours;
         }
+        boolean isNew = (currentCours == null);
         // 📩 EMAIL REAL (MailHog)
         EmailService emailService = new EmailService();
 
-        List<String> students = List.of(
-                "student1@test.com",
-                "student2@test.com"
-        );
+        UserService userService = new UserService();
+
+        List<String> students = new ArrayList<>();
+
+        try {
+            students = userService.getStudentEmails();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         int sent = emailService.sendToStudents(
                 students,
@@ -140,7 +155,61 @@ public class CoursForm {
                 "success"
         );
 
+        String message;
+
+        String link = "file:///C:/EduFlex/login.exe";
+
+        if (isNew) {
+            message =
+                    "<h3>Bonjour Assil,</h3>" +
+
+                            "<p>Un nouveau cours vient d'être ajouté :</p>" +
+                            "<b>" + savedCours.getTitre() + "</b><br><br>" +
+
+                            "<p><b>Description :</b> " + savedCours.getDescription() + "</p>" +
+
+                            "<a href='" + link + "' " +
+                            "style='display:inline-block;padding:10px 15px;background:#4CAF50;color:white;text-decoration:none;border-radius:5px;'>"
+                            + "📚 Voir le cours</a><br><br>" +
+
+                            "<p>EduFlex</p>";
+
+        } else {
+            message =
+                    "<h3>Bonjour Assil,</h3>" +
+
+                            "<p>Le cours suivant a été modifié :</p>" +
+                            "<b>" + savedCours.getTitre() + "</b><br><br>" +
+
+                            "<p><b>Nouvelle description :</b> " + savedCours.getDescription() + "</p>" +
+
+                            "<a href='" + link + "' " +
+                            "style='display:inline-block;padding:10px 15px;background:#2196F3;color:white;text-decoration:none;border-radius:5px;'>"
+                            + "✏️ Voir le cours</a><br><br>" +
+
+                            "<p>EduFlex</p>";
+        }
+
+        for (String email : students) {
+            emailService.sendEmail(email, "📚 Notification Cours", message);
+            sent++;
+        }
+
+        // 🔔 FLASH MESSAGE (IMPORTANT)
+        FlashSession.setFlash(
+                "📩 Cours enregistré avec succès. " + sent + " email(s) envoyé(s).",
+                "success"
+        );
+
         goToList();
+    }
+    public void initialize() {
+
+        badgeCombo.getItems().addAll(
+                "🔥 Populaire",
+                "📈 Tendance",
+                "⭐ À la une"
+        );
     }
 
     @FXML
@@ -211,4 +280,5 @@ public class CoursForm {
             e.printStackTrace();
         }
     }
+
 }

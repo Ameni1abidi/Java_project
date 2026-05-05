@@ -298,11 +298,11 @@ public class ResourceService {
             return false;
         }
         ensureFavoriteTableSafe();
+        String sql = "SELECT 1 FROM ressource_favori WHERE user_id = ? AND ressource_id = ?";
         String userColumn = getFavoriteUserColumn();
         if (userColumn == null) {
             return false;
         }
-        String sql = "SELECT 1 FROM ressource_favori WHERE " + userColumn + " = ? AND ressource_id = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, userId);
             ps.setInt(2, resourceId);
@@ -385,6 +385,7 @@ public class ResourceService {
                     "PRIMARY KEY (user_id, ressource_id), " +
                     "CONSTRAINT fk_fav_ressource FOREIGN KEY (ressource_id) REFERENCES ressource(id) ON DELETE CASCADE" +
                     ")");
+
             if (!hasTableColumn("ressource_favori", "created_at")) {
                 executeUpdate("ALTER TABLE ressource_favori ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
             }
@@ -415,7 +416,6 @@ public class ResourceService {
             }
         }
     }
-
     private resources mapRow(ResultSet rs) throws SQLException {
         return new resources(
                 rs.getInt("id"),

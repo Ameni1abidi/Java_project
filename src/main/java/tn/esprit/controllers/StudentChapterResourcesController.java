@@ -9,8 +9,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
@@ -30,12 +30,14 @@ import tn.esprit.entities.Cours;
 import tn.esprit.entities.User;
 import tn.esprit.entities.resources;
 import tn.esprit.services.ChapitreService;
+import tn.esprit.services.CoursService;
+import tn.esprit.services.ResourceService;
+import tn.esprit.services.SensitiveResourceAccessService;
 import tn.esprit.services.CloudinaryStorageService;
 import tn.esprit.services.OcrService;
 import tn.esprit.services.OcrViewerPageService;
 import tn.esprit.services.CoursService;
 import tn.esprit.services.QrCodeService;
-import tn.esprit.services.ResourceService;
 import tn.esprit.services.RessourceDashboardService;
 import tn.esprit.services.SensitiveResourceAccessService;
 import tn.esprit.services.TranslationService;
@@ -229,6 +231,7 @@ public class StudentChapterResourcesController {
         card.setStyle(darkMode
                 ? "-fx-background-color:#1f2937; -fx-background-radius:14; -fx-border-color:#334155; -fx-border-radius:14;"
                 : "-fx-background-color:#fffaff; -fx-background-radius:14; -fx-border-color:#dfd4f2; -fx-border-radius:14;");
+
 
         HBox topRow = new HBox(8);
         Label titre = new Label(safe(resource.getTitre()));
@@ -880,7 +883,6 @@ public class StudentChapterResourcesController {
     private boolean isRemoteUrl(String value) {
         return value != null && (value.startsWith("http://") || value.startsWith("https://"));
     }
-
     private String safeType(String type) {
         if (type == null || type.isBlank()) {
             return "TYPE";

@@ -26,7 +26,9 @@ import java.util.List;
 
 public class AjoutForum {
 
-    @FXML private FlowPane  forumContainer;
+
+    @FXML private FlowPane forumContainer;
+    @FXML private VBox     formPane;
     @FXML private StackPane formOverlay;
     @FXML private TextField titreField;
     @FXML private TextField typeField;
@@ -37,7 +39,8 @@ public class AjoutForum {
     private final OllamaService ollama = new OllamaService();
 
     private int currentPage = 1;
-    private final int pageSize = 3;
+
+    private final int pageSize = 3;   // ← 3 forums par page
     private int totalPages;
 
     // ── Styles globaux ────────────────────────────────────────────────────
@@ -220,19 +223,18 @@ public class AjoutForum {
 
         fs.getPaginated(currentPage, pageSize).forEach(f -> {
             try {
-                // ── Card ──────────────────────────────────────────────────
+                // ── Card ─────────────────────────────────────────────────
                 VBox card = new VBox(10);
-                card.setPrefWidth(420);
-                card.setMaxWidth(420);
+                card.setPrefWidth(260);
+                card.setMaxWidth(260);
                 card.setStyle(
                         "-fx-background-color:white;" +
-                                "-fx-padding:20;" +
-                                "-fx-background-radius:16;" +
-                                "-fx-border-color:#ede9fe;" +
-                                "-fx-border-radius:16;" +
-                                "-fx-border-width:1.5;" +
-                                "-fx-effect: dropshadow(gaussian,#ddd6fe,10,0,0,3);"
-                );
+                                "-fx-padding:15;" +
+                                "-fx-background-radius:12;" +
+                                "-fx-border-color:#ebebeb;" +
+                                "-fx-border-radius:12;" +
+                                "-fx-border-width:1;" +
+                                "-fx-effect: dropshadow(gaussian,#e0e0e0,6,0,0,2);");
 
                 // ── Titre ─────────────────────────────────────────────────
                 Label titre = new Label(f.getTitre());
@@ -242,7 +244,11 @@ public class AjoutForum {
 
                 // ── Info ──────────────────────────────────────────────────
                 Label info = new Label("Type: " + f.getType() + " | " + f.getDateCreation());
+
+                info.setStyle("-fx-text-fill:gray; -fx-font-size:11px;");
+
                 info.setStyle("-fx-text-fill:#a78bfa; -fx-font-size:11px;");
+
 
                 // ── Contenu ───────────────────────────────────────────────
                 Label contenu = new Label(f.getContenu());
@@ -254,6 +260,7 @@ public class AjoutForum {
                 Button delete = new Button("Supprimer");
                 edit.setStyle(BTN_MODIFIER);
                 delete.setStyle(BTN_SUPPRIMER);
+
 
                 delete.setOnAction(e -> { fs.supprimer(f.getId()); loadForums(); });
                 edit.setOnAction(e -> {
@@ -268,36 +275,48 @@ public class AjoutForum {
 
                 // ── Bouton IA ─────────────────────────────────────────────
                 Button iaBtn = new Button("Demander a l'IA");
+
                 iaBtn.setStyle(BTN_IA);
+
 
                 Label iaLoading = new Label("L'IA reflechit...");
                 iaLoading.setVisible(false);
                 iaLoading.setManaged(false);
+
+                iaLoading.setStyle("-fx-font-size:11px; -fx-text-fill:#7c3aed; -fx-font-style:italic;");
+
                 iaLoading.setStyle(
                         "-fx-font-size:12px; -fx-text-fill:#7c3aed;" +
                                 "-fx-font-style:italic;");
+
 
                 Label iaResponse = new Label();
                 iaResponse.setWrapText(true);
                 iaResponse.setVisible(false);
                 iaResponse.setManaged(false);
                 iaResponse.setStyle(
-                        "-fx-background-color:#faf5ff;" +
+
+                        "-fx-background-color:#f5f3ff;" +
                                 "-fx-border-color:#c4b5fd; -fx-border-width:1;" +
                                 "-fx-border-radius:8; -fx-background-radius:8;" +
-                                "-fx-padding:10; -fx-font-size:12px; -fx-text-fill:#4c1d95;");
+                                "-fx-padding:10; -fx-font-size:12px; -fx-text-fill:#3b0764;"
+                );
 
                 iaBtn.setOnAction(e -> {
                     if (iaResponse.isVisible()) {
                         iaResponse.setVisible(false);
                         iaResponse.setManaged(false);
                         iaBtn.setText("Demander a l'IA");
+
                         iaBtn.setStyle(BTN_IA);
+
                         return;
                     }
                     iaBtn.setDisable(true);
                     iaBtn.setText("Reflexion...");
+
                     iaBtn.setStyle(BTN_IA_ACTIVE);
+
                     iaLoading.setVisible(true);
                     iaLoading.setManaged(true);
 
@@ -309,7 +328,9 @@ public class AjoutForum {
                             iaLoading.setManaged(false);
                             iaBtn.setDisable(false);
                             iaBtn.setText("Masquer la reponse IA");
+
                             iaBtn.setStyle(BTN_IA_ACTIVE);
+
                             iaResponse.setText("IA : " + reponse);
                             iaResponse.setVisible(true);
                             iaResponse.setManaged(true);
@@ -320,15 +341,21 @@ public class AjoutForum {
                 HBox actions = new HBox(10, edit, delete);
 
                 // ── Commentaires ──────────────────────────────────────────
+
                 FXMLLoader loader = new FXMLLoader(
                         getClass().getResource("/commentaire.fxml"));
+
                 Parent commentUI = loader.load();
                 AjoutCommentaire cc = loader.getController();
                 cc.setForumId(f.getId());
 
                 card.getChildren().addAll(
+
+                        titre, info, contenu, actions,
+
                         titre, info, contenu,
                         actions,
+
                         iaBtn, iaLoading, iaResponse,
                         commentUI
                 );
@@ -353,28 +380,33 @@ public class AjoutForum {
     }
 
     // ── NAVIGATION ────────────────────────────────────────────────────────
-    @FXML private void goDashboard(ActionEvent event)   { loadPage(event, "/ProfDashboard.fxml"); }
-    @FXML private void goCours(ActionEvent event)       { loadPage(event, "/CoursList.fxml"); }
-    @FXML private void goRessources(ActionEvent event)  { loadPage(event, "/listeRessources.fxml"); }
-    @FXML private void goCategories(ActionEvent event)  { loadPage(event, "/CategorieList.fxml"); }
-    @FXML private void goExamens(ActionEvent event)     { loadPage(event, "/ExamenView.fxml"); }
-    @FXML private void goEvaluations(ActionEvent event) { loadPage(event, "/EvaluationView.fxml"); }
 
-    @FXML private void goResultats(ActionEvent event) {
-        new Alert(Alert.AlertType.INFORMATION,
-                "La page resultats sera bientot disponible.").showAndWait();
-    }
+    @FXML private void goDashboard(ActionEvent event)  { loadPage(event, "/ProfDashboard.fxml"); }
+    @FXML private void goCours(ActionEvent event)      { loadPage(event, "/CoursList.fxml"); }
+    @FXML private void goRessources(ActionEvent event) { loadPage(event, "/listeRessources.fxml"); }
+    @FXML private void goCategories(ActionEvent event) { loadPage(event, "/CategorieList.fxml"); }
+    @FXML private void goExamens(ActionEvent event)    { loadPage(event, "/ExamenView.fxml"); }
+    @FXML private void goEvaluations(ActionEvent event){ loadPage(event, "/EvaluationView.fxml"); }
 
-    @FXML private void goLogout(ActionEvent event) { loadPage(event, "/Login.fxml"); }
 
-    private void loadPage(ActionEvent event, String fxmlPath) {
-        try {
-            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.show();
-        } catch (Exception e) {
-            e.printStackTrace();
+        @FXML private void goResultats (ActionEvent event){
+            new Alert(Alert.AlertType.INFORMATION,
+                    "La page resultats sera bientot disponible.").showAndWait();
+
         }
-    }
+
+        @FXML private void goLogout (ActionEvent event){
+            loadPage(event, "/Login.fxml");
+        }
+
+        private void loadPage (ActionEvent event, String fxmlPath){
+            try {
+                Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
+                Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+                stage.setScene(new Scene(root));
+                stage.show();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 }
