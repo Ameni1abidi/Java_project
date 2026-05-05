@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox spacing="0"
+      xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="tn.esprit.controllers.AIController"
+      style="-fx-background-color: #f0f4f8;">
+
+    <!-- ===== HEADER ===== -->
+    <VBox style="-fx-background-color: #1a237e; -fx-padding: 20 24 20 24;">
+        <Label text="🎓 Générateur d'Examen IA"
+               style="-fx-text-fill: white; -fx-font-size: 22; -fx-font-weight: bold;"/>
+        <Label text="Powered by Ollama · Llama3"
+               style="-fx-text-fill: #9fa8da; -fx-font-size: 12;"/>
+    </VBox>
+
+    <!-- ===== FORM ===== -->
+    <VBox spacing="12" style="-fx-padding: 20 24 16 24; -fx-background-color: white;
+                              -fx-border-color: #e8eaf6; -fx-border-width: 0 0 1 0;">
+
+        <Label fx:id="examInfoLabel"
+               style="-fx-text-fill: #3949ab; -fx-font-size: 12; -fx-font-weight: bold;"/>
+
+        <HBox spacing="12" alignment="CENTER_LEFT">
+
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label text="Nom du cours"
+                       style="-fx-font-size: 12; -fx-text-fill: #555; -fx-font-weight: bold;"/>
+                <TextField fx:id="courseField"
+                           promptText="Ex: Java, Machine Learning, Algorithmes..."
+                           style="-fx-border-color: #c5cae9; -fx-border-radius: 6;
+                                  -fx-background-radius: 6; -fx-padding: 8; -fx-font-size: 13;"/>
+            </VBox>
+
+            <VBox spacing="4">
+                <Label text="Niveau"
+                       style="-fx-font-size: 12; -fx-text-fill: #555; -fx-font-weight: bold;"/>
+                <ComboBox fx:id="levelBox"
+                          prefWidth="160"
+                          style="-fx-border-color: #c5cae9; -fx-border-radius: 6; -fx-font-size: 13;"/>
+            </VBox>
+
+        </HBox>
+
+        <HBox spacing="10">
+            <Button fx:id="generateBtn"
+                    text="⚡ Générer l'examen"
+                    onAction="#handleGenerate"
+                    prefWidth="200"
+                    style="-fx-background-color: #1a237e; -fx-text-fill: white;
+                           -fx-font-weight: bold; -fx-font-size: 13;
+                           -fx-background-radius: 8; -fx-padding: 10 16;
+                           -fx-cursor: hand;"/>
+
+            <Button text="🗑 Effacer"
+                    onAction="#handleClear"
+                    style="-fx-background-color: #eceff1; -fx-text-fill: #555;
+                           -fx-font-size: 13; -fx-background-radius: 8;
+                           -fx-padding: 10 16; -fx-cursor: hand;"/>
+
+            <Button text="📋 Copier"
+                    onAction="#handleCopy"
+                    style="-fx-background-color: #e8f5e9; -fx-text-fill: #2e7d32;
+                           -fx-font-size: 13; -fx-background-radius: 8;
+                           -fx-padding: 10 16; -fx-cursor: hand;"/>
+        </HBox>
+
+    </VBox>
+
+    <!-- ===== PROGRESS ===== -->
+    <VBox style="-fx-padding: 6 24; -fx-background-color: white;" spacing="4">
+        <ProgressBar fx:id="progressBar" maxWidth="Infinity" prefHeight="6"
+                     style="-fx-accent: #3949ab;"/>
+        <Label fx:id="statusLabel" text="Prêt"
+               style="-fx-text-fill: #666; -fx-font-size: 12;"/>
+    </VBox>
+
+    <!-- ===== TABS ===== -->
+    <TabPane fx:id="tabPane"
+             tabClosingPolicy="UNAVAILABLE"
+             VBox.vgrow="ALWAYS"
+             style="-fx-background-color: #f0f4f8; -fx-padding: 12 20;">
+
+        <!-- TAB 1: Texte brut -->
+        <Tab text="📄 Texte brut">
+            <TextArea fx:id="resultArea"
+                      wrapText="true"
+                      editable="false"
+                      style="-fx-font-family: 'Consolas', monospace; -fx-font-size: 13;
+                             -fx-background-color: white; -fx-border-color: #c5cae9;
+                             -fx-border-radius: 8; -fx-background-radius: 8;"/>
+        </Tab>
+
+        <!-- TAB 2: Questions structurées -->
+        <Tab text="📝 Questions structurées">
+            <ScrollPane fitToWidth="true" style="-fx-background-color: transparent;">
+                <VBox fx:id="questionsContainer" spacing="12"
+                      style="-fx-padding: 12;">
+                    <Label text="Les questions apparaîtront ici après génération."
+                           style="-fx-text-fill: #999; -fx-font-style: italic;"/>
+                </VBox>
+            </ScrollPane>
+        </Tab>
+
+    </TabPane>
+
+</VBox>
