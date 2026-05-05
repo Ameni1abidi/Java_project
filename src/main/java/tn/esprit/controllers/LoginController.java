@@ -12,11 +12,15 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import tn.esprit.services.AuditLogService;
+import tn.esprit.services.LoginSecurityService;
 import tn.esprit.services.PasswordResetService;
+import tn.esprit.services.SessionService;
 import tn.esprit.services.auth.GitHubAuthService;
 import tn.esprit.services.auth.GoogleAuthService;
 import tn.esprit.utils.UserSession;
 
+import java.net.InetAddress;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 public class LoginController {
@@ -24,12 +28,16 @@ public class LoginController {
     @FXML private TextField     emailField;
     @FXML private PasswordField passwordField;
     @FXML private Label         errorLabel;
+    @FXML private CheckBox      rememberMeCheckBox;
 
     private final UserService userService = new UserService();
     private final AuditLogService auditLogService = new AuditLogService();
     private final PasswordResetService passwordResetService = new PasswordResetService();
     private final GoogleAuthService googleAuthService = new GoogleAuthService();
     private final GitHubAuthService gitHubAuthService = new GitHubAuthService();
+    private final LoginSecurityService loginSecurityService = new LoginSecurityService();
+    private final SessionService sessionService = new SessionService();
+    private static final DateTimeFormatter LOCK_TIME_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @FXML
     private void handleLogin() {
@@ -42,7 +50,8 @@ public class LoginController {
         }
 
         try {
-            Optional<User> result = userService.login(email, pw);
+            LoginSecurityService.LoginContext ctx = new LoginSecurityService.LoginContext(bestEffortLocalIp(), deviceFingerprint());
+            Optional<User> result = userService.login(email, pw, ctx);
 
             if (result.isEmpty()) {
                 auditLogService.log(email, "LOGIN_FAILED", "Login failed for provided credentials");
@@ -52,12 +61,21 @@ public class LoginController {
 
             User connectedUser = result.get();
             UserSession.setCurrentUser(connectedUser);
+            boolean remember = rememberMeCheckBox != null && rememberMeCheckBox.isSelected();
+            String token = sessionService.createSession(connectedUser.getId(), bestEffortLocalIp(), deviceFingerprint(), remember);
+            UserSession.setSessionToken(token);
             auditLogService.log(connectedUser.getEmail(), "LOGIN_SUCCESS", "User logged in with role " + connectedUser.getRole());
             redirectByRole(connectedUser);
 
+        } catch (IllegalStateException e) {
+            // Example: locked / not verified / blocked / status denied...
+            if (isLockedMessage(e.getMessage())) {
+                showLockedPopup(email, e.getMessage());
+                return;
+            }
+            showError("Erreur : " + formatError(e));
         } catch (Exception e) {
             showError("Erreur : " + formatError(e));
-            e.printStackTrace();
         }
     }
 
@@ -160,6 +178,13 @@ public class LoginController {
             try {
                 User connectedUser = task.getValue();
                 UserSession.setCurrentUser(connectedUser);
+                boolean remember = rememberMeCheckBox != null && rememberMeCheckBox.isSelected();
+                String token = sessionService.createSession(connectedUser.getId(), bestEffortLocalIp(), deviceFingerprint(), remember);
+                UserSession.setSessionToken(token);
+                userService.onExternalLoginSuccess(
+                        connectedUser,
+                        new LoginSecurityService.LoginContext(bestEffortLocalIp(), deviceFingerprint())
+                );
                 auditLogService.log(connectedUser.getEmail(), "LOGIN_GOOGLE_SUCCESS", "User logged in with Google");
                 redirectByRole(connectedUser);
             } catch (Exception e) {
@@ -198,6 +223,13 @@ public class LoginController {
             try {
                 User connectedUser = task.getValue();
                 UserSession.setCurrentUser(connectedUser);
+                boolean remember = rememberMeCheckBox != null && rememberMeCheckBox.isSelected();
+                String token = sessionService.createSession(connectedUser.getId(), bestEffortLocalIp(), deviceFingerprint(), remember);
+                UserSession.setSessionToken(token);
+                userService.onExternalLoginSuccess(
+                        connectedUser,
+                        new LoginSecurityService.LoginContext(bestEffortLocalIp(), deviceFingerprint())
+                );
                 auditLogService.log(connectedUser.getEmail(), "LOGIN_GITHUB_SUCCESS", "User logged in with GitHub");
                 redirectByRole(connectedUser);
             } catch (Exception e) {
@@ -291,4 +323,47 @@ public class LoginController {
     }
 
     private record ResetPayload(String code, String newPassword, String confirmPassword) {}
+
+    private static boolean isLockedMessage(String msg) {
+        if (msg == null) return false;
+        String m = msg.toLowerCase();
+        return m.contains("verrouill") || m.contains("locked");
+    }
+
+    private void showLockedPopup(String email, String fallbackMessage) {
+        String content = fallbackMessage == null ? "Compte temporairement verrouillé." : fallbackMessage;
+        try {
+            var lock = loginSecurityService.getActiveLock(email);
+            if (lock.isPresent() && lock.get().lockedUntil() != null) {
+                content = "Compte temporairement verrouillé jusqu'à: " + LOCK_TIME_FMT.format(lock.get().lockedUntil());
+            }
+        } catch (Exception ignored) {
+        }
+
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Sécurité — Compte verrouillé");
+        alert.setHeaderText("Trop de tentatives échouées");
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
+
+    private static String bestEffortLocalIp() {
+        try {
+            return InetAddress.getLocalHost().getHostAddress();
+        } catch (Exception e) {
+            return "unknown";
+        }
+    }
+
+    private static String deviceFingerprint() {
+        String os = System.getProperty("os.name", "unknown");
+        String ver = System.getProperty("os.version", "");
+        String user = System.getProperty("user.name", "");
+        String host = "";
+        try {
+            host = InetAddress.getLocalHost().getHostName();
+        } catch (Exception ignored) {
+        }
+        return ("os=" + os + " " + ver + "; user=" + user + "; host=" + host).trim();
+    }
 }

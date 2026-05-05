@@ -899,3 +899,35 @@
     -fx-text-fill: #D1D5DB;
     -fx-fill: #D1D5DB;
 }
+
+/* ───────────────────────────────────────────────────────────────────────── */
+/* Dark mode fixes: TableView rows/background                                */
+/* ───────────────────────────────────────────────────────────────────────── */
+.theme-dark .admin-table .table-row-cell {
+    -fx-background-color: #111827; /* base */
+}
+
+.theme-dark .admin-table .table-row-cell:odd {
+    -fx-background-color: #0B1220; /* slightly darker for zebra */
+}
+
+.theme-dark .admin-table .table-row-cell:selected {
+    -fx-background-color: #24324A;
+}
+
+.theme-dark .admin-table .table-cell {
+    -fx-text-fill: #F9FAFB;
+}
+
+.theme-dark .admin-table .column-header-background {
+    -fx-background-color: #374151;
+}
+
+.theme-dark .admin-table .column-header,
+.theme-dark .admin-table .filler {
+    -fx-background-color: #374151;
+}
+
+.theme-dark .admin-table .column-header .label {
+    -fx-text-fill: #F9FAFB;
+}
