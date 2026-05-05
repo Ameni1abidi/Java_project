@@ -48,7 +48,6 @@ public class StatistiqueService {
     }
 
     public double tauxReussite(int examenId) {
-
         List<Evaluation> list = getAll().stream()
                 .filter(e -> e.getExamenId() == examenId)
                 .toList();
@@ -89,7 +88,6 @@ public class StatistiqueService {
     }
 
     public String statutEleve(int eleveId) {
-
         double m = moyenneEleve(eleveId);
 
         if (m >= 10) return "ADMIS";
@@ -107,7 +105,6 @@ public class StatistiqueService {
     }
 
     public double tauxReussiteGlobal() {
-
         long total = getAll().size();
         if (total == 0) return 0;
 
@@ -119,7 +116,6 @@ public class StatistiqueService {
     }
 
     public double tauxEchecGlobal() {
-
         long total = getAll().size();
         if (total == 0) return 0;
 
@@ -130,23 +126,19 @@ public class StatistiqueService {
         return (fail * 100.0) / total;
     }
 
-    // ================= EXAMEN ANALYTICS =================
-
-    public int examenPlusDifficile() {
-
+    public double noteMaxGlobale() {
         return getAll().stream()
-                .collect(Collectors.groupingBy(
-                        Evaluation::getExamenId,
-                        Collectors.averagingDouble(Evaluation::getNote)
-                ))
-                .entrySet().stream()
-                .min(Map.Entry.comparingByValue())
-                .map(Map.Entry::getKey)
-                .orElse(-1);
+                .mapToDouble(Evaluation::getNote)
+                .max().orElse(0);
+    }
+
+    public double noteMinGlobale() {
+        return getAll().stream()
+                .mapToDouble(Evaluation::getNote)
+                .min().orElse(0);
     }
 
     public double ecartTypeGlobal() {
-
         List<Double> notes = getAll().stream()
                 .map(Evaluation::getNote)
                 .toList();
@@ -164,26 +156,47 @@ public class StatistiqueService {
         );
     }
 
+    // ================= EXAMEN ANALYTICS =================
+
+    public int examenPlusDifficile() {
+        return getAll().stream()
+                .collect(Collectors.groupingBy(
+                        Evaluation::getExamenId,
+                        Collectors.averagingDouble(Evaluation::getNote)
+                ))
+                .entrySet().stream()
+                .min(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(-1);
+    }
+
+    public int examenPlusReussi() {
+        return getAll().stream()
+                .collect(Collectors.groupingBy(
+                        Evaluation::getExamenId,
+                        Collectors.averagingDouble(Evaluation::getNote)
+                ))
+                .entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(-1);
+    }
+
     // ================= DISTRIBUTIONS =================
 
     public Map<String, Long> distributionNiveaux() {
-
         return getAll().stream()
                 .collect(Collectors.groupingBy(e -> {
-
                     if (e.getNote() < 10) return "Échec";
                     if (e.getNote() < 14) return "Moyen";
                     if (e.getNote() < 16) return "Bon";
                     return "Excellent";
-
                 }, Collectors.counting()));
     }
 
     public Map<String, Long> distributionNotes() {
-
         return getAll().stream()
                 .collect(Collectors.groupingBy(e -> {
-
                     double n = e.getNote();
 
                     if (n < 5) return "0-5";
@@ -192,14 +205,12 @@ public class StatistiqueService {
                     if (n < 14) return "12-14";
                     if (n < 16) return "14-16";
                     return "16-20";
-
                 }, Collectors.counting()));
     }
 
     // ================= TOP / INSIGHTS =================
 
     public List<Integer> top3Eleves() {
-
         return getAll().stream()
                 .collect(Collectors.groupingBy(
                         Evaluation::getEleveId,
@@ -213,7 +224,6 @@ public class StatistiqueService {
     }
 
     public int meilleurEleveId() {
-
         return getAll().stream()
                 .collect(Collectors.groupingBy(
                         Evaluation::getEleveId,
@@ -226,7 +236,6 @@ public class StatistiqueService {
     }
 
     public int eleveEnDifficulte() {
-
         return getAll().stream()
                 .collect(Collectors.groupingBy(
                         Evaluation::getEleveId,
@@ -241,36 +250,37 @@ public class StatistiqueService {
     // ================= INDICATEUR AVANCÉ =================
 
     public double performanceIndex() {
+        return moyenneGlobale() - (ecartTypeGlobal() * 0.5);
+    }
 
-        double moyenne = moyenneGlobale();
+    // ================= IA / ANALYSE =================
+
+    public String analyseAutomatique() {
+
+        double taux = tauxReussiteGlobal();
         double ecart = ecartTypeGlobal();
 
-        return moyenne - (ecart * 0.5);
+        if (taux < 50) {
+            return "⚠️ Faible taux de réussite → revoir contenu pédagogique";
+        }
+
+        if (ecart > 5) {
+            return "⚠️ Forte dispersion → niveaux très hétérogènes";
+        }
+
+        if (taux > 80) {
+            return "✔️ Excellente performance globale";
+        }
+
+        return "✔️ Performance correcte avec axes d’amélioration";
     }
 
-    public String examenLePlusReussi() {
-        return getAll().stream()
-                .collect(Collectors.groupingBy(
-                        Evaluation::getExamenId,
-                        Collectors.averagingDouble(Evaluation::getNote)
-                ))
-                .entrySet().stream()
-                .max(Map.Entry.comparingByValue())
-                .map(e -> "Examen ID " + e.getKey())
-                .orElse("N/A");
-    }
+    public String predictionEleve(int eleveId) {
 
-    public String examenLePlusDifficileLabel() {
-        return getAll().stream()
-                .collect(Collectors.groupingBy(
-                        Evaluation::getExamenId,
-                        Collectors.averagingDouble(Evaluation::getNote)
-                ))
-                .entrySet().stream()
-                .min(Map.Entry.comparingByValue())
-                .map(e -> "Examen ID " + e.getKey())
-                .orElse("N/A");
-    }
+        double m = moyenneEleve(eleveId);
 
-    
+        if (m >= 12) return "Succès probable";
+        if (m >= 9) return "Risque moyen";
+        return "Risque élevé";
+    }
 }

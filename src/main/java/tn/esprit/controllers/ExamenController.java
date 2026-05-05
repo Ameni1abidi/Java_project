@@ -25,23 +25,32 @@ import java.util.stream.Collectors;
 
 public class ExamenController {
 
-    @FXML private TableView<Examen> tableExamens;
-    @FXML private TableColumn<Examen, Integer> colId;
-    @FXML private TableColumn<Examen, String>  colTitre;
-    @FXML private TableColumn<Examen, String>  colFichier;
-    @FXML private TableColumn<Examen, String>  colType;
-    @FXML private TableColumn<Examen, LocalDate> colDate;
-    @FXML private TableColumn<Examen, Integer> colDuree;
-    @FXML private TableColumn<Examen, Void>    colActions;
-    @FXML private TableColumn<Examen, String>  colCours;
-    @FXML private TableColumn<Examen, String>  colEnseignant;
+    @FXML
+    private TableView<Examen> tableExamens;
+    @FXML
+    private TableColumn<Examen, Integer> colId;
+    @FXML
+    private TableColumn<Examen, String> colTitre;
+    @FXML
+    private TableColumn<Examen, String> colFichier;
+    @FXML
+    private TableColumn<Examen, String> colType;
+    @FXML
+    private TableColumn<Examen, LocalDate> colDate;
+    @FXML
+    private TableColumn<Examen, Integer> colDuree;
+    @FXML
+    private TableColumn<Examen, Void> colActions;
+    @FXML
+    private TableColumn<Examen, String> colCours;
+    @FXML
+    private TableColumn<Examen, String> colEnseignant;
     @FXML
     private TextField searchField;
     private ObservableList<Examen> list;
-    private final ExamenService service      = new ExamenService();
-    private final CoursService  coursService = new CoursService();
+    private final ExamenService service = new ExamenService();
+    private final CoursService coursService = new CoursService();
     private final UserService userService = new UserService();
-
 
 
     private Map<Integer, String> coursMap;
@@ -63,8 +72,6 @@ public class ExamenController {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-
 
 
         colTitre.setCellValueFactory(data ->
@@ -97,6 +104,7 @@ public class ExamenController {
         // ── Fichier cliquable ────────────────────────────────────────────────
         colFichier.setCellFactory(col -> new TableCell<>() {
             private final Hyperlink link = new Hyperlink("Télécharger");
+
             {
                 link.setStyle("-fx-text-fill: #1a73e8;");
                 link.setOnAction(e -> {
@@ -104,6 +112,7 @@ public class ExamenController {
                     showAlert("Télécharger", "Fichier de : " + ex.getTitre());
                 });
             }
+
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
@@ -320,6 +329,16 @@ public class ExamenController {
         loadPage(event, "/Login.fxml");
     }
 
+    @FXML
+    public void goStatistique(ActionEvent event) {
+        loadPage(event, "/statistique.fxml");
+    }
+
+    @FXML
+    public void goIa(ActionEvent event) {
+        loadPage(event, "/AIView.fxml");
+    }
+
     private void loadPage(ActionEvent event, String fxmlPath) {
         try {
             Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
@@ -337,6 +356,7 @@ public class ExamenController {
         );
         tableExamens.setItems(list);
     }
+
     @FXML
     private void rechercherExamen() {
         String titre = searchField.getText();
@@ -439,4 +459,6 @@ public class ExamenController {
             alert.show();
         }
     }
+
+
 }

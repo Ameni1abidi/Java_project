@@ -100,4 +100,6 @@ public class OllamaService {
         }
         return sb.toString().trim();
     }
+
+
 }

@@ -1,37 +1,30 @@
 package tn.esprit.services;
 
+import tn.esprit.entities.Examen;
+
 public class AIExamService {
 
-    private final OllamaService ollama = new OllamaService();
+    private final ollama ollamaService = new ollama();
+    private final ExamenService examenService = new ExamenService();
 
-    public String ask(String prompt) {
-        return ollama.ask(prompt);
-    }
+    /**
+     * Génère un examen via Ollama et le sauvegarde en BD.
+     */
+    public Examen generateExamEntity(String cours, String niveau) {
+        try {
+            String contenuCours = "Cours: " + cours + "\nNiveau: " + niveau;
 
-    public String generateExam(String course, String level) {
+            // coursId=0, enseignantId=0 par défaut (à adapter selon ta session)
+            Examen examen = ollamaService.genererExamen(contenuCours, 0, 0);
 
-        String prompt =
-                "Tu es un professeur expert.\n" +
-                        "Génère un examen structuré.\n\n" +
-                        "Cours: " + course + "\n" +
-                        "Niveau: " + level + "\n\n" +
-                        "Format:\n" +
-                        "- 10 questions QCM\n" +
-                        "- 4 choix par question\n" +
-                        "- réponse correcte\n" +
-                        "- explication courte";
+            examenService.create(examen); // ← utilise ton ExamenService existant
 
-        return ask(prompt);
-    }
+            System.out.println("✔ Examen sauvegardé : " + examen);
+            return examen;
 
-    public String correctAnswer(String question, String answer) {
-
-        String prompt =
-                "Corrige cette réponse:\n\n" +
-                        "Question: " + question + "\n" +
-                        "Réponse étudiant: " + answer + "\n\n" +
-                        "Donne une note sur 20 + explication.";
-
-        return ask(prompt);
+        } catch (Exception e) {
+            System.err.println("Erreur AIExamService : " + e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 }
