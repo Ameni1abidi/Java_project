@@ -14,6 +14,9 @@ import tn.esprit.utils.FlashSession;
 
 import java.sql.Date;
 import java.util.ArrayList;
+import tn.esprit.utils.FlashSession;
+
+import java.sql.Date;
 import java.util.List;
 
 public class CoursForm {
@@ -140,6 +143,18 @@ public class CoursForm {
             e.printStackTrace();
         }
 
+        int sent = emailService.sendToStudents(
+                students,
+                "📚 Nouveau cours",
+                "Un cours a été ajouté/modifié: " + savedCours.getTitre()
+        );
+
+        // 🔔 FLASH MESSAGE (IMPORTANT)
+        FlashSession.setFlash(
+                "📩 Cours enregistré avec succès. " + sent + " email(s) envoyé(s).",
+                "success"
+        );
+
         String message;
 
         String link = "file:///C:/EduFlex/login.exe";
@@ -174,8 +189,6 @@ public class CoursForm {
 
                             "<p>EduFlex</p>";
         }
-
-        int sent = 0;
 
         for (String email : students) {
             emailService.sendEmail(email, "📚 Notification Cours", message);

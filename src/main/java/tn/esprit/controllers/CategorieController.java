@@ -131,6 +131,18 @@ public class CategorieController {
     }
 
     @FXML
+
+    private void goRessourceDashboard(ActionEvent event) {
+        loadPage(event, "/RessourceDashboard.fxml");
+    }
+
+    @FXML
+    private void goRessourceCalendar(ActionEvent event) {
+        loadPage(event, "/RessourceCalendar.fxml");
+    }
+
+    @FXML
+
     private void goExamens(ActionEvent event) {
         loadPage(event, "/ExamenView.fxml");
     }

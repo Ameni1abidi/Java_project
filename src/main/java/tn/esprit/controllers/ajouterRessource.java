@@ -26,6 +26,8 @@ import tn.esprit.entities.resources;
 import tn.esprit.services.ChapitreService;
 import tn.esprit.services.CategoryService;
 import tn.esprit.services.CloudinaryStorageService;
+
+import tn.esprit.services.QrCodeService;
 import tn.esprit.services.ResourceService;
 import tn.esprit.services.YouTubeLinkService;
 
@@ -82,6 +84,9 @@ public class ajouterRessource {
     private final CategoryService categoryService = new CategoryService();
     private final ChapitreService chapitreService = new ChapitreService();
     private final CloudinaryStorageService cloudinaryStorageService = new CloudinaryStorageService();
+
+    private final QrCodeService qrCodeService = new QrCodeService();
+
     private final YouTubeLinkService youTubeLinkService = new YouTubeLinkService();
     private resources currentResource;
     private String selectedFilePath = "";
@@ -91,6 +96,9 @@ public class ajouterRessource {
         loadCategories();
         loadChapitres();
         categorieCombo.valueProperty().addListener((obs, oldCat, newCat) -> handleCategoryChange(newCat));
+        if (datePicker.getValue() == null) {
+            datePicker.setValue(LocalDate.now());
+        }
 
         fileChooserContainer.setVisible(false);
         fileChooserContainer.setManaged(false);
@@ -370,6 +378,11 @@ public class ajouterRessource {
 
     private String prepareStoredFilePath(String sourcePath, String type) throws IOException {
         if (isRemoteUrl(sourcePath)) {
+
+            if ("image".equals(type) || "video".equals(type)) {
+                qrCodeService.generateAndSave(sourcePath);
+            }
+
             return sourcePath;
         }
 
@@ -385,6 +398,28 @@ public class ajouterRessource {
             return cloudinaryStorageService.uploadVideo(source);
         }
 
+        if ("image".equals(type) || "video".equals(type)) {
+            if (cloudinaryStorageService.isEnabled()) {
+                try {
+                    String cloudinaryUrl = "image".equals(type)
+                            ? cloudinaryStorageService.uploadImage(source)
+                            : cloudinaryStorageService.uploadVideo(source);
+                    qrCodeService.generateAndSave(cloudinaryUrl);
+                    return cloudinaryUrl;
+                } catch (Exception e) {
+                    throw new IOException("Upload Cloudinary impossible. Verifiez la configuration Cloudinary.", e);
+                }
+            }
+
+            String localPath = storeLocalFile(source);
+            qrCodeService.generateAndSave(Path.of(localPath).toUri().toString());
+            return localPath;
+        }
+
+        return storeLocalFile(source);
+    }
+
+    private String storeLocalFile(Path source) throws IOException {
         Path storageDir = Path.of("storage", "resources").toAbsolutePath().normalize();
         Files.createDirectories(storageDir);
 
@@ -463,6 +498,16 @@ public class ajouterRessource {
     @FXML
     private void goCategories(ActionEvent event) {
         loadPage(event, "/CategorieList.fxml");
+    }
+
+    @FXML
+    private void goRessourceDashboard(ActionEvent event) {
+        loadPage(event, "/RessourceDashboard.fxml");
+    }
+
+    @FXML
+    private void goRessourceCalendar(ActionEvent event) {
+        loadPage(event, "/RessourceCalendar.fxml");
     }
 
     @FXML

@@ -299,6 +299,10 @@ public class ResourceService {
         }
         ensureFavoriteTableSafe();
         String sql = "SELECT 1 FROM ressource_favori WHERE user_id = ? AND ressource_id = ?";
+        String userColumn = getFavoriteUserColumn();
+        if (userColumn == null) {
+            return false;
+        }
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, userId);
             ps.setInt(2, resourceId);
@@ -310,21 +314,53 @@ public class ResourceService {
         }
     }
 
-    public void setFavorite(int userId, int resourceId, boolean favorite) {
+    public boolean setFavorite(int userId, int resourceId, boolean favorite) {
         if (userId <= 0) {
-            return;
+            return false;
         }
         ensureFavoriteTableSafe();
-        String sqlInsert = "INSERT IGNORE INTO ressource_favori(user_id, ressource_id) VALUES(?, ?)";
-        String sqlDelete = "DELETE FROM ressource_favori WHERE user_id = ? AND ressource_id = ?";
+        String userColumn = getFavoriteUserColumn();
+        if (userColumn == null) {
+            return false;
+        }
+        String sqlInsert = "INSERT IGNORE INTO ressource_favori(" + userColumn + ", ressource_id, created_at) VALUES(?, ?, CURRENT_TIMESTAMP)";
+        String sqlDelete = "DELETE FROM ressource_favori WHERE " + userColumn + " = ? AND ressource_id = ?";
 
         try (PreparedStatement ps = connection.prepareStatement(favorite ? sqlInsert : sqlDelete)) {
             ps.setInt(1, userId);
             ps.setInt(2, resourceId);
             ps.executeUpdate();
+            return true;
         } catch (SQLException e) {
             // No crash in UI if favoris table is not ready; resources page must stay usable.
+            return false;
         }
+    }
+
+    public List<resources> getFavoritesByUserId(int userId) {
+        if (userId <= 0) {
+            return new ArrayList<>();
+        }
+        ensureFavoriteTableSafe();
+        String userColumn = getFavoriteUserColumn();
+        if (userColumn == null) {
+            return new ArrayList<>();
+        }
+        String sql = "SELECT r.id, r.titre, r.contenu, r.categorie_nom, r.type, r.disponible_le, r.chapitre_id, r.is_sensitive " +
+                "FROM ressource r INNER JOIN ressource_favori rf ON r.id = rf.ressource_id " +
+                "WHERE rf." + userColumn + " = ? ORDER BY rf.created_at DESC";
+        List<resources> list = new ArrayList<>();
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapRow(rs));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Erreur lors de la recuperation des favoris", e);
+        }
+        return list;
     }
 
     public Map<Integer, String> getChapitreTitles() {
@@ -349,11 +385,37 @@ public class ResourceService {
                     "PRIMARY KEY (user_id, ressource_id), " +
                     "CONSTRAINT fk_fav_ressource FOREIGN KEY (ressource_id) REFERENCES ressource(id) ON DELETE CASCADE" +
                     ")");
+
+            if (!hasTableColumn("ressource_favori", "created_at")) {
+                executeUpdate("ALTER TABLE ressource_favori ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
+            }
         } catch (SQLException ignored) {
             // Keep app running even if migration cannot be applied now.
         }
     }
 
+    private String getFavoriteUserColumn() {
+        try {
+            if (hasTableColumn("ressource_favori", "user_id")) {
+                return "user_id";
+            }
+            if (hasTableColumn("ressource_favori", "utilisateur_id")) {
+                return "utilisateur_id";
+            }
+        } catch (SQLException ignored) {
+        }
+        return null;
+    }
+
+    private boolean hasTableColumn(String tableName, String columnName) throws SQLException {
+        String sql = "SHOW COLUMNS FROM " + tableName + " LIKE ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, columnName);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
     private resources mapRow(ResultSet rs) throws SQLException {
         return new resources(
                 rs.getInt("id"),

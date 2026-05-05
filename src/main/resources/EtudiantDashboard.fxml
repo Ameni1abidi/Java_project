@@ -51,6 +51,7 @@
                     <Button maxWidth="Infinity" text="Voir tous les cours" onAction="#goCoursList" style="-fx-background-color: #7E57C2; -fx-text-fill: white; -fx-font-weight: bold;"/>
                     <Button maxWidth="Infinity" text="Voir les examens" onAction="#goExams" style="-fx-background-color: #42A5F5; -fx-text-fill: white; -fx-font-weight: bold;"/>
                     <Button maxWidth="Infinity" text="Consulter evaluations" onAction="#goEvaluations" style="-fx-background-color: #26A69A; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                    <Button maxWidth="Infinity" text="Mes favoris" onAction="#goFavorites" style="-fx-background-color: #FF8A65; -fx-text-fill: white; -fx-font-weight: bold;"/>
                     <Button maxWidth="Infinity" text="Discuter sur le forum" onAction="#goForum" style="-fx-background-color: #FFB74D; -fx-text-fill: #5D4037; -fx-font-weight: bold;"/>
                 </VBox>
             </HBox>

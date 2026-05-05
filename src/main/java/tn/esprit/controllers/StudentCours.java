@@ -8,19 +8,20 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import tn.esprit.entities.Cours;
 import tn.esprit.entities.Chapitre;
+import tn.esprit.entities.Cours;
 import tn.esprit.services.ChapitreService;
 import tn.esprit.services.CoursService;
 import tn.esprit.services.StudentChapitreProgressService;
-
+import tn.esprit.utils.ResourceNavigationContext;
 import java.awt.*;
 import java.io.File;
 import java.util.*;
@@ -30,11 +31,17 @@ public class StudentCours {
 
     @FXML
     private FlowPane courseContainer;
+    @FXML
+    private Label weatherIcon;
+    @FXML
+    private Label weatherTemp;
+    @FXML
+    private Label weatherDesc;
 
     private final CoursService coursService = new CoursService();
     private final ChapitreService chapitreService = new ChapitreService();
+    private Timeline refreshTimeline;
 
-    // ================= INIT =================
     @FXML
     public void initialize() {
         loadCourses();
@@ -42,28 +49,21 @@ public class StudentCours {
         setWeather("Ciel degage", 28);
     }
 
-    // ================= AUTO REFRESH =================
     private void startAutoRefresh() {
-        Timeline timeline = new Timeline(
-                new KeyFrame(Duration.seconds(5), e -> loadCourses())
-        );
-        timeline.setCycleCount(Timeline.INDEFINITE);
-        timeline.play();
+        refreshTimeline = new Timeline(new KeyFrame(Duration.seconds(5), e -> loadCourses()));
+        refreshTimeline.setCycleCount(Timeline.INDEFINITE);
+        refreshTimeline.play();
     }
 
-    // ================= LOAD COURSES =================
     private void loadCourses() {
         courseContainer.getChildren().clear();
         List<Cours> coursList = coursService.getAll();
-
         for (Cours c : coursList) {
             courseContainer.getChildren().add(createCourseCard(c));
         }
     }
 
-    // ================= COURSE CARD =================
     private VBox createCourseCard(Cours c) {
-
         VBox card = new VBox(10);
         card.setStyle("""
         -fx-background-color: white;
@@ -73,11 +73,9 @@ public class StudentCours {
         -fx-pref-width: 330;
     """);
 
-        // ===== TITLE =====
         Label title = new Label(c.getTitre());
         title.setStyle("-fx-font-size:20px; -fx-font-weight:bold; -fx-text-fill:#111;");
 
-        // ===== DESCRIPTION =====
         Label desc = new Label(
                 c.getDescription() != null
                         ? c.getDescription().substring(0, Math.min(100, c.getDescription().length())) + "..."
@@ -85,11 +83,9 @@ public class StudentCours {
         );
         desc.setStyle("-fx-text-fill:#666; -fx-font-size:12px;");
 
-        // ===== DATE =====
-        Label date = new Label("📅 " + c.getDateCreation());
+        Label date = new Label("Date: " + c.getDateCreation());
         date.setStyle("-fx-text-fill:#999; -fx-font-size:11px;");
 
-        // ===== CHAPTER COUNT =====
         int totalChaps = chapitreService.countByCoursId(c.getId());
         Label chapLabel = new Label("📚 Nombre de chapitres: " + totalChaps);
         chapLabel.setStyle("""
@@ -113,10 +109,10 @@ public class StudentCours {
 
         Label progressValue = new Label(progress + "% terminé");
         progressValue.setStyle("-fx-font-size:11px; -fx-text-fill:#555;");
-
         ProgressBar progressBar = new ProgressBar(percent);
         progressBar.setPrefWidth(280);
         progressBar.setStyle("-fx-accent:#2d89ef;");
+
 
 
         // ===== CERTIFICATE =====
@@ -249,9 +245,27 @@ public class StudentCours {
 
                 // ===== ADD =====
                 chapCard.getChildren().addAll(titre, duree, temps, badge, type, resumeBtn);
+                Label t = new Label(chap.getOrdre() + ". " + chap.getTitre());
+                t.setStyle("-fx-font-weight:bold; -fx-text-fill:#333;");
+
+                Label info = new Label("Duree: " + chap.getDureeEstimee() + " min | Type: " + chap.getTypeContenu());
+                info.setStyle("-fx-text-fill:#666; -fx-font-size:11px;");
+
+                Label status = new Label("Temps: 0 min | En cours");
+                status.setStyle("-fx-text-fill:#f39c12; -fx-font-size:11px;");
+
+                Button openChap = new Button("Voir Resume");
+                openChap.setStyle("-fx-background-color:#ff416c; -fx-text-fill:white; -fx-background-radius:20; -fx-padding:5 10;");
+
+                Button ressourcesBtn = new Button("Ressources");
+                ressourcesBtn.setStyle("-fx-background-color:#5b7cfa; -fx-text-fill:white; -fx-background-radius:20; -fx-padding:5 12; -fx-font-weight:bold;");
+                ressourcesBtn.setOnAction(e -> openChapterResources(e, chap));
+
+                chapCard.getChildren().addAll(t, info, status, openChap, ressourcesBtn);
                 chaptersBox.getChildren().add(chapCard);
             }
         }
+
 
         // ===== BUILD CARD =====
         card.getChildren().addAll(
@@ -263,24 +277,59 @@ public class StudentCours {
         return card;
     }
 
+    private void openChapterResources(ActionEvent event, Chapitre chapitre) {
+        if (chapitre == null || chapitre.getId() <= 0) {
+            showNavigationError("Chapitre invalide. Impossible d'ouvrir les ressources.");
+            return;
+        }
 
-    // ================= WEATHER =================
-    @FXML private Label weatherIcon;
-    @FXML private Label weatherTemp;
-    @FXML private Label weatherDesc;
+        try {
+            if (refreshTimeline != null) {
+                refreshTimeline.stop();
+            }
+            ResourceNavigationContext.openForChapitre(chapitre.getId(), chapitre.getTitre(), true);
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            Parent root = FXMLLoader.load(getClass().getResource("/StudentChapterResources.fxml"));
+            stage.setScene(new Scene(root));
+            stage.setTitle("Ressources du chapitre");
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            showNavigationError("Ouverture des ressources echouee: " + e.getMessage());
+        }
+    }
+
+    private void showNavigationError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Navigation");
+        alert.setHeaderText("Le bouton Ressources a rencontre une erreur");
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    public void goDashboard() {}
+    public void goForum() {}
+    public void goExams() {}
+    public void goLogout() {}
 
     private void setWeather(String desc, double temp) {
+        String icon = "?";
+        if (desc.equalsIgnoreCase("Ciel degage")) {
+            icon = "Sun";
+        } else if (desc.equalsIgnoreCase("Pluie") || desc.equalsIgnoreCase("Averses")) {
+            icon = "Rain";
+        } else if (desc.equalsIgnoreCase("Orage")) {
+            icon = "Storm";
+        } else if (desc.equalsIgnoreCase("Neige")) {
+            icon = "Snow";
+        }
 
-        String icon = "☁";
-
-        if (desc.equalsIgnoreCase("Ciel degage")) icon = "☀";
-        else if (desc.equalsIgnoreCase("Pluie")) icon = "☂";
-        else if (desc.equalsIgnoreCase("Orage")) icon = "⚡";
 
         weatherIcon.setText(icon);
-        weatherTemp.setText((int) temp + "°C");
+        weatherTemp.setText((int) temp + "C");
         weatherDesc.setText(desc);
     }
+
     private void loadPage(ActionEvent event, String fxmlPath) {
         try {
             Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
@@ -323,3 +372,6 @@ public class StudentCours {
     }
 
 }
+
+
+

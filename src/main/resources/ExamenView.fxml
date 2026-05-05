@@ -52,6 +52,12 @@
             <Button text="CT  Categories" maxWidth="Infinity" onAction="#goCategories"
                     style="-fx-background-color: transparent; -fx-text-fill: #333;
                            -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="ST statistique" maxWidth="Infinity" onAction="#goStatistique"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333;
+                           -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="  AI AIgenerator" maxWidth="Infinity" onAction="#goIa"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333;
+                           -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
 
             <!-- ACTIVE -->
             <Button text="EX  Examens" maxWidth="Infinity"
@@ -95,6 +101,11 @@
                 <TextField fx:id="searchField" promptText="🔍 Rechercher un examen..." />
                 <Button text="Rechercher" onAction="#rechercherExamen"
                         style="-fx-background-color: #7c5cbf; -fx-text-fill: white;" />
+
+                <Button
+                        text="Ajouter au Calendar"
+                        onAction="#handleAddToCalendar"
+                        style="-fx-background-color: #4CAF50; -fx-text-fill: white;" />
             </HBox>
             <!-- TABLE -->
             <TableView fx:id="tableExamens" VBox.vgrow="ALWAYS"

@@ -14,8 +14,8 @@
       xmlns:fx="http://javafx.com/fxml/1"
       xmlns="http://javafx.com/javafx/17.0.12"
       fx:controller="tn.esprit.controllers.ajouterRessource">
+    <VBox prefWidth="230" minWidth="230" maxWidth="230" style="-fx-background-color: #c4b5e8; -fx-padding: 20; -fx-spacing: 10;">
 
-    <VBox prefWidth="220" style="-fx-background-color: #c4b5e8; -fx-padding: 20; -fx-spacing: 10;">
         <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-padding: 0 0 20 0;">
             <Label text="EF"
                    style="-fx-background-color: #7c5cbf; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16; -fx-background-radius: 10; -fx-padding: 8 10;" />
@@ -42,6 +42,12 @@
                     style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
             <Button text="RS  Ressources" maxWidth="Infinity"
                     style="-fx-background-color: #b39ddb; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+
+            <Button text="RD  Dashboard ressources" maxWidth="Infinity" onAction="#goRessourceDashboard"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+            <Button text="CA  Calendrier" maxWidth="Infinity" onAction="#goRessourceCalendar"
+                    style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
+
             <Button text="CT  Categories" maxWidth="Infinity" onAction="#goCategories"
                     style="-fx-background-color: transparent; -fx-text-fill: #333; -fx-alignment: CENTER_LEFT; -fx-padding: 8 12; -fx-background-radius: 8;"/>
             <Button text="EX  Examens" maxWidth="Infinity" onAction="#goExamens"

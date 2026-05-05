@@ -15,7 +15,7 @@
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="tn.esprit.controllers.StudentChapterResourcesController">
 
-    <VBox fx:id="sidebarContainer" prefWidth="255.0" style="-fx-background-color:#b7a5da; -fx-padding:16; -fx-spacing:12;">
+    <VBox fx:id="sidebarContainer" prefWidth="255.0" minWidth="255.0" maxWidth="255.0" style="-fx-background-color:#b7a5da; -fx-padding:16; -fx-spacing:12;">
         <VBox fx:id="profileCard" alignment="CENTER" spacing="6" style="-fx-background-color:#c6b6e4; -fx-background-radius:18; -fx-padding:14;">
             <Label fx:id="studentInitialsLabel" text="AM"
                    style="-fx-background-color:#dbd2ee; -fx-text-fill:white; -fx-font-size:28; -fx-font-weight:bold; -fx-background-radius:18; -fx-padding:14 20;" />

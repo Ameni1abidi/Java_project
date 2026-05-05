@@ -44,7 +44,6 @@ public class CoursList {
             showNotification(msg, type);
             FlashSession.clear();
         }
-        showOnlyArchived = false;
     }
 
     public void loadData() {
@@ -102,10 +101,10 @@ public class CoursList {
 
         if (badgeValue == null) badgeValue = "none";
 
-
         String badge = c.getBadge(); // ممكن null
 
         String etat = c.getEtat();
+
 
 // 🔥 STAT LOGIC (بدل DB badge)
         String badgeText = c.getBadge();
@@ -126,8 +125,6 @@ public class CoursList {
                         "-fx-font-size:11;" +
                         "-fx-font-weight:bold;"
         );
-
-
 
         // 🔹 description
         Label desc = new Label(c.getDescription());
@@ -222,14 +219,12 @@ public class CoursList {
             card.getChildren().addAll(titre, badgeLabel, desc, date, actions);
         }
 
+        // 🔥 hover effect (كيف Symfony)
         card.setOnMouseEntered(e -> card.setStyle(card.getStyle() +
                 "-fx-scale-x:1.03; -fx-scale-y:1.03;"));
 
         card.setOnMouseExited(e -> card.setStyle(card.getStyle()
                 .replace("-fx-scale-x:1.03; -fx-scale-y:1.03;", "")));
-
-        // add
-       // card.getChildren().addAll(titre, badge, desc, date, actions);
 
         return card;
     }
@@ -356,7 +351,6 @@ public class CoursList {
             stage.setScene(new Scene(root));
 
             showNotification("✏️ Cours modifié avec succès", "success");
-
         } catch (Exception e) {
             showNotification("Erreur modification", "error");
         }
@@ -372,9 +366,8 @@ public class CoursList {
             loadData(); // يرجع للقا
 
             showNotification("📦 Cours archivé", "warning");
-
         } catch (Exception e) {
-            e.printStackTrace();
+            showNotification("Erreur modification", "error");
         }
     }
 

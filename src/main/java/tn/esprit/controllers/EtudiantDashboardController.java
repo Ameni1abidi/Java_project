@@ -61,6 +61,11 @@ public class EtudiantDashboardController {
     }
 
     @FXML
+    private void goFavorites(ActionEvent event) {
+        loadPage(event, "/StudentFavorites.fxml");
+    }
+
+    @FXML
     private void goForum(ActionEvent event) {
         loadPage(event, "/forum.fxml");
     }
