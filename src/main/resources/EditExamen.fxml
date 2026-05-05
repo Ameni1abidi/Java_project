@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="tn.esprit.controllers.EditExamenController"
+            style="-fx-background-color: #f5f3fb;">
+
+    <!-- SIDEBAR -->
+    <left>
+        <fx:include source="Sidebar.fxml"/>
+    </left>
+
+    <!-- CENTER -->
+    <center>
+
+        <VBox alignment="CENTER" spacing="20"
+              style="-fx-padding: 40;">
+
+            <!-- TITLE -->
+            <Label text="Modifier Examen"
+                   style="-fx-font-size: 24px;
+                          -fx-font-weight: bold;
+                          -fx-text-fill: #333;"/>
+
+            <!-- CARD -->
+            <VBox spacing="18"
+                  maxWidth="500"
+                  style="-fx-background-color: white;
+                         -fx-padding: 30;
+                         -fx-background-radius: 15;
+                         -fx-border-radius: 15;
+                         -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 12, 0, 0, 4);">
+
+                <GridPane hgap="15" vgap="15">
+
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="120"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                    </columnConstraints>
+
+                    <!-- TITRE -->
+                    <Label text="Titre :" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                    <TextField fx:id="titreField"
+                               promptText="Entrer le titre"
+                               GridPane.rowIndex="0"
+                               GridPane.columnIndex="1"/>
+
+                    <!-- TYPE -->
+                    <Label text="Type :" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                    <TextField fx:id="typeField"
+                               promptText="Ex: QCM / Examen"
+                               GridPane.rowIndex="1"
+                               GridPane.columnIndex="1"/>
+
+                    <!-- DATE -->
+                    <Label text="Date :" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                    <DatePicker fx:id="dateField"
+                                GridPane.rowIndex="2"
+                                GridPane.columnIndex="1"/>
+
+                    <!-- DUREE -->
+                    <Label text="Durée :" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                    <TextField fx:id="dureeField"
+                               promptText="Durée en minutes"
+                               GridPane.rowIndex="3"
+                               GridPane.columnIndex="1"/>
+
+                    <!-- COURS -->
+                    <Label text="Cours :" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                    <ComboBox fx:id="coursCombo"
+                              promptText="Choisir un cours"
+                              prefWidth="200"
+                              GridPane.rowIndex="4"
+                              GridPane.columnIndex="1"/>
+
+                    <!-- ENSEIGNANT -->
+                    <Label text="Enseignant :" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                    <ComboBox fx:id="enseignantCombo"
+                              promptText="Choisir un enseignant"
+                              prefWidth="200"
+                              GridPane.rowIndex="5"
+                              GridPane.columnIndex="1"/>
+
+                </GridPane>
+
+                <!-- BUTTONS -->
+                <HBox spacing="12" alignment="CENTER_RIGHT">
+
+                    <Button text="Retour"
+                            onAction="#goBack"
+                            style="-fx-background-color: #ccc;
+                                   -fx-text-fill: #333;
+                                   -fx-background-radius: 8;
+                                   -fx-padding: 8 16;"/>
+
+                    <Button text="Enregistrer"
+                            onAction="#modifierExamen"
+                            style="-fx-background-color: #4CAF50;
+                                   -fx-text-fill: white;
+                                   -fx-background-radius: 8;
+                                   -fx-padding: 8 18;"/>
+
+                </HBox>
+
+            </VBox>
+
+        </VBox>
+
+    </center>
+
+</BorderPane>

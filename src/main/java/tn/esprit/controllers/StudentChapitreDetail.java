@@ -139,13 +139,14 @@ public class StudentChapitreDetail {
     }
 
     // ================= MARK AS DONE =================
+    // ================= MARK AS DONE =================
     @FXML
     private void handleTerminer() {
+
         try {
             int userId = getCurrentUserId();
 
-            StudentChapitreProgress p =
-                    progressService.find(userId, chapitre.getId());
+            StudentChapitreProgress p = progressService.find(userId, chapitre.getId());
 
             if (p == null) {
                 p = new StudentChapitreProgress();
@@ -154,17 +155,16 @@ public class StudentChapitreDetail {
                 p.setStartedAt(LocalDateTime.now());
             }
 
-            p.setCompleted(true); // 🔥 مهم برشة
+            // ✅ مهمين
+            p.setCompleted(true);
             p.setCompletedAt(LocalDateTime.now());
             p.setProgress(100);
 
             progressService.saveOrUpdate(p);
 
-            doneBtn.setText("✔ Terminé");
-            doneBtn.setDisable(true);
-
-            showAlert("✔ Chapitre terminé ! Retour aux cours");
-
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setContentText("🎉 Chapitre terminé !");
+            alert.show();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -273,7 +273,7 @@ public class StudentChapitreDetail {
             return "AI error";
         }
     }
-    // ================= USER =================
+
     private int getCurrentUserId() {
         return 3;
     }

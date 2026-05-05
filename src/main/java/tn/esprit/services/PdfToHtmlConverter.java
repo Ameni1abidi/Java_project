@@ -12,14 +12,10 @@ public class PdfToHtmlConverter {
 
             PDFTextStripper stripper = new PDFTextStripper();
             String text = stripper.getText(document);
-
-            // 🔥 تحسين النص
             String formatted = text
                     .replaceAll("(?m)^(.+):$", "<h3>$1</h3>") // titres
                     .replace("\n\n", "<br><br>")
                     .replace("\n", "<br>");
-
-            // 🔥 HTML + CSS
             return """
 <html>
 <head>

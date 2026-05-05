@@ -74,8 +74,8 @@
             <DatePicker fx:id="dateField"/>
             <Label fx:id="dateError" style="-fx-text-fill:red; -fx-font-size:11px;"/>
 
-            <TextField fx:id="badgeField" promptText="Badge"/>
-            <Label fx:id="badgeError" style="-fx-text-fill:red; -fx-font-size:11px;"/>
+            <ComboBox fx:id="badgeCombo" promptText="Choisir un badge"/>
+            <Label fx:id="badgeError" textFill="red"/>
 
             <HBox spacing="10">
 

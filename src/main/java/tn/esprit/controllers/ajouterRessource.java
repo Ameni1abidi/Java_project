@@ -1,10 +1,16 @@
 package tn.esprit.controllers;
 
+import javafx.event.ActionEvent;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
@@ -13,10 +19,15 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
+import tn.esprit.entities.Chapitre;
 import tn.esprit.entities.categorie;
 import tn.esprit.entities.resources;
+import tn.esprit.services.ChapitreService;
 import tn.esprit.services.CategoryService;
+import tn.esprit.services.CloudinaryStorageService;
 import tn.esprit.services.ResourceService;
+import tn.esprit.services.YouTubeLinkService;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,6 +50,9 @@ public class ajouterRessource {
     private ComboBox<categorie> categorieCombo;
 
     @FXML
+    private ComboBox<Chapitre> chapitreCombo;
+
+    @FXML
     private HBox fileChooserContainer;
 
     @FXML
@@ -55,6 +69,8 @@ public class ajouterRessource {
 
     @FXML
     private Label errorLabel;
+    @FXML
+    private CheckBox sensitiveCheckBox;
 
     @FXML
     private Button enregistrerButton;
@@ -64,16 +80,22 @@ public class ajouterRessource {
 
     private final ResourceService resourceService = new ResourceService();
     private final CategoryService categoryService = new CategoryService();
+    private final ChapitreService chapitreService = new ChapitreService();
+    private final CloudinaryStorageService cloudinaryStorageService = new CloudinaryStorageService();
+    private final YouTubeLinkService youTubeLinkService = new YouTubeLinkService();
     private resources currentResource;
     private String selectedFilePath = "";
 
     @FXML
     public void initialize() {
         loadCategories();
+        loadChapitres();
         categorieCombo.valueProperty().addListener((obs, oldCat, newCat) -> handleCategoryChange(newCat));
 
         fileChooserContainer.setVisible(false);
+        fileChooserContainer.setManaged(false);
         urlContainer.setVisible(false);
+        urlContainer.setManaged(false);
         supprimerButton.setVisible(false);
     }
 
@@ -85,17 +107,23 @@ public class ajouterRessource {
         String type = mapCategoryToType(categorie);
         if (type == null) {
             fileChooserContainer.setVisible(false);
+            fileChooserContainer.setManaged(false);
             urlContainer.setVisible(false);
+            urlContainer.setManaged(false);
             return;
         }
 
         if (type.equals("lien")) {
             fileChooserContainer.setVisible(false);
+            fileChooserContainer.setManaged(false);
             urlContainer.setVisible(true);
+            urlContainer.setManaged(true);
             urlField.setPromptText("https://exemple.com");
         } else {
             fileChooserContainer.setVisible(true);
+            fileChooserContainer.setManaged(true);
             urlContainer.setVisible(false);
+            urlContainer.setManaged(false);
             browseButton.setText("Choisir " + type);
         }
     }
@@ -146,6 +174,30 @@ public class ajouterRessource {
         }
     }
 
+    private void loadChapitres() {
+        try {
+            List<Chapitre> chapitres = chapitreService.getAllChapitres();
+            chapitreCombo.setItems(javafx.collections.FXCollections.observableArrayList(chapitres));
+            chapitreCombo.setConverter(new StringConverter<>() {
+                @Override
+                public String toString(Chapitre chapitre) {
+                    if (chapitre == null) {
+                        return "";
+                    }
+                    return "Cours " + chapitre.getCoursId() + " - " + chapitre.getOrdre() + ". " + chapitre.getTitre();
+                }
+
+                @Override
+                public Chapitre fromString(String string) {
+                    return null;
+                }
+            });
+        } catch (Exception e) {
+            errorLabel.setText("Erreur lors du chargement des chapitres.");
+            e.printStackTrace();
+        }
+    }
+
     public void setResource(resources resource) {
         this.currentResource = resource;
         if (resource != null) {
@@ -153,6 +205,7 @@ public class ajouterRessource {
             selectedFilePath = resource.getContenu();
             selectedFileLabel.setText(extractFileName(resource.getContenu()));
             urlField.setText("lien".equals(resource.getType()) ? resource.getContenu() : "");
+            sensitiveCheckBox.setSelected(resource.isSensitive());
 
             if (resource.getDisponibleLe() != null && !resource.getDisponibleLe().isEmpty()) {
                 try {
@@ -164,6 +217,13 @@ public class ajouterRessource {
             for (categorie cat : categorieCombo.getItems()) {
                 if (cat.getNom().equals(resource.getCategorieNom())) {
                     categorieCombo.setValue(cat);
+                    break;
+                }
+            }
+
+            for (Chapitre ch : chapitreCombo.getItems()) {
+                if (ch.getId() == resource.getChapitreId()) {
+                    chapitreCombo.setValue(ch);
                     break;
                 }
             }
@@ -180,6 +240,7 @@ public class ajouterRessource {
 
         String titre = titreField.getText().trim();
         categorie categorie = categorieCombo.getValue();
+        Chapitre chapitre = chapitreCombo.getValue();
         LocalDate date = datePicker.getValue();
 
         if (titre.isEmpty()) {
@@ -188,6 +249,10 @@ public class ajouterRessource {
         }
         if (categorie == null) {
             errorLabel.setText("Veuillez selectionner une categorie.");
+            return;
+        }
+        if (chapitre == null) {
+            errorLabel.setText("Veuillez selectionner un chapitre.");
             return;
         }
 
@@ -212,13 +277,16 @@ public class ajouterRessource {
                 errorLabel.setText("L'URL doit commencer par http:// ou https://");
                 return;
             }
+            if (youTubeLinkService.isYoutubeUrl(contenu)) {
+                contenu = youTubeLinkService.normalizeForOpen(contenu);
+            }
         } else {
             if (selectedFilePath.isEmpty()) {
                 errorLabel.setText("Veuillez selectionner un fichier.");
                 return;
             }
             try {
-                contenu = prepareStoredFilePath(selectedFilePath);
+                contenu = prepareStoredFilePath(selectedFilePath, type);
             } catch (IOException e) {
                 errorLabel.setText("Impossible de sauvegarder le fichier: " + e.getMessage());
                 return;
@@ -226,10 +294,12 @@ public class ajouterRessource {
         }
 
         String disponibleLe = date.toString();
+        boolean sensitive = sensitiveCheckBox != null && sensitiveCheckBox.isSelected();
 
         try {
             if (currentResource == null) {
-                resources newResource = new resources(titre, contenu, categorie.getNom(), type, disponibleLe);
+                resources newResource = new resources(titre, contenu, categorie.getNom(), type, disponibleLe, chapitre.getId());
+                newResource.setSensitive(sensitive);
                 resourceService.add(newResource);
                 showAlert("Succes", "Ressource creee avec succes !");
             } else {
@@ -238,6 +308,8 @@ public class ajouterRessource {
                 currentResource.setCategorieNom(categorie.getNom());
                 currentResource.setType(type);
                 currentResource.setDisponibleLe(disponibleLe);
+                currentResource.setChapitreId(chapitre.getId());
+                currentResource.setSensitive(sensitive);
                 resourceService.update(currentResource);
                 showAlert("Succes", "Ressource modifiee avec succes !");
             }
@@ -296,10 +368,21 @@ public class ajouterRessource {
         }
     }
 
-    private String prepareStoredFilePath(String sourcePath) throws IOException {
+    private String prepareStoredFilePath(String sourcePath, String type) throws IOException {
+        if (isRemoteUrl(sourcePath)) {
+            return sourcePath;
+        }
+
         Path source = Path.of(sourcePath);
         if (!Files.exists(source)) {
             throw new IOException("fichier introuvable");
+        }
+
+        if (cloudinaryStorageService.isEnabled() && ("image".equals(type) || "video".equals(type))) {
+            if ("image".equals(type)) {
+                return cloudinaryStorageService.uploadImage(source);
+            }
+            return cloudinaryStorageService.uploadVideo(source);
         }
 
         Path storageDir = Path.of("storage", "resources").toAbsolutePath().normalize();
@@ -323,11 +406,19 @@ public class ajouterRessource {
         return target.toString();
     }
 
+    private boolean isRemoteUrl(String value) {
+        return value != null && (value.startsWith("http://") || value.startsWith("https://"));
+    }
+
     private String extractFileName(String content) {
         if (content == null || content.isBlank()) {
             return "Aucun fichier selectionne";
         }
         if (content.startsWith("http://") || content.startsWith("https://")) {
+            int slash = content.lastIndexOf('/');
+            if (slash >= 0 && slash < content.length() - 1) {
+                return content.substring(slash + 1);
+            }
             return content;
         }
         try {
@@ -346,7 +437,83 @@ public class ajouterRessource {
     }
 
     private void fermerFenetre() {
-        Stage stage = (Stage) enregistrerButton.getScene().getWindow();
-        stage.close();
+        navigateToList();
+    }
+
+    @FXML
+    private void retourListe() {
+        fermerFenetre();
+    }
+
+    @FXML
+    private void goDashboard(ActionEvent event) {
+        loadPage(event, "/ProfDashboard.fxml");
+    }
+
+    @FXML
+    private void goForum(ActionEvent event) {
+        loadPage(event, "/forum.fxml");
+    }
+
+    @FXML
+    private void goCours(ActionEvent event) {
+        loadPage(event, "/CoursList.fxml");
+    }
+
+    @FXML
+    private void goCategories(ActionEvent event) {
+        loadPage(event, "/CategorieList.fxml");
+    }
+
+    @FXML
+    private void goExamens(ActionEvent event) {
+        loadPage(event, "/ExamenView.fxml");
+    }
+
+    @FXML
+    private void goEvaluations(ActionEvent event) {
+        loadPage(event, "/EvaluationView.fxml");
+    }
+
+    @FXML
+    private void goResultats(ActionEvent event) {
+        Alert alert = new Alert(AlertType.INFORMATION);
+        alert.setTitle("Resultats");
+        alert.setHeaderText(null);
+        alert.setContentText("La page resultats sera bientot disponible.");
+        alert.showAndWait();
+    }
+
+    @FXML
+    private void goLogout(ActionEvent event) {
+        loadPage(event, "/Login.fxml");
+    }
+
+    private void loadPage(ActionEvent event, String fxmlPath) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void navigateToList() {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/listeRessources.fxml"));
+            Stage stage = (Stage) enregistrerButton.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Ressources");
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Erreur de navigation");
+            alert.setHeaderText("Impossible d'ouvrir la liste des ressources");
+            alert.setContentText(e.getMessage());
+            alert.showAndWait();
+        }
     }
 }

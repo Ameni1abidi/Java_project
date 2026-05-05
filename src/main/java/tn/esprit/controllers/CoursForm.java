@@ -8,7 +8,13 @@ import tn.esprit.entities.Cours;
 import tn.esprit.services.CoursService;
 
 import javafx.event.ActionEvent;
+import tn.esprit.services.EmailService;
+import tn.esprit.services.UserService;
+import tn.esprit.utils.FlashSession;
+
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CoursForm {
 
@@ -16,13 +22,15 @@ public class CoursForm {
     @FXML private TextArea descriptionField;
     @FXML private TextField niveauField;
     @FXML private DatePicker dateField;
-    @FXML private TextField badgeField;
+    @FXML
+    private ComboBox<String> badgeCombo;
 
     @FXML private Label titreError;
     @FXML private Label descriptionError;
     @FXML private Label niveauError;
     @FXML private Label dateError;
     @FXML private Label badgeError;
+
 
     private CoursService service = new CoursService();
     private Cours currentCours;
@@ -34,7 +42,7 @@ public class CoursForm {
             titreField.setText(c.getTitre());
             descriptionField.setText(c.getDescription());
             niveauField.setText(c.getNiveau());
-            badgeField.setText(c.getBadge());
+            badgeCombo.setValue(c.getBadge());
             dateField.setValue(c.getDateCreation().toLocalDate());
         }
     }
@@ -54,8 +62,9 @@ public class CoursForm {
         String titre = titreField.getText();
         String description = descriptionField.getText();
         String niveau = niveauField.getText();
-        String badge = badgeField.getText();
+        String badge = badgeCombo.getValue();
         var date = dateField.getValue();
+
 
         if (titre == null || titre.trim().isEmpty()) {
             titreError.setText("Titre obligatoire");
@@ -83,24 +92,27 @@ public class CoursForm {
             valid = false;
         }
 
-        if (badge != null && badge.length() > 20) {
-            badgeError.setText("Badge trop long");
+
+        if (badge == null || badge.isEmpty()) {
+            badgeError.setText("Veuillez choisir un badge");
             valid = false;
         }
 
         if (!valid) return;
 
+        Cours savedCours;
+
         if (currentCours == null) {
 
-            Cours c = new Cours();
+            savedCours = new Cours();
 
-            c.setTitre(titre);
-            c.setDescription(description);
-            c.setNiveau(niveau);
-            c.setBadge(badge);
-            c.setDateCreation(Date.valueOf(date));
+            savedCours.setTitre(titre);
+            savedCours.setDescription(description);
+            savedCours.setNiveau(niveau);
+            savedCours.setBadge(badge);
+            savedCours.setDateCreation(Date.valueOf(date));
 
-            service.ajouter(c);
+            service.ajouter(savedCours);
 
         } else {
 
@@ -111,9 +123,80 @@ public class CoursForm {
             currentCours.setDateCreation(Date.valueOf(date));
 
             service.modifier(currentCours);
+
+            savedCours = currentCours;
+        }
+        boolean isNew = (currentCours == null);
+        // 📩 EMAIL REAL (MailHog)
+        EmailService emailService = new EmailService();
+
+        UserService userService = new UserService();
+
+        List<String> students = new ArrayList<>();
+
+        try {
+            students = userService.getStudentEmails();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
+        String message;
+
+        String link = "file:///C:/EduFlex/login.exe";
+
+        if (isNew) {
+            message =
+                    "<h3>Bonjour Assil,</h3>" +
+
+                            "<p>Un nouveau cours vient d'être ajouté :</p>" +
+                            "<b>" + savedCours.getTitre() + "</b><br><br>" +
+
+                            "<p><b>Description :</b> " + savedCours.getDescription() + "</p>" +
+
+                            "<a href='" + link + "' " +
+                            "style='display:inline-block;padding:10px 15px;background:#4CAF50;color:white;text-decoration:none;border-radius:5px;'>"
+                            + "📚 Voir le cours</a><br><br>" +
+
+                            "<p>EduFlex</p>";
+
+        } else {
+            message =
+                    "<h3>Bonjour Assil,</h3>" +
+
+                            "<p>Le cours suivant a été modifié :</p>" +
+                            "<b>" + savedCours.getTitre() + "</b><br><br>" +
+
+                            "<p><b>Nouvelle description :</b> " + savedCours.getDescription() + "</p>" +
+
+                            "<a href='" + link + "' " +
+                            "style='display:inline-block;padding:10px 15px;background:#2196F3;color:white;text-decoration:none;border-radius:5px;'>"
+                            + "✏️ Voir le cours</a><br><br>" +
+
+                            "<p>EduFlex</p>";
+        }
+
+        int sent = 0;
+
+        for (String email : students) {
+            emailService.sendEmail(email, "📚 Notification Cours", message);
+            sent++;
+        }
+
+        // 🔔 FLASH MESSAGE (IMPORTANT)
+        FlashSession.setFlash(
+                "📩 Cours enregistré avec succès. " + sent + " email(s) envoyé(s).",
+                "success"
+        );
+
         goToList();
+    }
+    public void initialize() {
+
+        badgeCombo.getItems().addAll(
+                "🔥 Populaire",
+                "📈 Tendance",
+                "⭐ À la une"
+        );
     }
 
     @FXML
@@ -184,4 +267,5 @@ public class CoursForm {
             e.printStackTrace();
         }
     }
+
 }

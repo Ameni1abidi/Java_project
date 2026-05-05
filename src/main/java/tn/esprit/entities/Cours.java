@@ -11,11 +11,12 @@ public class Cours {
     private String titreTraduit;
     private String descriptionTraduit;
     private String badge;
+    private String etat;
 
     public Cours() {}
 
     public Cours(String titre, String description, String niveau, Date dateCreation,
-                 String titreTraduit, String descriptionTraduit, String badge) {
+                 String titreTraduit, String descriptionTraduit, String badge, String etat) {
         this.titre = titre;
         this.description = description;
         this.niveau = niveau;
@@ -23,6 +24,7 @@ public class Cours {
         this.titreTraduit = titreTraduit;
         this.descriptionTraduit = descriptionTraduit;
         this.badge = badge;
+        this.etat= etat;
     }
 
     public int getId() {
@@ -89,4 +91,11 @@ public class Cours {
         this.badge = badge;
     }
 
+    public String getEtat() {
+        return etat;
+    }
+
+    public void setEtat(String etat) {
+        this.etat = etat;
+    }
 }

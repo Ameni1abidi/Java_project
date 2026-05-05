@@ -12,11 +12,8 @@ public class ChapitreService {
     Connection cnx = MyDatabase.getInstance().getConnection();
 
     public void ajouter(Chapitre c) {
-
         String sql = "INSERT INTO chapitre (titre, ordre, type_contenu, contenu_texte, contenu_fichier, duree_estimee, resume, cours_id) VALUES (?,?,?,?,?,?,?,?)";
-
         try (PreparedStatement ps = cnx.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-
             ps.setString(1, c.getTitre());
             ps.setInt(2, c.getOrdre());
             ps.setString(3, c.getTypeContenu());
@@ -25,59 +22,36 @@ public class ChapitreService {
             ps.setInt(6, c.getDureeEstimee());
             ps.setString(7, c.getResume());
             ps.setInt(8, c.getCoursId());
-
             ps.executeUpdate();
 
             ResultSet rs = ps.getGeneratedKeys();
             if (rs.next()) {
                 c.setId(rs.getInt(1));
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     public List<Chapitre> getAll(int coursId) {
-
         List<Chapitre> list = new ArrayList<>();
-
         String sql = "SELECT * FROM chapitre WHERE cours_id = ?";
-
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
-
             ps.setInt(1, coursId);
-
             ResultSet rs = ps.executeQuery();
-
             while (rs.next()) {
-                Chapitre c = new Chapitre();
-
-                c.setId(rs.getInt("id"));
-                c.setTitre(rs.getString("titre"));
-                c.setOrdre(rs.getInt("ordre"));
-                c.setTypeContenu(rs.getString("type_contenu"));
-                c.setContenuTexte(rs.getString("contenu_texte"));
-                c.setContenuFichier(rs.getString("contenu_fichier"));
-                c.setDureeEstimee(rs.getInt("duree_estimee"));
-                c.setResume(rs.getString("resume"));
-
+                Chapitre c = mapRow(rs);
                 list.add(c);
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return list;
     }
 
     public void modifier(Chapitre c) {
-
         String sql = "UPDATE chapitre SET titre=?, ordre=?, type_contenu=?, contenu_texte=?, contenu_fichier=?, duree_estimee=?, resume=?, cours_id=? WHERE id=?";
-
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
-
             ps.setString(1, c.getTitre());
             ps.setInt(2, c.getOrdre());
             ps.setString(3, c.getTypeContenu());
@@ -85,14 +59,9 @@ public class ChapitreService {
             ps.setString(5, c.getContenuFichier());
             ps.setInt(6, c.getDureeEstimee());
             ps.setString(7, c.getResume());
-
-            // relation
             ps.setInt(8, c.getCoursId());
-
             ps.setInt(9, c.getId());
-
             ps.executeUpdate();
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -107,12 +76,12 @@ public class ChapitreService {
             e.printStackTrace();
         }
     }
+
     public int getLastInsertedId() {
         try {
             String sql = "SELECT LAST_INSERT_ID()";
             Statement st = cnx.createStatement();
             ResultSet rs = st.executeQuery(sql);
-
             if (rs.next()) {
                 return rs.getInt(1);
             }
@@ -121,58 +90,69 @@ public class ChapitreService {
         }
         return 0;
     }
+
     public int countByCoursId(int coursId) {
         int count = 0;
-
         try {
             String sql = "SELECT COUNT(*) FROM chapitre WHERE cours_id = ?";
             PreparedStatement ps = cnx.prepareStatement(sql);
             ps.setInt(1, coursId);
-
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 count = rs.getInt(1);
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return count;
     }
+
     public List<Chapitre> getByCoursId(int coursId) {
-
         List<Chapitre> list = new ArrayList<>();
-
         try {
             String sql = "SELECT * FROM chapitre WHERE cours_id = ?";
             PreparedStatement ps = cnx.prepareStatement(sql);
             ps.setInt(1, coursId);
-
             ResultSet rs = ps.executeQuery();
-
             while (rs.next()) {
-                Chapitre ch = new Chapitre();
-                ch.setId(rs.getInt("id"));
-                ch.setTitre(rs.getString("titre"));
-                ch.setOrdre(rs.getInt("ordre"));
-                ch.setTypeContenu(rs.getString("type_contenu"));
-                ch.setContenuTexte(rs.getString("contenu_texte"));
-                ch.setContenuFichier(rs.getString("contenu_fichier"));
-                ch.setDureeEstimee(rs.getInt("duree_estimee"));
-                ch.setCoursId(rs.getInt("cours_id"));
-
-                list.add(ch);
+                list.add(mapRow(rs));
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return list;
     }
-    public int getCourseProgress(int userId, int coursId) {
 
+    public List<Chapitre> getAllChapitres() {
+        List<Chapitre> list = new ArrayList<>();
+        String sql = "SELECT * FROM chapitre ORDER BY cours_id, ordre, id";
+        try (PreparedStatement ps = cnx.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                list.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public Chapitre getById(int chapitreId) {
+        String sql = "SELECT * FROM chapitre WHERE id = ?";
+        try (PreparedStatement ps = cnx.prepareStatement(sql)) {
+            ps.setInt(1, chapitreId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapRow(rs);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public int getCourseProgress(int userId, int coursId) {
         try {
             String sql = """
             SELECT COALESCE(AVG(progress),0) as avg_progress
@@ -180,23 +160,30 @@ public class ChapitreService {
             JOIN chapitre c ON c.id = p.chapitre_id
             WHERE p.utilisateur_id = ? AND c.cours_id = ?
         """;
-
-            PreparedStatement ps = MyDatabase.getInstance().getConnection().prepareStatement(sql);
-
+            PreparedStatement ps = cnx.prepareStatement(sql);
             ps.setInt(1, userId);
             ps.setInt(2, coursId);
-
             ResultSet rs = ps.executeQuery();
-
             if (rs.next()) {
                 return rs.getInt("avg_progress");
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return 0;
     }
-}
 
+    private Chapitre mapRow(ResultSet rs) throws SQLException {
+        Chapitre ch = new Chapitre();
+        ch.setId(rs.getInt("id"));
+        ch.setTitre(rs.getString("titre"));
+        ch.setOrdre(rs.getInt("ordre"));
+        ch.setTypeContenu(rs.getString("type_contenu"));
+        ch.setContenuTexte(rs.getString("contenu_texte"));
+        ch.setContenuFichier(rs.getString("contenu_fichier"));
+        ch.setDureeEstimee(rs.getInt("duree_estimee"));
+        ch.setCoursId(rs.getInt("cours_id"));
+        ch.setResume(rs.getString("resume"));
+        return ch;
+    }
+}

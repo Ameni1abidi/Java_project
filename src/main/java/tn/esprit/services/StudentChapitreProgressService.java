@@ -126,28 +126,35 @@ public class StudentChapitreProgressService {
     }
     public int getCourseProgress(int userId, int coursId) {
 
-        String sql = """
-        SELECT COUNT(*) as completed_count
+        String totalSql = "SELECT COUNT(*) FROM chapitre WHERE cours_id=?";
+        String doneSql = """
+        SELECT COUNT(*) 
         FROM student_chapitre_progress p
         JOIN chapitre c ON p.chapitre_id = c.id
-        WHERE p.utilisateur_id = ? 
-        AND c.cours_id = ?
-        AND p.completed = true
+        WHERE p.utilisateur_id=? 
+        AND c.cours_id=? 
+        AND p.completed=true
     """;
 
         try {
-            PreparedStatement ps = cnx.prepareStatement(sql);
-            ps.setInt(1, userId);
-            ps.setInt(2, coursId);
+            PreparedStatement ps1 = cnx.prepareStatement(totalSql);
+            ps1.setInt(1, coursId);
+            ResultSet rs1 = ps1.executeQuery();
 
-            ResultSet rs = ps.executeQuery();
+            int total = 0;
+            if (rs1.next()) total = rs1.getInt(1);
 
-            if (rs.next()) {
-                int completed = rs.getInt("completed_count");
+            PreparedStatement ps2 = cnx.prepareStatement(doneSql);
+            ps2.setInt(1, userId);
+            ps2.setInt(2, coursId);
+            ResultSet rs2 = ps2.executeQuery();
 
-                // 🔥 إذا فمّا chapitre terminé → 100%
-                if (completed > 0) return 100;
-            }
+            int done = 0;
+            if (rs2.next()) done = rs2.getInt(1);
+
+            if (total == 0) return 0;
+
+            return (int)(((double) done / total) * 100);
 
         } catch (Exception e) {
             e.printStackTrace();
