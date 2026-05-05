@@ -41,6 +41,7 @@ import java.io.OutputStreamWriter;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.ArrayList;
@@ -77,6 +78,11 @@ public class UserController {
     @FXML private ComboBox<String> filterStatusCombo;
     @FXML private ComboBox<String> sortCombo;
     @FXML private ComboBox<String> bulkRoleCombo;
+    @FXML private DatePicker createdFromPicker;
+    @FXML private DatePicker createdToPicker;
+    @FXML private DatePicker lastLoginFromPicker;
+    @FXML private DatePicker lastLoginToPicker;
+    @FXML private CheckBox neverLoggedInCheckBox;
     @FXML private Label            countLabel;
     @FXML private Label            totalUsersLabel;
     @FXML private Label            totalAdminsLabel;
@@ -120,8 +126,12 @@ public class UserController {
                 cell.getValue() == null || cell.getValue().getRole() == null ? "" : cell.getValue().getRole().name()
         ));
         colStatus.setCellValueFactory(cell -> new javafx.beans.property.SimpleStringProperty(statusFor(cell.getValue())));
-        colCreated.setCellValueFactory(cell -> new javafx.beans.property.SimpleStringProperty(createdDateFor(cell.getValue()).format(UI_DATE)));
-        colLastLogin.setCellValueFactory(cell -> new javafx.beans.property.SimpleStringProperty(lastLoginFor(cell.getValue()).format(UI_DATE)));
+        colCreated.setCellValueFactory(cell -> new javafx.beans.property.SimpleStringProperty(
+                createdDateFor(cell.getValue()).format(UI_DATE)
+        ));
+        colLastLogin.setCellValueFactory(cell -> new javafx.beans.property.SimpleStringProperty(
+                lastLoginLabelFor(cell.getValue())
+        ));
         colActions.setCellValueFactory(cell -> new javafx.beans.property.SimpleStringProperty(""));
         colActions.setCellFactory(column -> new TableCell<>() {
             @Override
@@ -248,6 +258,13 @@ public class UserController {
         }
         searchDebounce.setOnFinished(event -> applySearchFilterSort());
 
+        // Advanced filters
+        if (createdFromPicker != null) createdFromPicker.valueProperty().addListener((o, a, b) -> applySearchFilterSort());
+        if (createdToPicker != null) createdToPicker.valueProperty().addListener((o, a, b) -> applySearchFilterSort());
+        if (lastLoginFromPicker != null) lastLoginFromPicker.valueProperty().addListener((o, a, b) -> applySearchFilterSort());
+        if (lastLoginToPicker != null) lastLoginToPicker.valueProperty().addListener((o, a, b) -> applySearchFilterSort());
+        if (neverLoggedInCheckBox != null) neverLoggedInCheckBox.selectedProperty().addListener((o, a, b) -> applySearchFilterSort());
+
         pagination.setPageFactory(pageIndex -> {
             updateTablePage(pageIndex);
             return new Region();
@@ -288,6 +305,7 @@ public class UserController {
             if (filterStatusCombo != null) filterStatusCombo.setValue("Tous statuts");
             if (sortCombo != null) sortCombo.setValue("Nom A-Z");
             if (searchField != null) searchField.clear();
+            clearAdvancedFilters(null);
             applySearchFilterSort();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -641,6 +659,12 @@ public class UserController {
         String statusFilter = filterStatusCombo != null ? filterStatusCombo.getValue() : "Tous statuts";
         String sortMode = sortCombo != null ? sortCombo.getValue() : "Nom A-Z";
 
+        LocalDate createdFrom = createdFromPicker != null ? createdFromPicker.getValue() : null;
+        LocalDate createdTo = createdToPicker != null ? createdToPicker.getValue() : null;
+        LocalDate lastFrom = lastLoginFromPicker != null ? lastLoginFromPicker.getValue() : null;
+        LocalDate lastTo = lastLoginToPicker != null ? lastLoginToPicker.getValue() : null;
+        boolean neverOnly = neverLoggedInCheckBox != null && neverLoggedInCheckBox.isSelected();
+
         Comparator<User> comparator = switch (sortMode) {
             case "Nom Z-A" -> Comparator.comparing(User::getNom, String.CASE_INSENSITIVE_ORDER).reversed();
             case "Role A-Z" -> Comparator.comparing(u -> u.getRole().name(), String.CASE_INSENSITIVE_ORDER);
@@ -655,6 +679,25 @@ public class UserController {
                         || u.getRole().name().equals(roleFilter))
                 .filter(u -> statusFilter == null || statusFilter.equals("Tous statuts")
                         || statusFor(u).equals(statusFilter))
+                .filter(u -> {
+                    LocalDate c = createdDateFor(u);
+                    if (createdFrom != null && (c == null || c.isBefore(createdFrom))) return false;
+                    if (createdTo != null && (c == null || c.isAfter(createdTo))) return false;
+                    return true;
+                })
+                .filter(u -> {
+                    LocalDate last = lastLoginDateOrNull(u);
+                    if (neverOnly) {
+                        return last == null;
+                    }
+                    if (lastFrom != null) {
+                        if (last == null || last.isBefore(lastFrom)) return false;
+                    }
+                    if (lastTo != null) {
+                        if (last == null || last.isAfter(lastTo)) return false;
+                    }
+                    return true;
+                })
                 .sorted(comparator)
                 .collect(Collectors.toList());
 
@@ -885,11 +928,33 @@ public class UserController {
     }
 
     private LocalDate lastLoginFor(User user) {
+        LocalDate d = lastLoginDateOrNull(user);
+        if (d != null) return d;
+        // fallback for demo when DB doesn't store last_login: keep a stable synthetic date
+        int days = user == null ? 0 : Math.max(0, user.getId() % 30);
+        return LocalDate.now().minusDays(days);
+    }
+
+    private LocalDate lastLoginDateOrNull(User user) {
         if (user != null && user.getLastLoginAt() != null) {
             return user.getLastLoginAt().toLocalDate();
         }
-        int days = user == null ? 0 : Math.max(0, user.getId() % 30);
-        return LocalDate.now().minusDays(days);
+        return null;
+    }
+
+    private String lastLoginLabelFor(User user) {
+        LocalDate d = lastLoginDateOrNull(user);
+        if (d == null) return "Jamais";
+        return d.format(UI_DATE);
+    }
+
+    @FXML
+    private void clearAdvancedFilters(ActionEvent event) {
+        if (createdFromPicker != null) createdFromPicker.setValue(null);
+        if (createdToPicker != null) createdToPicker.setValue(null);
+        if (lastLoginFromPicker != null) lastLoginFromPicker.setValue(null);
+        if (lastLoginToPicker != null) lastLoginToPicker.setValue(null);
+        if (neverLoggedInCheckBox != null) neverLoggedInCheckBox.setSelected(false);
     }
 
     private String csv(String value) {
@@ -966,7 +1031,7 @@ public class UserController {
         }
     }
 
-    // ── Copilote IA (fallback local) ─────────────────────────────────────────
+    // ── Copilote IA  ─────────────────────────────────────────
     @FXML
     private void analyzeWithCopilot(ActionEvent event) {
         runCopilot("");
@@ -1148,6 +1213,34 @@ public class UserController {
         Thread th = new Thread(t, "ollama-copilot");
         th.setDaemon(true);
         th.start();
+    }
+
+    @FXML
+    private void clearCopilot(ActionEvent event) {
+        if (copilotQuestionField != null) copilotQuestionField.clear();
+        if (copilotAnswerArea != null) copilotAnswerArea.clear();
+        if (copilotSourceLabel != null) copilotSourceLabel.setText("Source: Fallback local");
+    }
+
+    @FXML
+    private void copilotExampleSecurity(ActionEvent event) {
+        if (copilotQuestionField == null) return;
+        copilotQuestionField.setText("Analyse la sécurité login: comptes bloqués/non vérifiés, tentatives échouées, et propose 3 actions admin.");
+        copilotQuestionField.requestFocus();
+    }
+
+    @FXML
+    private void copilotExampleStatuses(ActionEvent event) {
+        if (copilotQuestionField == null) return;
+        copilotQuestionField.setText("Quels utilisateurs doivent être activés/désactivés/bloqués selon les statuts actuels ?");
+        copilotQuestionField.requestFocus();
+    }
+
+    @FXML
+    private void copilotExampleAnomalies(ActionEvent event) {
+        if (copilotQuestionField == null) return;
+        copilotQuestionField.setText("Détecte les anomalies (jamais connecté, beaucoup de blocked, rôles incohérents) et propose un plan d'action.");
+        copilotQuestionField.requestFocus();
     }
 
     private static String safe(String s) {

@@ -2,7 +2,6 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.web.WebView?>
 
 <AnchorPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="tn.esprit.controllers.RegisterController"
@@ -43,6 +42,12 @@
                 </VBox>
 
                 <VBox spacing="5">
+                    <Label text="Téléphone" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #5E35B1;"/>
+                    <TextField fx:id="telephoneField" promptText="+216 XX XXX XXX"
+                               style="-fx-pref-height: 42; -fx-background-color: #FAF7FF; -fx-border-color: rgba(94,53,177,0.22); -fx-border-radius: 10; -fx-background-radius: 10;"/>
+                </VBox>
+
+                <VBox spacing="5">
                     <Label text="Mot de passe *" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #5E35B1;"/>
                     <StackPane>
                         <PasswordField fx:id="passwordField" promptText="Mot de passe"
@@ -76,7 +81,7 @@
 
                 <VBox spacing="8" style="-fx-background-color: rgba(126,87,194,0.08); -fx-padding: 10; -fx-background-radius: 10; -fx-border-color: rgba(94,53,177,0.18); -fx-border-radius: 10;">
                     <Label text="Vérification reCAPTCHA *" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #5E35B1;"/>
-                    <WebView fx:id="recaptchaWebView" prefHeight="108" minHeight="100" maxHeight="120"/>
+                    <StackPane fx:id="recaptchaHost" prefHeight="108" minHeight="100" maxHeight="120"/>
                 </VBox>
 
                 <Label fx:id="messageLabel" visible="false" wrapText="true"
