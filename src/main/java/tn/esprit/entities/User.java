@@ -27,6 +27,7 @@ public class User {
     private String nom;
     private String password;
     private String email;
+    private String telephone;
     private Role   role;
     private boolean verified;
     private boolean blocked;
@@ -57,6 +58,7 @@ public class User {
     public String getNom()      { return nom; }
     public String getPassword() { return password; }
     public String getEmail()    { return email; }
+    public String getTelephone() { return telephone; }
     public Role   getRole()     { return role; }
     public boolean isVerified() { return verified; }
     public boolean isBlocked()  { return blocked; }
@@ -68,6 +70,7 @@ public class User {
     public void setNom(String nom)        { this.nom = nom; }
     public void setPassword(String pw)    { this.password = pw; }
     public void setEmail(String email)    { this.email = email; }
+    public void setTelephone(String telephone) { this.telephone = telephone; }
     public void setRole(Role role)        { this.role = role; }
     public void setVerified(boolean verified) { this.verified = verified; }
     public void setBlocked(boolean blocked) { this.blocked = blocked; }

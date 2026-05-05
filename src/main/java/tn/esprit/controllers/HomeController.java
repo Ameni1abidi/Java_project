@@ -5,17 +5,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
-import javafx.scene.image.ImageView;
-import javafx.scene.shape.Rectangle;
-import javafx.stage.Stage;
-import javafx.event.ActionEvent;
-import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;   // 🔥 IMPORTANT
 import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.scene.shape.Rectangle;
@@ -43,6 +34,11 @@ public class HomeController {
 
             if (url == null) {
                 System.out.println("❌ Fichier introuvable: " + page);
+                Alert a = new Alert(Alert.AlertType.ERROR);
+                a.setTitle("Navigation");
+                a.setHeaderText("Fichier introuvable");
+                a.setContentText("Impossible de charger: " + page);
+                a.showAndWait();
                 return;
             }
 
@@ -53,6 +49,11 @@ public class HomeController {
 
         } catch (Exception e) {
             e.printStackTrace();
+            Alert a = new Alert(Alert.AlertType.ERROR);
+            a.setTitle("Navigation");
+            a.setHeaderText("Echec du chargement");
+            a.setContentText(page + " : " + e.getClass().getSimpleName() + " — " + e.getMessage());
+            a.showAndWait();
         }
     }
     // 🔎 SEARCH

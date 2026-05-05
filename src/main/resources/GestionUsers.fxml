@@ -184,6 +184,15 @@
                                 <ComboBox fx:id="sortCombo" prefWidth="160" onAction="#applySorting" styleClass="field-select"/>
                                 <ComboBox fx:id="bulkRoleCombo" prefWidth="150" styleClass="field-select"/>
                             </HBox>
+                            <HBox spacing="10" alignment="CENTER_LEFT">
+                                <DatePicker fx:id="createdFromPicker" promptText="Created from" styleClass="field-input"/>
+                                <DatePicker fx:id="createdToPicker" promptText="Created to" styleClass="field-input"/>
+                                <DatePicker fx:id="lastLoginFromPicker" promptText="Last login from" styleClass="field-input"/>
+                                <DatePicker fx:id="lastLoginToPicker" promptText="Last login to" styleClass="field-input"/>
+                                <CheckBox fx:id="neverLoggedInCheckBox" text="Jamais connecté" styleClass="field-label"/>
+                                <Region HBox.hgrow="ALWAYS"/>
+                                <Button text="Clear filters" onAction="#clearAdvancedFilters" styleClass="btn-muted"/>
+                            </HBox>
                             <HBox spacing="8">
                                 <Button text="Apply role" onAction="#applyBulkRole" styleClass="btn-warning"/>
                                 <Button text="Delete selected" onAction="#deleteSelectedUsers" styleClass="btn-danger"/>
@@ -229,12 +238,19 @@
                         <HBox spacing="8">
                             <Button text="Analyze" onAction="#analyzeWithCopilot" styleClass="btn-success"/>
                             <Button text="Export Report" onAction="#exportCopilotReport" styleClass="btn-muted"/>
+                            <Button text="Clear" onAction="#clearCopilot" styleClass="btn-muted"/>
                         </HBox>
                         <HBox spacing="8">
                             <TextField fx:id="copilotQuestionField" promptText="Ask something about your platform..." HBox.hgrow="ALWAYS" styleClass="field-input"/>
                             <Button text="Ask" onAction="#askCopilot" styleClass="btn-primary"/>
                         </HBox>
-                        <TextArea fx:id="copilotAnswerArea" editable="false" wrapText="true" prefRowCount="8" styleClass="copilot-area"/>
+                        <HBox spacing="8" alignment="CENTER_LEFT">
+                            <Label text="Exemples:" styleClass="field-label"/>
+                            <Button text="Sécurité login" onAction="#copilotExampleSecurity" styleClass="btn-muted"/>
+                            <Button text="Statuts à vérifier" onAction="#copilotExampleStatuses" styleClass="btn-muted"/>
+                            <Button text="Top anomalies" onAction="#copilotExampleAnomalies" styleClass="btn-muted"/>
+                        </HBox>
+                        <TextArea fx:id="copilotAnswerArea" editable="false" wrapText="true" prefRowCount="9" styleClass="copilot-area"/>
                     </VBox>
                 </VBox>
             </content>
