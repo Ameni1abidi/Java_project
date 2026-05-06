@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.Map;
 
 public class ResourceService {
     private final Connection connection = MyDatabase.getInstance().getConnection();
+    private String lastFavoriteError = "";
 
     public ResourceService() {
         ensureSchema();
@@ -282,27 +284,61 @@ public class ResourceService {
     }
 
     public boolean isDisponible(resources resource) {
-        if (resource == null || resource.getDisponibleLe() == null || resource.getDisponibleLe().isBlank()) {
+        LocalDate dateDispo = parseDisponibiliteDate(resource == null ? null : resource.getDisponibleLe());
+        if (dateDispo == null) {
             return false;
         }
+        return !LocalDate.now().isBefore(dateDispo);
+    }
+
+    private LocalDate parseDisponibiliteDate(String rawDate) {
+        if (rawDate == null || rawDate.isBlank()) {
+            return null;
+        }
+
+        String value = rawDate.trim();
         try {
-            LocalDate dateDispo = LocalDate.parse(resource.getDisponibleLe());
-            return !LocalDate.now().isBefore(dateDispo);
-        } catch (Exception e) {
-            return false;
+            return LocalDate.parse(value);
+        } catch (Exception ignored) {
         }
+
+        if (value.length() >= 10) {
+            String firstPart = value.substring(0, 10);
+            try {
+                return LocalDate.parse(firstPart);
+            } catch (Exception ignored) {
+            }
+        }
+
+        DateTimeFormatter[] formats = {
+                DateTimeFormatter.ofPattern("dd/MM/yyyy"),
+                DateTimeFormatter.ofPattern("MM/dd/yyyy"),
+                DateTimeFormatter.ofPattern("dd-MM-yyyy")
+        };
+
+        for (DateTimeFormatter format : formats) {
+            try {
+                return LocalDate.parse(value, format);
+            } catch (Exception ignored) {
+            }
+        }
+
+        return null;
     }
 
     public boolean isFavorite(int userId, int resourceId) {
+        lastFavoriteError = "";
         if (userId <= 0) {
+            lastFavoriteError = "Utilisateur invalide.";
             return false;
         }
         ensureFavoriteTableSafe();
-        String sql = "SELECT 1 FROM ressource_favori WHERE user_id = ? AND ressource_id = ?";
         String userColumn = getFavoriteUserColumn();
         if (userColumn == null) {
+            lastFavoriteError = "Colonne utilisateur introuvable dans ressource_favori.";
             return false;
         }
+        String sql = "SELECT 1 FROM ressource_favori WHERE " + userColumn + " = ? AND ressource_id = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, userId);
             ps.setInt(2, resourceId);
@@ -310,20 +346,26 @@ public class ResourceService {
                 return rs.next();
             }
         } catch (SQLException e) {
+            lastFavoriteError = e.getMessage();
             return false;
         }
     }
 
     public boolean setFavorite(int userId, int resourceId, boolean favorite) {
+        lastFavoriteError = "";
         if (userId <= 0) {
+            lastFavoriteError = "Utilisateur invalide.";
             return false;
         }
         ensureFavoriteTableSafe();
         String userColumn = getFavoriteUserColumn();
         if (userColumn == null) {
+            lastFavoriteError = "Colonne utilisateur introuvable dans ressource_favori.";
             return false;
         }
-        String sqlInsert = "INSERT IGNORE INTO ressource_favori(" + userColumn + ", ressource_id, created_at) VALUES(?, ?, CURRENT_TIMESTAMP)";
+        String sqlInsert = hasFavoriteCreatedAtColumn()
+                ? "INSERT IGNORE INTO ressource_favori(" + userColumn + ", ressource_id, created_at) VALUES(?, ?, CURRENT_TIMESTAMP)"
+                : "INSERT IGNORE INTO ressource_favori(" + userColumn + ", ressource_id) VALUES(?, ?)";
         String sqlDelete = "DELETE FROM ressource_favori WHERE " + userColumn + " = ? AND ressource_id = ?";
 
         try (PreparedStatement ps = connection.prepareStatement(favorite ? sqlInsert : sqlDelete)) {
@@ -333,8 +375,41 @@ public class ResourceService {
             return true;
         } catch (SQLException e) {
             // No crash in UI if favoris table is not ready; resources page must stay usable.
+            lastFavoriteError = e.getMessage();
             return false;
         }
+    }
+
+    public String getLastFavoriteError() {
+        return lastFavoriteError;
+    }
+
+    public int resolveStudentUserIdForFavorites() {
+        String studentSql = """
+                SELECT id FROM utilisateur
+                WHERE UPPER(role) IN ('ROLE_ETUDIANT', 'ETUDIANT', 'ROLE_STUDENT', 'STUDENT', 'ROLE_USER', 'USER')
+                ORDER BY id ASC
+                LIMIT 1
+                """;
+        int studentId = findFirstUserId(studentSql);
+        if (studentId > 0) {
+            return studentId;
+        }
+
+        return findFirstUserId("SELECT id FROM utilisateur ORDER BY id ASC LIMIT 1");
+    }
+
+    private int findFirstUserId(String sql) {
+        try (PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt("id");
+            }
+        } catch (SQLException e) {
+            lastFavoriteError = e.getMessage();
+        }
+
+        return -1;
     }
 
     public List<resources> getFavoritesByUserId(int userId) {
@@ -346,9 +421,10 @@ public class ResourceService {
         if (userColumn == null) {
             return new ArrayList<>();
         }
+        String orderBy = hasFavoriteCreatedAtColumn() ? " ORDER BY rf.created_at DESC" : " ORDER BY r.id DESC";
         String sql = "SELECT r.id, r.titre, r.contenu, r.categorie_nom, r.type, r.disponible_le, r.chapitre_id, r.is_sensitive " +
                 "FROM ressource r INNER JOIN ressource_favori rf ON r.id = rf.ressource_id " +
-                "WHERE rf." + userColumn + " = ? ORDER BY rf.created_at DESC";
+                "WHERE rf." + userColumn + " = ?" + orderBy;
         List<resources> list = new ArrayList<>();
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, userId);
@@ -389,6 +465,9 @@ public class ResourceService {
             if (!hasTableColumn("ressource_favori", "created_at")) {
                 executeUpdate("ALTER TABLE ressource_favori ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP");
             }
+            if (!hasTableColumn("ressource_favori", "user_id") && !hasTableColumn("ressource_favori", "utilisateur_id")) {
+                executeUpdate("ALTER TABLE ressource_favori ADD COLUMN user_id INT NOT NULL FIRST");
+            }
         } catch (SQLException ignored) {
             // Keep app running even if migration cannot be applied now.
         }
@@ -396,15 +475,23 @@ public class ResourceService {
 
     private String getFavoriteUserColumn() {
         try {
-            if (hasTableColumn("ressource_favori", "user_id")) {
-                return "user_id";
-            }
             if (hasTableColumn("ressource_favori", "utilisateur_id")) {
                 return "utilisateur_id";
+            }
+            if (hasTableColumn("ressource_favori", "user_id")) {
+                return "user_id";
             }
         } catch (SQLException ignored) {
         }
         return null;
+    }
+
+    private boolean hasFavoriteCreatedAtColumn() {
+        try {
+            return hasTableColumn("ressource_favori", "created_at");
+        } catch (SQLException ignored) {
+            return false;
+        }
     }
 
     private boolean hasTableColumn(String tableName, String columnName) throws SQLException {

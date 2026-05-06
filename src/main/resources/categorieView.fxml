@@ -72,7 +72,6 @@
 
             <HBox spacing="10">
                 <Button fx:id="saveButton" text="Creer" onAction="#saveCategorie"
-                        style="-fx-background-color: #1abc9c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 22;" />
                         style="-fx-background-color: #855ba1; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 22;" />
                 <Button fx:id="deleteButton" text="Supprimer" onAction="#deleteCategorie"
                         style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 8; -fx-padding: 10 22;" />
