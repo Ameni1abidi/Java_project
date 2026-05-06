@@ -32,7 +32,7 @@ public class CreateExamenController {
 
     private String filePath;
 
-    private final SmsService smsService = new SmsService();
+    //private final SmsService smsService = new SmsService();
     private final ExamenService service = new ExamenService();
     @FXML
     public void initialize() {
@@ -177,10 +177,10 @@ public class CreateExamenController {
             // ================= SAVE DB =================
             service.create(e);
             // 2️⃣ SMS APRES SUCCESS
-            smsService.sendSms(
-                    "+21629693334",
-                    "📢 Nouvel examen ajouté : " + e.getTitre()
-            );
+            //smsService.sendSms(
+                    //"+21629693334",
+                    //"📢 Nouvel examen ajouté : " + e.getTitre()
+            //);
             new Alert(Alert.AlertType.INFORMATION,
                     "Examen ajouté avec succès !").show();
 
