@@ -254,14 +254,11 @@ public class StudentCours {
                 Label status = new Label("Temps: 0 min | En cours");
                 status.setStyle("-fx-text-fill:#f39c12; -fx-font-size:11px;");
 
-                Button openChap = new Button("Voir Resume");
-                openChap.setStyle("-fx-background-color:#ff416c; -fx-text-fill:white; -fx-background-radius:20; -fx-padding:5 10;");
-
                 Button ressourcesBtn = new Button("Ressources");
                 ressourcesBtn.setStyle("-fx-background-color:#5b7cfa; -fx-text-fill:white; -fx-background-radius:20; -fx-padding:5 12; -fx-font-weight:bold;");
                 ressourcesBtn.setOnAction(e -> openChapterResources(e, chap));
 
-                chapCard.getChildren().addAll(t, info, status, openChap, ressourcesBtn);
+                chapCard.getChildren().addAll(t, info, status, ressourcesBtn);
                 chaptersBox.getChildren().add(chapCard);
             }
         }
