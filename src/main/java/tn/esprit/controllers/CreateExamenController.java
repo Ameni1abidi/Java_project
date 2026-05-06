@@ -14,7 +14,6 @@ import tn.esprit.entities.Examen;
 import tn.esprit.entities.User;
 import tn.esprit.services.CoursService;
 import tn.esprit.services.ExamenService;
-import tn.esprit.services.SmsService;
 import tn.esprit.services.UserService;
 
 import java.io.File;
@@ -32,7 +31,7 @@ public class CreateExamenController {
 
     private String filePath;
 
-    private final SmsService smsService = new SmsService();
+
     private final ExamenService service = new ExamenService();
     @FXML
     public void initialize() {
@@ -176,11 +175,8 @@ public class CreateExamenController {
 
             // ================= SAVE DB =================
             service.create(e);
-            // 2️⃣ SMS APRES SUCCESS
-            smsService.sendSms(
-                    "+21629693334",
-                    "📢 Nouvel examen ajouté : " + e.getTitre()
-            );
+
+
             new Alert(Alert.AlertType.INFORMATION,
                     "Examen ajouté avec succès !").show();
 
