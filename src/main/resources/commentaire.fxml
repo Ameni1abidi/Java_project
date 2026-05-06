@@ -5,7 +5,7 @@
 
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
-      fx:controller="tn.esprit.controllers.AjoutCommentaire">
+      fx:controller="tn.esprit.controllers.AjoutCommentaire"
       spacing="12"
       prefWidth="320"
       style="-fx-padding:15; -fx-background-color:#f9f9f9; -fx-background-radius:12;">
@@ -16,7 +16,6 @@
     <VBox fx:id="commentContainer"
           spacing="10"
           prefWidth="290"/>
-
 
     <TextArea fx:id="contenuField"
               promptText="Ajouter un commentaire..."
