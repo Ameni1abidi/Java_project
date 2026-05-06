@@ -183,7 +183,7 @@ public class ExamenController {
                 );
 
                 btnDelete.setStyle(
-                        "-fx-background-color: #ef130c;" +
+                        "-fx-background-color: #a54e4e;" +
                                 "-fx-text-fill: white;" +
                                 "-fx-background-radius: 6;" +
                                 "-fx-padding: 6 16;" +

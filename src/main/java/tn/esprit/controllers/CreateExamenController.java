@@ -14,7 +14,6 @@ import tn.esprit.entities.Examen;
 import tn.esprit.entities.User;
 import tn.esprit.services.CoursService;
 import tn.esprit.services.ExamenService;
-import tn.esprit.services.SmsService;
 import tn.esprit.services.UserService;
 
 import java.io.File;
@@ -32,22 +31,18 @@ public class CreateExamenController {
 
     private String filePath;
 
-    //private final SmsService smsService = new SmsService();
     private final ExamenService service = new ExamenService();
+
     @FXML
     public void initialize() {
 
-        // TYPE
         cbType.getItems().addAll("Examen", "Contrôle");
 
-        // SERVICES
         CoursService coursService = new CoursService();
         UserService userService = new UserService();
 
-        // COURS
         cbCours.getItems().addAll(coursService.getAll());
 
-        // ENSEIGNANTS (filtrer PROF)
         try {
             cbEnseignant.getItems().addAll(
                     userService.getAllUsers().stream()
@@ -58,7 +53,6 @@ public class CreateExamenController {
             throw new RuntimeException(e);
         }
 
-        // AFFICHAGE NOM COURS
         cbCours.setCellFactory(param -> new ListCell<>() {
             @Override
             protected void updateItem(Cours c, boolean empty) {
@@ -75,7 +69,6 @@ public class CreateExamenController {
             }
         });
 
-        // AFFICHAGE NOM ENSEIGNANT
         cbEnseignant.setCellFactory(param -> new ListCell<>() {
             @Override
             protected void updateItem(User u, boolean empty) {
@@ -92,6 +85,7 @@ public class CreateExamenController {
             }
         });
     }
+
     @FXML
     void chooseFile() {
         FileChooser fileChooser = new FileChooser();
@@ -103,11 +97,8 @@ public class CreateExamenController {
     }
 
     @FXML
-
-
     void handleSave() {
 
-        // ================= LECTURE DONNÉES =================
         String titre = txtTitre.getText();
         String type = cbType.getValue();
         LocalDate date = dateExamen.getValue();
@@ -115,7 +106,6 @@ public class CreateExamenController {
         Cours cours = cbCours.getValue();
         User enseignant = cbEnseignant.getValue();
 
-        // ================= VALIDATION =================
         if (titre == null || titre.isBlank()) {
             showAlert("Le titre est obligatoire !");
             return;
@@ -163,7 +153,6 @@ public class CreateExamenController {
             return;
         }
 
-        // ================= CREATION OBJET =================
         try {
             Examen e = new Examen();
             e.setTitre(titre);
@@ -174,13 +163,8 @@ public class CreateExamenController {
             e.setCoursId(cours.getId());
             e.setEnseignantId(enseignant.getId());
 
-            // ================= SAVE DB =================
             service.create(e);
-            // 2️⃣ SMS APRES SUCCESS
-            //smsService.sendSms(
-                    //"+21629693334",
-                    //"📢 Nouvel examen ajouté : " + e.getTitre()
-            //);
+
             new Alert(Alert.AlertType.INFORMATION,
                     "Examen ajouté avec succès !").show();
 
@@ -189,9 +173,6 @@ public class CreateExamenController {
         } catch (Exception ex) {
             ex.printStackTrace();
             showAlert("Erreur lors de l'enregistrement en base !");
-
-
-
         }
     }
 
@@ -199,7 +180,7 @@ public class CreateExamenController {
     void goBack() {
         try {
             FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/ExamenView.fxml")); // adapte le nom
+                    getClass().getResource("/ExamenView.fxml"));
             Parent root = loader.load();
             txtTitre.getScene().setRoot(root);
         } catch (Exception e) {
@@ -210,6 +191,7 @@ public class CreateExamenController {
     private void showAlert(String msg) {
         new Alert(Alert.AlertType.WARNING, msg).show();
     }
+
     private void clearForm() {
         txtTitre.clear();
         txtDuree.clear();
@@ -220,36 +202,23 @@ public class CreateExamenController {
         filePath = null;
     }
 
+    @FXML
+    private void goDashboard(ActionEvent event) { loadPage(event, "/ProfDashboard.fxml"); }
 
     @FXML
-    private void goDashboard(ActionEvent event) {
-        loadPage(event, "/ProfDashboard.fxml");
-    }
+    private void goForum(ActionEvent event) { loadPage(event, "/forum.fxml"); }
 
     @FXML
-    private void goForum(ActionEvent event) {
-        loadPage(event, "/forum.fxml");
-    }
+    private void goCours(ActionEvent event) { loadPage(event, "/CoursList.fxml"); }
 
     @FXML
-    private void goCours(ActionEvent event) {
-        loadPage(event, "/CoursList.fxml");
-    }
+    private void goRessources(ActionEvent event) { loadPage(event, "/listeRessources.fxml"); }
 
     @FXML
-    private void goRessources(ActionEvent event) {
-        loadPage(event, "/listeRessources.fxml");
-    }
+    private void goCategories(ActionEvent event) { loadPage(event, "/CategorieList.fxml"); }
 
     @FXML
-    private void goCategories(ActionEvent event) {
-        loadPage(event, "/CategorieList.fxml");
-    }
-
-    @FXML
-    private void goExamens(ActionEvent event) {
-        loadPage(event, "/ExamenView.fxml");
-    }
+    private void goExamens(ActionEvent event) { loadPage(event, "/ExamenView.fxml"); }
 
     @FXML
     private void goResultats(ActionEvent event) {
@@ -261,9 +230,7 @@ public class CreateExamenController {
     }
 
     @FXML
-    private void goLogout(ActionEvent event) {
-        loadPage(event, "/Login.fxml");
-    }
+    private void goLogout(ActionEvent event) { loadPage(event, "/Login.fxml"); }
 
     private void loadPage(ActionEvent event, String fxmlPath) {
         try {

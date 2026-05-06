@@ -151,6 +151,15 @@ public class StudentChapterResourcesController {
             }
         } catch (Exception ignored) {
         }
+        int fallbackUserId = resourceService.resolveStudentUserIdForFavorites();
+        if (fallbackUserId > 0) {
+            User fallback = new User();
+            fallback.setId(fallbackUserId);
+            fallback.setNom("Etudiant");
+            fallback.setRole(User.Role.ROLE_ETUDIANT);
+            UserSession.setCurrentUser(fallback);
+            return fallback;
+        }
         return null;
     }
 
@@ -499,14 +508,24 @@ public class StudentChapterResourcesController {
         Button favori = new Button(resource.isFavori() ? "Retire" : "Favori");
         favori.setStyle(resource.isFavori()
                 ? (darkMode
-                    ? "-fx-background-color:#14532d; -fx-text-fill:#dcfce7; -fx-font-weight:bold; -fx-background-radius:10;"
-                    : "-fx-background-color:#e4f8ec; -fx-text-fill:#17643a; -fx-font-weight:bold; -fx-background-radius:10;")
+                ? "-fx-background-color:#14532d; -fx-text-fill:#dcfce7; -fx-font-weight:bold; -fx-background-radius:10;"
+                : "-fx-background-color:#e4f8ec; -fx-text-fill:#17643a; -fx-font-weight:bold; -fx-background-radius:10;")
                 : (darkMode
-                    ? "-fx-background-color:#334155; -fx-text-fill:#e2e8f0; -fx-font-weight:bold; -fx-background-radius:10;"
-                    : "-fx-background-color:#eee8f8; -fx-text-fill:#4b3b78; -fx-font-weight:bold; -fx-background-radius:10;"));
+                ? "-fx-background-color:#334155; -fx-text-fill:#e2e8f0; -fx-font-weight:bold; -fx-background-radius:10;"
+                : "-fx-background-color:#eee8f8; -fx-text-fill:#4b3b78; -fx-font-weight:bold; -fx-background-radius:10;"));
         favori.setOnAction(e -> {
             toggleFavorite(resource);
-            loadResources();
+            favori.setText(resource.isFavori() ? "Retire" : "Favori");
+            favori.setStyle(resource.isFavori()
+                    ? (darkMode
+                    ? "-fx-background-color:#14532d; -fx-text-fill:#dcfce7; -fx-font-weight:bold; -fx-background-radius:10;"
+                    : "-fx-background-color:#e4f8ec; -fx-text-fill:#17643a; -fx-font-weight:bold; -fx-background-radius:10;")
+                    : (darkMode
+                    ? "-fx-background-color:#334155; -fx-text-fill:#e2e8f0; -fx-font-weight:bold; -fx-background-radius:10;"
+                    : "-fx-background-color:#eee8f8; -fx-text-fill:#4b3b78; -fx-font-weight:bold; -fx-background-radius:10;"));
+            if (favoritesOnly && !resource.isFavori()) {
+                loadResources();
+            }
         });
 
         actions.getChildren().add(favori);
@@ -702,8 +721,12 @@ public class StudentChapterResourcesController {
 
     private void toggleFavorite(resources resource) {
         if (currentUserId <= 0) {
-            showError("Session utilisateur invalide.");
-            return;
+            currentUserId = resourceService.resolveStudentUserIdForFavorites();
+            if (currentUserId <= 0) {
+                String reason = resourceService.getLastFavoriteError();
+                showError("Session utilisateur invalide." + (reason == null || reason.isBlank() ? "" : "\n" + reason));
+                return;
+            }
         }
         if (resource == null || resource.getId() <= 0) {
             showError("Ressource invalide.");
@@ -712,7 +735,8 @@ public class StudentChapterResourcesController {
 
         boolean newFavoriteState = !resource.isFavori();
         if (!resourceService.setFavorite(currentUserId, resource.getId(), newFavoriteState)) {
-            showError("Impossible de mettre a jour les favoris.");
+            String reason = resourceService.getLastFavoriteError();
+            showError("Impossible de mettre a jour les favoris." + (reason == null || reason.isBlank() ? "" : "\n" + reason));
             return;
         }
         resource.setFavori(newFavoriteState);
@@ -734,11 +758,11 @@ public class StudentChapterResourcesController {
         );
         favoritesOnlyButton.setStyle(favoritesOnly
                 ? (darkMode
-                    ? "-fx-background-color:#14532d; -fx-text-fill:#dcfce7; -fx-font-size:13; -fx-font-weight:bold; -fx-background-radius:999; -fx-padding:8 14;"
-                    : "-fx-background-color:#dcfce7; -fx-text-fill:#166534; -fx-font-size:13; -fx-font-weight:bold; -fx-background-radius:999; -fx-padding:8 14;")
+                ? "-fx-background-color:#14532d; -fx-text-fill:#dcfce7; -fx-font-size:13; -fx-font-weight:bold; -fx-background-radius:999; -fx-padding:8 14;"
+                : "-fx-background-color:#dcfce7; -fx-text-fill:#166534; -fx-font-size:13; -fx-font-weight:bold; -fx-background-radius:999; -fx-padding:8 14;")
                 : (darkMode
-                    ? "-fx-background-color:#1f2937; -fx-text-fill:#c7d2fe; -fx-font-size:13; -fx-font-weight:bold; -fx-background-radius:999; -fx-padding:8 14;"
-                    : "-fx-background-color:#eef2ff; -fx-text-fill:#3730a3; -fx-font-size:13; -fx-font-weight:bold; -fx-background-radius:999; -fx-padding:8 14;"));
+                ? "-fx-background-color:#1f2937; -fx-text-fill:#c7d2fe; -fx-font-size:13; -fx-font-weight:bold; -fx-background-radius:999; -fx-padding:8 14;"
+                : "-fx-background-color:#eef2ff; -fx-text-fill:#3730a3; -fx-font-size:13; -fx-font-weight:bold; -fx-background-radius:999; -fx-padding:8 14;"));
     }
 
     private void applyTheme() {

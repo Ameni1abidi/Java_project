@@ -31,7 +31,7 @@ public class CategorieListController {
     @FXML
     private TableColumn<categorie, Void> actionCol;
 
-    private CategoryService service = new CategoryService();
+    private final CategoryService service = new CategoryService();
 
     @FXML
     public void initialize() {
@@ -42,13 +42,12 @@ public class CategorieListController {
         actionCol.setCellFactory(column -> new EditButtonCell());
 
         try {
-            tableCategorie.setItems(FXCollections.observableArrayList(service.getAll()));
-            tableCategorie.refresh();
+            refreshCategories();
         } catch (Exception e) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Erreur de base de données");
-            alert.setHeaderText("Connexion à la base de données échouée");
-            alert.setContentText("Vérifiez que MySQL est démarré et que la base 'eduflex' existe.\nErreur: " + e.getMessage());
+            alert.setTitle("Erreur de base de donnees");
+            alert.setHeaderText("Connexion a la base de donnees echouee");
+            alert.setContentText("Verifiez que MySQL est demarre et que la base 'eduflex' existe.\nErreur: " + getRootMessage(e));
             alert.showAndWait();
         }
     }
@@ -188,15 +187,39 @@ public class CategorieListController {
         }
 
         try {
-            service.delete(item.getNom());
-            tableCategorie.setItems(FXCollections.observableArrayList(service.getAll()));
-            tableCategorie.refresh();
+            int resourceCount = service.countResourcesByCategory(item.getNom());
+            if (resourceCount > 0) {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("Suppression impossible");
+                alert.setHeaderText("Cette categorie est utilisee");
+                alert.setContentText(resourceCount + " ressource(s) utilisent encore la categorie \"" + item.getNom() + "\".");
+                alert.showAndWait();
+                return;
+            }
+
+            if (service.delete(item.getNom())) {
+                refreshCategories();
+            }
         } catch (Exception e) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Erreur");
             alert.setHeaderText("Impossible de supprimer la categorie");
-            alert.setContentText("Verifiez qu'aucune ressource n'utilise encore cette categorie.\n" + e.getMessage());
+            alert.setContentText("Verifiez qu'aucune ressource n'utilise encore cette categorie.\n" + getRootMessage(e));
             alert.showAndWait();
         }
+    }
+
+    private void refreshCategories() {
+        tableCategorie.setItems(FXCollections.observableArrayList(service.getAll()));
+        tableCategorie.refresh();
+    }
+
+    private String getRootMessage(Exception e) {
+        Throwable cause = e;
+        while (cause.getCause() != null) {
+            cause = cause.getCause();
+        }
+
+        return cause.getMessage() == null ? e.getMessage() : cause.getMessage();
     }
 }

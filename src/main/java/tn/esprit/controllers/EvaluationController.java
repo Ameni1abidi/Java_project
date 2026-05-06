@@ -142,14 +142,14 @@ public class EvaluationController {
                 );
 
                 btnDelete.setStyle(
-                        "-fx-background-color: #ef130c;" +
+                        "-fx-background-color: #a54e4e;" +
                                 "-fx-text-fill: white;" +
                                 "-fx-background-radius: 6;" +
                                 "-fx-padding: 6 16;" +
                                 "-fx-min-width: 90;"
                 );
                 btnPdf.setStyle(
-                        "-fx-background-color: #2c3e50;" +
+                        "-fx-background-color: #b39ddb;" +
                                 "-fx-text-fill: white;" +
                                 "-fx-background-radius: 6;" +
                                 "-fx-padding: 6 16;" +
