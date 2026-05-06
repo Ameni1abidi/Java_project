@@ -14,6 +14,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
+import javafx.scene.layout.StackPane;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
@@ -35,11 +36,13 @@ import java.util.Optional;
 public class RegisterController {
     @FXML private TextField      nomField;
     @FXML private TextField      emailField;
+    @FXML private TextField      telephoneField;
     @FXML private PasswordField  passwordField;
     @FXML private PasswordField  confirmField;
     @FXML private TextField      passwordVisibleField;
     @FXML private TextField      confirmVisibleField;
-    @FXML private WebView        recaptchaWebView;
+    @FXML private StackPane        recaptchaHost;
+    private WebView recaptchaWebView;
     @FXML private Button         registerButton;
     @FXML private CheckBox       togglePasswordsCheckBox;
     @FXML private CheckBox       agreeTermsCheckBox;
@@ -69,13 +72,29 @@ public class RegisterController {
         if (togglePasswordsCheckBox != null) {
             togglePasswordsCheckBox.selectedProperty().addListener((obs, oldVal, show) -> togglePasswordVisibility(show));
         }
+        initRecaptchaWebView();
         initRecaptchaWidget();
+    }
+
+    private void initRecaptchaWebView() {
+        if (recaptchaHost == null) return;
+        try {
+            recaptchaWebView = new WebView();
+            recaptchaWebView.setPrefHeight(108);
+            recaptchaWebView.setMinHeight(100);
+            recaptchaWebView.setMaxHeight(120);
+            recaptchaHost.getChildren().setAll(recaptchaWebView);
+        } catch (Throwable t) {
+            if (registerButton != null) registerButton.setDisable(true);
+            showError("reCAPTCHA indisponible sur cette machine (WebView). Verifie que javafx-web est bien charge au runtime.");
+        }
     }
 
     @FXML
     private void handleRegister() {
         String nom     = nomField.getText().trim();
         String email   = emailField.getText().trim();
+        String tel     = telephoneField != null ? telephoneField.getText().trim() : "";
         String pw      = passwordField.getText();
         String confirm = confirmField.getText();
         Role   role    = roleCombo.getValue();
@@ -86,6 +105,10 @@ public class RegisterController {
         }
         if (!email.matches("^[\\w.+\\-]+@[\\w\\-]+\\.[a-z]{2,}$")) {
             showError("Format d'email invalide.");
+            return;
+        }
+        if (!tel.isBlank() && !tel.matches("^[0-9+()\\-\\s]{8,20}$")) {
+            showError("Format de téléphone invalide.");
             return;
         }
         if (!pw.equals(confirm)) {
@@ -117,7 +140,11 @@ public class RegisterController {
                 resetRecaptchaWidget();
                 return;
             }
-            boolean ok = userService.register(new User(nom, pw, email, role));
+            User candidate = new User(nom, pw, email, role);
+            if (!tel.isBlank()) {
+                candidate.setTelephone(tel);
+            }
+            boolean ok = userService.register(candidate);
 
             if (!ok) {
                 showError("Cet email est déjà utilisé.");

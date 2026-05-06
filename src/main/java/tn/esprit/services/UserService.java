@@ -15,6 +15,10 @@ import java.util.UUID;
 public class UserService {
 
     private final Connection cnx = MyDatabase.getInstance().getConnection();
+    private volatile Boolean cachedHasTelephoneColumn;
+    private final LoginSecurityService loginSecurityService = new LoginSecurityService();
+    private final AuditLogService auditLogService = new AuditLogService();
+    private final EmailService emailService = new EmailService();
 
     // ─────────────────────────────────────────────────────────────────────────
     //  REGISTER
@@ -22,14 +26,22 @@ public class UserService {
     public boolean register(User user) throws SQLException {
         if (emailExists(user.getEmail())) return false;
 
-        String sql = "INSERT INTO utilisateur (nom, password, email, role, is_verified, is_blocked, status) " +
-                "VALUES (?, ?, ?, ?, 0, 0, 'PENDING')";
+        boolean hasTel = hasTelephoneColumn();
+        String sql = hasTel
+                ? "INSERT INTO utilisateur (nom, password, email, telephone, role, is_verified, is_blocked, status) VALUES (?, ?, ?, ?, ?, 0, 0, 'PENDING')"
+                : "INSERT INTO utilisateur (nom, password, email, role, is_verified, is_blocked, status) VALUES (?, ?, ?, ?, 0, 0, 'PENDING')";
         try (PreparedStatement ps = cnx.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             String hashedPassword = BCrypt.hashpw(user.getPassword(), BCrypt.gensalt());
             ps.setString(1, user.getNom());
             ps.setString(2, hashedPassword);
             ps.setString(3, user.getEmail());
-            ps.setString(4, user.getRole().name());
+            if (hasTel) {
+                String tel = user.getTelephone();
+                ps.setString(4, (tel == null || tel.isBlank()) ? null : tel.trim());
+                ps.setString(5, user.getRole().name());
+            } else {
+                ps.setString(4, user.getRole().name());
+            }
             ps.executeUpdate();
 
             ResultSet keys = ps.getGeneratedKeys();
@@ -42,6 +54,11 @@ public class UserService {
     //  LOGIN
     // ─────────────────────────────────────────────────────────────────────────
     public Optional<User> login(String email, String password) throws SQLException {
+        return login(email, password, null);
+    }
+
+    public Optional<User> login(String email, String password, LoginSecurityService.LoginContext ctx) throws SQLException {
+        loginSecurityService.enforceNotLocked(email);
         String sql = "SELECT * FROM utilisateur WHERE LOWER(TRIM(email)) = LOWER(TRIM(?))";
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
             ps.setString(1, email);
@@ -65,14 +82,70 @@ public class UserService {
             } else {
                 valid = stored.equals(input);
             }
-            if (!valid) return Optional.empty();
+            if (!valid) {
+                try {
+                    loginSecurityService.recordFailure(email, ctx);
+                } catch (SQLException ignored) {
+                }
+                return Optional.empty();
+            }
 
             // Auto-migrate legacy plain text password after successful login.
             if (!isBcryptHash(stored)) {
                 updatePasswordHash(user.getId(), BCrypt.hashpw(input, BCrypt.gensalt()));
             }
             markLastLoginNowIfPossible(user.getId());
+
+            boolean suspicious = false;
+            try {
+                suspicious = loginSecurityService.recordSuccessAndDetectSuspicious(email, ctx);
+            } catch (SQLException ignored) {
+            }
+            if (suspicious) {
+                String ip = ctx == null ? "" : String.valueOf(ctx.ip());
+                auditLogService.log(user.getEmail(), "LOGIN_SUSPICIOUS", "New device detected. ip=" + ip);
+                try {
+                    String body = """
+                            Alerte sécurité EduFlex
+                            
+                            Une connexion à votre compte a été détectée depuis un nouvel appareil.
+                            
+                            Email: %s
+                            IP (local): %s
+                            
+                            Si ce n'est pas vous, changez votre mot de passe immédiatement.
+                            """.formatted(user.getEmail(), ip).trim();
+                    emailService.sendTextEmail(user.getEmail(), "EduFlex — Alerte connexion suspecte", body);
+                } catch (Exception ignored) {
+                }
+            }
             return Optional.of(user);
+        }
+    }
+
+    public void onExternalLoginSuccess(User user, LoginSecurityService.LoginContext ctx) {
+        if (user == null || user.getEmail() == null || user.getEmail().isBlank()) return;
+        try {
+            boolean suspicious = loginSecurityService.recordSuccessAndDetectSuspicious(user.getEmail(), ctx);
+            if (suspicious) {
+                String ip = ctx == null ? "" : String.valueOf(ctx.ip());
+                auditLogService.log(user.getEmail(), "LOGIN_SUSPICIOUS", "New device detected (external login). ip=" + ip);
+                try {
+                    String body = """
+                            Alerte sécurité EduFlex
+                            
+                            Une connexion à votre compte a été détectée depuis un nouvel appareil (Google/GitHub).
+                            
+                            Email: %s
+                            IP (local): %s
+                            
+                            Si ce n'est pas vous, changez votre mot de passe immédiatement.
+                            """.formatted(user.getEmail(), ip).trim();
+                    emailService.sendTextEmail(user.getEmail(), "EduFlex — Alerte connexion suspecte", body);
+                } catch (Exception ignored) {
+                }
+            }
+        } catch (Exception ignored) {
         }
     }
 
@@ -178,6 +251,9 @@ public class UserService {
         } else if (hasColumn(rs, "last_login")) {
             Timestamp ts = rs.getTimestamp("last_login");
             if (ts != null) u.setLastLoginAt(ts.toLocalDateTime());
+        }
+        if (hasColumn(rs, "telephone")) {
+            u.setTelephone(rs.getString("telephone"));
         }
         return u;
     }
@@ -369,6 +445,23 @@ public class UserService {
         } catch (SQLException ignored) {
         }
         return false;
+    }
+
+    private boolean hasTelephoneColumn() {
+        Boolean cached = cachedHasTelephoneColumn;
+        if (cached != null) return cached;
+
+        boolean exists = false;
+        try {
+            DatabaseMetaData md = cnx.getMetaData();
+            try (ResultSet rs = md.getColumns(null, null, "utilisateur", "telephone")) {
+                exists = rs.next();
+            }
+        } catch (SQLException ignored) {
+            exists = false;
+        }
+        cachedHasTelephoneColumn = exists;
+        return exists;
     }
 }
 

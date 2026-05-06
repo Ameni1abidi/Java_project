@@ -26,7 +26,6 @@ import java.util.List;
 
 public class AjoutForum {
 
-
     @FXML private FlowPane forumContainer;
     @FXML private VBox     formPane;
     @FXML private StackPane formOverlay;
@@ -39,11 +38,9 @@ public class AjoutForum {
     private final OllamaService ollama = new OllamaService();
 
     private int currentPage = 1;
-
-    private final int pageSize = 3;   // ← 3 forums par page
+    private final int pageSize = 3;
     private int totalPages;
 
-    // ── Styles globaux ────────────────────────────────────────────────────
     private static final String BTN_MODIFIER =
             "-fx-background-color:#d1fae5; -fx-text-fill:#065f46;" +
                     "-fx-background-radius:15; -fx-font-size:12px;" +
@@ -66,11 +63,9 @@ public class AjoutForum {
     @FXML
     public void initialize() { loadForums(); }
 
-    // ── Afficher / Masquer formulaire ─────────────────────────────────────
     @FXML public void showCreateForm() { formOverlay.setVisible(true);  }
     @FXML public void showList()       { formOverlay.setVisible(false); }
 
-    // ── CREATE ────────────────────────────────────────────────────────────
     @FXML
     public void ajouterForum() {
         forum f = new forum(
@@ -93,7 +88,6 @@ public class AjoutForum {
         loadForums();
     }
 
-    // ── EXPORT EXCEL ──────────────────────────────────────────────────────
     @FXML
     private void exporterExcel() {
         System.out.println("=== exporterExcel() appelé ===");
@@ -104,7 +98,6 @@ public class AjoutForum {
 
             org.apache.poi.ss.usermodel.Sheet sheet = workbook.createSheet("Forums");
 
-            // ── Style en-tête ──
             org.apache.poi.ss.usermodel.CellStyle headerStyle = workbook.createCellStyle();
             org.apache.poi.ss.usermodel.Font headerFont = workbook.createFont();
             headerFont.setBold(true);
@@ -121,7 +114,6 @@ public class AjoutForum {
             headerStyle.setBorderLeft(org.apache.poi.ss.usermodel.BorderStyle.THIN);
             headerStyle.setBorderRight(org.apache.poi.ss.usermodel.BorderStyle.THIN);
 
-            // ── Style lignes paires ──
             org.apache.poi.ss.usermodel.CellStyle evenStyle = workbook.createCellStyle();
             evenStyle.setFillForegroundColor(
                     org.apache.poi.ss.usermodel.IndexedColors.LAVENDER.getIndex());
@@ -133,7 +125,6 @@ public class AjoutForum {
             evenStyle.setBorderRight(org.apache.poi.ss.usermodel.BorderStyle.THIN);
             evenStyle.setWrapText(true);
 
-            // ── Style lignes impaires ──
             org.apache.poi.ss.usermodel.CellStyle oddStyle = workbook.createCellStyle();
             oddStyle.setFillForegroundColor(
                     org.apache.poi.ss.usermodel.IndexedColors.WHITE.getIndex());
@@ -145,7 +136,6 @@ public class AjoutForum {
             oddStyle.setBorderRight(org.apache.poi.ss.usermodel.BorderStyle.THIN);
             oddStyle.setWrapText(true);
 
-            // ── En-têtes ──
             String[] colonnes = {"ID", "Titre", "Type", "Contenu", "Date de creation"};
             org.apache.poi.ss.usermodel.Row header = sheet.createRow(0);
             header.setHeight((short) 500);
@@ -155,7 +145,6 @@ public class AjoutForum {
                 cell.setCellStyle(headerStyle);
             }
 
-            // ── Données ──
             int rowIndex = 1;
             for (forum f : forums) {
                 org.apache.poi.ss.usermodel.Row row = sheet.createRow(rowIndex);
@@ -213,7 +202,6 @@ public class AjoutForum {
         }
     }
 
-    // ── READ + PAGINATION ─────────────────────────────────────────────────
     private void loadForums() {
         forumContainer.getChildren().clear();
 
@@ -223,7 +211,7 @@ public class AjoutForum {
 
         fs.getPaginated(currentPage, pageSize).forEach(f -> {
             try {
-                // ── Card ─────────────────────────────────────────────────
+                // ── Card ──────────────────────────────────────────────────
                 VBox card = new VBox(10);
                 card.setPrefWidth(260);
                 card.setMaxWidth(260);
@@ -244,11 +232,7 @@ public class AjoutForum {
 
                 // ── Info ──────────────────────────────────────────────────
                 Label info = new Label("Type: " + f.getType() + " | " + f.getDateCreation());
-
-                info.setStyle("-fx-text-fill:gray; -fx-font-size:11px;");
-
                 info.setStyle("-fx-text-fill:#a78bfa; -fx-font-size:11px;");
-
 
                 // ── Contenu ───────────────────────────────────────────────
                 Label contenu = new Label(f.getContenu());
@@ -261,7 +245,6 @@ public class AjoutForum {
                 edit.setStyle(BTN_MODIFIER);
                 delete.setStyle(BTN_SUPPRIMER);
 
-
                 delete.setOnAction(e -> { fs.supprimer(f.getId()); loadForums(); });
                 edit.setOnAction(e -> {
                     TextInputDialog dialog = new TextInputDialog(f.getContenu());
@@ -273,50 +256,40 @@ public class AjoutForum {
                     });
                 });
 
+                HBox actions = new HBox(10, edit, delete);
+
                 // ── Bouton IA ─────────────────────────────────────────────
                 Button iaBtn = new Button("Demander a l'IA");
-
                 iaBtn.setStyle(BTN_IA);
-
 
                 Label iaLoading = new Label("L'IA reflechit...");
                 iaLoading.setVisible(false);
                 iaLoading.setManaged(false);
-
-                iaLoading.setStyle("-fx-font-size:11px; -fx-text-fill:#7c3aed; -fx-font-style:italic;");
-
                 iaLoading.setStyle(
                         "-fx-font-size:12px; -fx-text-fill:#7c3aed;" +
                                 "-fx-font-style:italic;");
-
 
                 Label iaResponse = new Label();
                 iaResponse.setWrapText(true);
                 iaResponse.setVisible(false);
                 iaResponse.setManaged(false);
                 iaResponse.setStyle(
-
                         "-fx-background-color:#f5f3ff;" +
                                 "-fx-border-color:#c4b5fd; -fx-border-width:1;" +
                                 "-fx-border-radius:8; -fx-background-radius:8;" +
-                                "-fx-padding:10; -fx-font-size:12px; -fx-text-fill:#3b0764;"
-                );
+                                "-fx-padding:10; -fx-font-size:12px; -fx-text-fill:#3b0764;");
 
                 iaBtn.setOnAction(e -> {
                     if (iaResponse.isVisible()) {
                         iaResponse.setVisible(false);
                         iaResponse.setManaged(false);
                         iaBtn.setText("Demander a l'IA");
-
                         iaBtn.setStyle(BTN_IA);
-
                         return;
                     }
                     iaBtn.setDisable(true);
                     iaBtn.setText("Reflexion...");
-
                     iaBtn.setStyle(BTN_IA_ACTIVE);
-
                     iaLoading.setVisible(true);
                     iaLoading.setManaged(true);
 
@@ -328,9 +301,7 @@ public class AjoutForum {
                             iaLoading.setManaged(false);
                             iaBtn.setDisable(false);
                             iaBtn.setText("Masquer la reponse IA");
-
                             iaBtn.setStyle(BTN_IA_ACTIVE);
-
                             iaResponse.setText("IA : " + reponse);
                             iaResponse.setVisible(true);
                             iaResponse.setManaged(true);
@@ -338,24 +309,16 @@ public class AjoutForum {
                     }).start();
                 });
 
-                HBox actions = new HBox(10, edit, delete);
-
                 // ── Commentaires ──────────────────────────────────────────
-
                 FXMLLoader loader = new FXMLLoader(
                         getClass().getResource("/commentaire.fxml"));
-
                 Parent commentUI = loader.load();
                 AjoutCommentaire cc = loader.getController();
                 cc.setForumId(f.getId());
 
+                // ── Ajout dans la card (SANS DOUBLONS) ────────────────────
                 card.getChildren().addAll(
-
                         titre, info, contenu, actions,
-
-                        titre, info, contenu,
-                        actions,
-
                         iaBtn, iaLoading, iaResponse,
                         commentUI
                 );
@@ -370,7 +333,6 @@ public class AjoutForum {
         pageLabel.setText("Page " + currentPage + " / " + totalPages);
     }
 
-    // ── PAGINATION ────────────────────────────────────────────────────────
     @FXML void nextPage(ActionEvent event) {
         if (currentPage < totalPages) { currentPage++; loadForums(); }
     }
@@ -379,8 +341,6 @@ public class AjoutForum {
         if (currentPage > 1) { currentPage--; loadForums(); }
     }
 
-    // ── NAVIGATION ────────────────────────────────────────────────────────
-
     @FXML private void goDashboard(ActionEvent event)  { loadPage(event, "/ProfDashboard.fxml"); }
     @FXML private void goCours(ActionEvent event)      { loadPage(event, "/CoursList.fxml"); }
     @FXML private void goRessources(ActionEvent event) { loadPage(event, "/listeRessources.fxml"); }
@@ -388,25 +348,23 @@ public class AjoutForum {
     @FXML private void goExamens(ActionEvent event)    { loadPage(event, "/ExamenView.fxml"); }
     @FXML private void goEvaluations(ActionEvent event){ loadPage(event, "/EvaluationView.fxml"); }
 
+    @FXML private void goResultats(ActionEvent event) {
+        new Alert(Alert.AlertType.INFORMATION,
+                "La page resultats sera bientot disponible.").showAndWait();
+    }
 
-        @FXML private void goResultats (ActionEvent event){
-            new Alert(Alert.AlertType.INFORMATION,
-                    "La page resultats sera bientot disponible.").showAndWait();
+    @FXML private void goLogout(ActionEvent event) {
+        loadPage(event, "/Login.fxml");
+    }
 
+    private void loadPage(ActionEvent event, String fxmlPath) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        @FXML private void goLogout (ActionEvent event){
-            loadPage(event, "/Login.fxml");
-        }
-
-        private void loadPage (ActionEvent event, String fxmlPath){
-            try {
-                Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
-                Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-                stage.setScene(new Scene(root));
-                stage.show();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+    }
 }
