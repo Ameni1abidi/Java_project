@@ -14,7 +14,7 @@ public class CloudinaryStorageService {
     private final boolean enabled;
 
     public CloudinaryStorageService() {
-        String cloudinaryUrl = LocalSecrets.get("CLOUDINARY_URL");
+        String cloudinaryUrl = normalizeCloudinaryUrl(LocalSecrets.get("CLOUDINARY_URL"));
         String cloudName = LocalSecrets.get("CLOUDINARY_CLOUD_NAME");
         String apiKey = LocalSecrets.get("CLOUDINARY_API_KEY");
         String apiSecret = LocalSecrets.get("CLOUDINARY_API_SECRET");
@@ -150,6 +150,17 @@ public class CloudinaryStorageService {
 
     private boolean isBlank(String value) {
         return value == null || value.isBlank();
+    }
+
+    private String normalizeCloudinaryUrl(String value) {
+        if (value == null) {
+            return null;
+        }
+        String normalized = value.trim();
+        while (normalized.startsWith("CLOUDINARY_URL=")) {
+            normalized = normalized.substring("CLOUDINARY_URL=".length()).trim();
+        }
+        return normalized;
     }
 
     private boolean isPlaceholder(String value) {

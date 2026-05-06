@@ -192,7 +192,7 @@ public class StudentFavoritesController {
         qrView.setFitHeight(138);
         qrView.setPreserveRatio(true);
 
-        Label hint = new Label("Scanner OCR");
+        Label hint = new Label("Scanner Cloudinary");
         hint.setStyle("-fx-text-fill:#2f2855; -fx-font-size:12; -fx-font-weight:bold;");
         box.getChildren().addAll(qrView, hint);
         return box;
@@ -266,8 +266,8 @@ public class StudentFavoritesController {
 
     private String resolveAccessUrl(resources resource) {
         String content = resource.getContenu();
-        if ("image".equalsIgnoreCase(resource.getType())) {
-            return resolveImageOcrViewerUrl(resource);
+        if ("image".equalsIgnoreCase(resource.getType()) || "video".equalsIgnoreCase(resource.getType())) {
+            return resolveCloudinaryMediaUrl(resource);
         }
         if (isRemoteUrl(content)) {
             return content;
@@ -290,6 +290,36 @@ public class StudentFavoritesController {
                 return cloudinaryUrl;
             }
             return source.toUri().toString();
+        } catch (Exception e) {
+            Path source = resolveLocalPath(content);
+            return source == null ? null : source.toUri().toString();
+        }
+    }
+
+    private String resolveCloudinaryMediaUrl(resources resource) {
+        String content = resource.getContenu();
+        if (isRemoteUrl(content)) {
+            return content;
+        }
+        if (content == null || content.isBlank()) {
+            return null;
+        }
+
+        try {
+            Path source = resolveLocalPath(content);
+            if (source == null) {
+                return null;
+            }
+            if (!cloudinaryStorageService.isEnabled()) {
+                return source.toUri().toString();
+            }
+
+            String cloudinaryUrl = "image".equalsIgnoreCase(resource.getType())
+                    ? cloudinaryStorageService.uploadImage(source)
+                    : cloudinaryStorageService.uploadVideo(source);
+            resource.setContenu(cloudinaryUrl);
+            resourceService.update(resource);
+            return cloudinaryUrl;
         } catch (Exception e) {
             Path source = resolveLocalPath(content);
             return source == null ? null : source.toUri().toString();

@@ -381,7 +381,7 @@ public class StudentChapterResourcesController {
         qrView.setFitHeight(138);
         qrView.setPreserveRatio(true);
 
-        Label hint = new Label("Scanner OCR");
+        Label hint = new Label("Scanner Cloudinary");
         hint.setStyle(darkMode
                 ? "-fx-text-fill:#e5e7eb; -fx-font-size:12; -fx-font-weight:bold;"
                 : "-fx-text-fill:#2f2855; -fx-font-size:12; -fx-font-weight:bold;");
@@ -435,8 +435,8 @@ public class StudentChapterResourcesController {
 
     private String resolveAccessUrl(resources resource) {
         String content = resource.getContenu();
-        if ("image".equalsIgnoreCase(resource.getType())) {
-            return resolveImageOcrViewerUrl(resource);
+        if ("image".equalsIgnoreCase(resource.getType()) || "video".equalsIgnoreCase(resource.getType())) {
+            return resolveCloudinaryMediaUrl(resource);
         }
         if (isRemoteUrl(content)) {
             return content;
@@ -461,6 +461,36 @@ public class StudentChapterResourcesController {
             }
 
             return source.toUri().toString();
+        } catch (Exception e) {
+            Path source = resolveLocalPath(content);
+            return source == null ? null : source.toUri().toString();
+        }
+    }
+
+    private String resolveCloudinaryMediaUrl(resources resource) {
+        String content = resource.getContenu();
+        if (isRemoteUrl(content)) {
+            return content;
+        }
+        if (content == null || content.isBlank()) {
+            return null;
+        }
+
+        try {
+            Path source = resolveLocalPath(content);
+            if (source == null) {
+                return null;
+            }
+            if (!cloudinaryStorageService.isEnabled()) {
+                return source.toUri().toString();
+            }
+
+            String cloudinaryUrl = "image".equalsIgnoreCase(resource.getType())
+                    ? cloudinaryStorageService.uploadImage(source)
+                    : cloudinaryStorageService.uploadVideo(source);
+            resource.setContenu(cloudinaryUrl);
+            resourceService.update(resource);
+            return cloudinaryUrl;
         } catch (Exception e) {
             Path source = resolveLocalPath(content);
             return source == null ? null : source.toUri().toString();
@@ -600,19 +630,13 @@ public class StudentChapterResourcesController {
         Task<String> task = new Task<>() {
             @Override
             protected String call() throws Exception {
-                String content = resource.getContenu();
-                if (isRemoteUrl(content)) {
-                    return ocrService.extractTextFromUrl(content);
+                String imageUrl = resolveCloudinaryMediaUrl(resource);
+                if (isRemoteUrl(imageUrl)) {
+                    return ocrService.extractTextFromUrl(imageUrl);
                 }
-                Path source = resolveLocalPath(content);
+                Path source = resolveLocalPath(resource.getContenu());
                 if (source == null) {
                     throw new IOException("Image introuvable.");
-                }
-                if (cloudinaryStorageService.isEnabled()) {
-                    String cloudinaryUrl = cloudinaryStorageService.uploadImage(source);
-                    resource.setContenu(cloudinaryUrl);
-                    resourceService.update(resource);
-                    return ocrService.extractTextFromUrl(cloudinaryUrl);
                 }
                 return ocrService.extractTextFromFile(source);
             }

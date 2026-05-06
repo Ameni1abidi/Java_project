@@ -10,6 +10,7 @@ import java.util.Properties;
 
 public final class LocalSecrets {
     private static final String LOCAL_FILE_NAME = "local.secrets.properties";
+    private static final String EXAMPLE_FILE_NAME = "local.secrets.properties.example";
     private static volatile String lastResolvedPath = "not-resolved";
     private static final Properties PROPS = loadProperties();
 
@@ -51,15 +52,15 @@ public final class LocalSecrets {
     }
 
     private static Path resolveSecretsFile() {
-        Path direct = Path.of(LOCAL_FILE_NAME);
-        if (Files.exists(direct)) return direct;
+        Path direct = resolveCandidate(Path.of("").toAbsolutePath().normalize());
+        if (direct != null) return direct;
 
         String userDir = System.getProperty("user.dir");
         if (userDir != null && !userDir.isBlank()) {
             Path current = Paths.get(userDir).toAbsolutePath().normalize();
             for (int i = 0; i < 12 && current != null; i++) {
-                Path candidate = current.resolve(LOCAL_FILE_NAME);
-                if (Files.exists(candidate)) return candidate;
+                Path candidate = resolveCandidate(current);
+                if (candidate != null) return candidate;
                 current = current.getParent();
             }
         }
@@ -73,12 +74,22 @@ public final class LocalSecrets {
                     .normalize();
             Path current = Files.isDirectory(codeSource) ? codeSource : codeSource.getParent();
             for (int i = 0; i < 12 && current != null; i++) {
-                Path candidate = current.resolve(LOCAL_FILE_NAME);
-                if (Files.exists(candidate)) return candidate;
+                Path candidate = resolveCandidate(current);
+                if (candidate != null) return candidate;
                 current = current.getParent();
             }
         } catch (URISyntaxException | NullPointerException ignored) {
         }
+
+        return null;
+    }
+
+    private static Path resolveCandidate(Path directory) {
+        Path local = directory.resolve(LOCAL_FILE_NAME);
+        if (Files.exists(local)) return local;
+
+        Path example = directory.resolve(EXAMPLE_FILE_NAME);
+        if (Files.exists(example)) return example;
 
         return null;
     }

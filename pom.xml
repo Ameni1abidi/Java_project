@@ -14,6 +14,8 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <javafx.platform>win</javafx.platform>
+        <os.detected.classifier>win</os.detected.classifier>
     </properties>
 
     <dependencies>
@@ -30,17 +32,20 @@
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
             <version>21.0.2</version>
+            <classifier>win</classifier>
         </dependency>
 
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
             <version>21.0.2</version>
+            <classifier>win</classifier>
         </dependency>
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-web</artifactId>
             <version>21.0.2</version>
+            <classifier>win</classifier>
         </dependency>
 
 
@@ -71,7 +76,8 @@
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-swing</artifactId>
-            <version>21</version>
+            <version>21.0.2</version>
+            <classifier>win</classifier>
         </dependency>
         <dependency>
             <groupId>com.itextpdf</groupId>

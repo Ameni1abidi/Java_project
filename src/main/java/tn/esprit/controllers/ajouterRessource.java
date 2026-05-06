@@ -392,28 +392,15 @@ public class ajouterRessource {
         }
 
         if (cloudinaryStorageService.isEnabled() && ("image".equals(type) || "video".equals(type))) {
-            if ("image".equals(type)) {
-                return cloudinaryStorageService.uploadImage(source);
+            try {
+                String cloudinaryUrl = "image".equals(type)
+                        ? cloudinaryStorageService.uploadImage(source)
+                        : cloudinaryStorageService.uploadVideo(source);
+                qrCodeService.generateAndSave(cloudinaryUrl);
+                return cloudinaryUrl;
+            } catch (Exception e) {
+                throw new IOException("Upload Cloudinary impossible. Verifiez la configuration Cloudinary.", e);
             }
-            return cloudinaryStorageService.uploadVideo(source);
-        }
-
-        if ("image".equals(type) || "video".equals(type)) {
-            if (cloudinaryStorageService.isEnabled()) {
-                try {
-                    String cloudinaryUrl = "image".equals(type)
-                            ? cloudinaryStorageService.uploadImage(source)
-                            : cloudinaryStorageService.uploadVideo(source);
-                    qrCodeService.generateAndSave(cloudinaryUrl);
-                    return cloudinaryUrl;
-                } catch (Exception e) {
-                    throw new IOException("Upload Cloudinary impossible. Verifiez la configuration Cloudinary.", e);
-                }
-            }
-
-            String localPath = storeLocalFile(source);
-            qrCodeService.generateAndSave(Path.of(localPath).toUri().toString());
-            return localPath;
         }
 
         return storeLocalFile(source);
