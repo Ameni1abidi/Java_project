@@ -74,15 +74,19 @@ public class CategorieController {
             return;
         }
 
-        if (currentCategorie == null) {
-            service.add(new categorie(nom));
-            showAlert("Succes", "Categorie ajoutee avec succes !");
-        } else {
-            service.update(currentCategorie.getNom(), nom);
-            showAlert("Succes", "Categorie modifiee avec succes !");
-        }
+        try {
+            if (currentCategorie == null) {
+                service.add(new categorie(nom));
+                showAlert("Succes", "Categorie ajoutee avec succes !");
+            } else {
+                service.update(currentCategorie.getNom(), nom);
+                showAlert("Succes", "Categorie modifiee avec succes !");
+            }
 
-        retourListe();
+            retourListe();
+        } catch (Exception e) {
+            errorLabel.setText("Operation impossible : " + getRootMessage(e));
+        }
     }
 
     @FXML
@@ -98,9 +102,19 @@ public class CategorieController {
 
         confirmation.showAndWait().ifPresent(response -> {
             if (response == javafx.scene.control.ButtonType.OK) {
-                service.delete(currentCategorie.getNom());
-                showAlert("Succes", "Categorie supprimee avec succes !");
-                retourListe();
+                try {
+                    int resourceCount = service.countResourcesByCategory(currentCategorie.getNom());
+                    if (resourceCount > 0) {
+                        errorLabel.setText("Impossible de supprimer : " + resourceCount + " ressource(s) utilisent cette categorie.");
+                        return;
+                    }
+
+                    service.delete(currentCategorie.getNom());
+                    showAlert("Succes", "Categorie supprimee avec succes !");
+                    retourListe();
+                } catch (Exception e) {
+                    errorLabel.setText("Suppression impossible : " + getRootMessage(e));
+                }
             }
         });
     }
@@ -194,6 +208,15 @@ public class CategorieController {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
         alert.setContentText(msg);
-        alert.show();
+        alert.showAndWait();
+    }
+
+    private String getRootMessage(Exception e) {
+        Throwable cause = e;
+        while (cause.getCause() != null) {
+            cause = cause.getCause();
+        }
+
+        return cause.getMessage() == null ? e.getMessage() : cause.getMessage();
     }
 }

@@ -176,9 +176,13 @@ public class UserService {
     }
 
     public Optional<User> getFirstByRole(Role role) throws SQLException {
-        String sql = "SELECT * FROM utilisateur WHERE role = ? ORDER BY id ASC LIMIT 1";
+        String sql = role == Role.ROLE_ETUDIANT
+                ? "SELECT * FROM utilisateur WHERE UPPER(role) IN ('ROLE_ETUDIANT', 'ETUDIANT', 'ROLE_STUDENT', 'STUDENT', 'ROLE_USER', 'USER') ORDER BY id ASC LIMIT 1"
+                : "SELECT * FROM utilisateur WHERE role = ? ORDER BY id ASC LIMIT 1";
         try (PreparedStatement ps = cnx.prepareStatement(sql)) {
-            ps.setString(1, role.name());
+            if (role != Role.ROLE_ETUDIANT) {
+                ps.setString(1, role.name());
+            }
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return Optional.of(mapRow(rs));
