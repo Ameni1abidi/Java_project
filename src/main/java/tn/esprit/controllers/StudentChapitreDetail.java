@@ -43,7 +43,6 @@ public class StudentChapitreDetail {
         loadPDF();
         generateAIResume();
 
-        // 🔥 OPEN action = 20%
         StudentChapitreProgress p =
                 progressService.find(getCurrentUserId(), chapitre.getId());
 
@@ -105,7 +104,6 @@ public class StudentChapitreDetail {
         }
     }
 
-    // ================= PRINT =================
     @FXML
     private void handlePrint() {
         try {
@@ -155,7 +153,7 @@ public class StudentChapitreDetail {
                 p.setStartedAt(LocalDateTime.now());
             }
 
-            // ✅ مهمين
+
             p.setCompleted(true);
             p.setCompletedAt(LocalDateTime.now());
             p.setProgress(100);

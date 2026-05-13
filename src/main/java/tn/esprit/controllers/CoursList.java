@@ -363,7 +363,7 @@ public class CoursList {
             ps.setInt(1, c.getId());
             ps.executeUpdate();
 
-            loadData(); // يرجع للقا
+            loadData();
 
             showNotification("📦 Cours archivé", "warning");
         } catch (Exception e) {

@@ -124,13 +124,13 @@ public class StudentCours {
 
                 CertificatController controller = loader.getController();
 
-                // 👇 نعديو الداتا
+
                 controller.setData(
-                        "Assil", // بدلها بالuser الحقيقي
+                        "Assil",
                         c,
-                        true,   // eligible (خاطر 100%)
-                        120,    // temps passé (تنجم تبدلو)
-                        60      // temps requis
+                        true,
+                        120,
+                        60
                 );
 
                 Stage stage = (Stage) courseContainer.getScene().getWindow();
