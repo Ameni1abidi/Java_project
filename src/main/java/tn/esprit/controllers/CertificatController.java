@@ -5,13 +5,19 @@ import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Paragraph;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Label;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import tn.esprit.entities.Cours;
 
 import javax.imageio.ImageIO;
@@ -83,13 +89,13 @@ public class CertificatController {
     private void exportPDF() {
         try {
 
-            // 🔥 نخبي buttons قبل screenshot
+            // cacher le button avant le screenshot
             certifBox.lookupAll(".button").forEach(node -> node.setVisible(false));
 
             // 📸 screenshot
             WritableImage image = certifBox.snapshot(new SnapshotParameters(), null);
 
-            // 📁 choisir win yethabet
+
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Enregistrer PDF");
             fileChooser.setInitialFileName("certificat.pdf");
@@ -97,7 +103,7 @@ public class CertificatController {
             File file = fileChooser.showSaveDialog(certifBox.getScene().getWindow());
             if (file == null) return;
 
-            // 🔥 create PDF
+
             PdfWriter writer = new PdfWriter(file.getAbsolutePath());
             PdfDocument pdf = new PdfDocument(writer);
             Document document = new Document(pdf);
@@ -114,7 +120,7 @@ public class CertificatController {
             document.add(img);
             document.close();
 
-            // 🔥 رجّع buttons
+
             certifBox.lookupAll(".button").forEach(node -> node.setVisible(true));
 
             System.out.println("✅ PDF design saved");
@@ -127,13 +133,13 @@ public class CertificatController {
     private void handleDownloadImage() {
         try {
 
-            // 🔥 hide buttons
+
             certifBox.lookupAll(".button").forEach(n -> n.setVisible(false));
 
             // 📸 snapshot clean
             WritableImage image = certifBox.snapshot(new SnapshotParameters(), null);
 
-            // 🔁 رجّع buttons
+
             certifBox.lookupAll(".button").forEach(n -> n.setVisible(true));
 
             FileChooser fileChooser = new FileChooser();
@@ -148,5 +154,20 @@ public class CertificatController {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void loadPage(ActionEvent event, String fxmlPath) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath));
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    @FXML
+    private void goBack(ActionEvent event) {
+        loadPage(event, "/StudentCours.fxml");
     }
 }

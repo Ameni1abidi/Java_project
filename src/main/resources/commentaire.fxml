@@ -5,10 +5,15 @@
 
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
+<<<<<<< HEAD
+      fx:controller="tn.esprit.controllers.AjoutCommentaire">
+    <HBox
+=======
       fx:controller="tn.esprit.controllers.AjoutCommentaire"
+>>>>>>> 79801f2709ce9462e5184640cd75ad1c3e0b9f5c
       spacing="12"
       prefWidth="320"
-      style="-fx-padding:15; -fx-background-color:#f9f9f9; -fx-background-radius:12;">
+      style="-fx-padding:15; -fx-background-color:#f9f9f9; -fx-background-radius:12;"/>
 
     <Label text="Commentaires"
            style="-fx-font-size:16px; -fx-font-weight:bold;"/>

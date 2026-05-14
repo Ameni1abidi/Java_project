@@ -91,6 +91,12 @@
                            -fx-padding:8 15;
                            -fx-background-radius:25;
                            -fx-font-weight:bold;" />
+
+        </HBox>
+        <HBox>
+            <Button text="⬅ Retour Cours"
+                    onAction="#goBack"
+                    style="-fx-background-color:#D1C4E9; -fx-text-fill:#4A148C; -fx-background-radius:8; -fx-padding:10 20;"/>
         </HBox>
 
     </VBox>
